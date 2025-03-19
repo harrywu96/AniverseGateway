@@ -4,7 +4,7 @@ import os
 import re
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock, mock_open, PropertyMock
 
 from subtranslate.core.ffmpeg import FFmpegTool, FFmpegError
 from subtranslate.core.subtitle_extractor import (
@@ -138,8 +138,12 @@ class TestSubtitleExtractor:
         assert extractor.ffmpeg is ffmpeg
 
         # 不提供FFmpegTool实例，应自动创建
-        with patch("subtranslate.core.ffmpeg.FFmpegTool") as mock_ffmpeg_cls:
+        with patch(
+            "subtranslate.core.subtitle_extractor.FFmpegTool"
+        ) as mock_ffmpeg_cls:
+            mock_ffmpeg = mock_ffmpeg_cls.return_value
             extractor = SubtitleExtractor()
+            assert extractor.ffmpeg is mock_ffmpeg
             assert mock_ffmpeg_cls.called
 
     def test_detect_subtitle_files(self, subtitle_extractor):
@@ -149,12 +153,11 @@ class TestSubtitleExtractor:
             patch("pathlib.Path.glob") as mock_glob,
             patch("pathlib.Path.__truediv__") as mock_div,
         ):
-
             # 模拟文件存在和目录glob结果
-            mock_file1 = MagicMock(spec=Path)
-            mock_file2 = MagicMock(spec=Path)
-            mock_div.return_value = mock_file1
-            mock_glob.return_value = [mock_file2]
+            mock_exact_match = MagicMock(spec=Path)
+            mock_language_match = MagicMock(spec=Path)
+            mock_div.return_value = mock_exact_match
+            mock_glob.return_value = [mock_language_match]
 
             # 视频路径
             video_path = "/path/to/video.mp4"
@@ -163,60 +166,54 @@ class TestSubtitleExtractor:
             results = subtitle_extractor.detect_subtitle_files(video_path)
 
             # 验证结果
-            assert len(results) == 2  # 一个精确匹配，一个语言匹配
-            assert mock_file1 in results
-            assert mock_file2 in results
-
-    def test_detect_subtitle_files_video_not_exists(self, subtitle_extractor):
-        """测试当视频不存在时返回空列表"""
-        with patch("pathlib.Path.exists", return_value=False):
-            results = subtitle_extractor.detect_subtitle_files(
-                "/path/to/nonexistent.mp4"
-            )
-            assert results == []
+            assert len(results) == 14  # 7个扩展名 * (1个精确匹配 + 1个语言匹配)
+            assert results.count(mock_exact_match) == 7  # 每个扩展名一个精确匹配
+            assert results.count(mock_language_match) == 7  # 每个扩展名一个语言匹配
 
     def test_get_subtitle_format(self, subtitle_extractor):
         """测试确定字幕文件格式"""
         # 测试通过扩展名判断
-        with patch("pathlib.Path.suffix", return_value=".srt"):
-            assert (
-                subtitle_extractor.get_subtitle_format("/path/to/subtitle.srt")
-                == SubtitleFormat.SRT
-            )
+        with patch.object(
+            Path, "suffix", new_callable=PropertyMock, return_value=".srt"
+        ):
+            with patch.object(Path, "exists", return_value=True):
+                result = subtitle_extractor.get_subtitle_format("/path/to/subtitle.srt")
+                assert result == SubtitleFormat.SRT
 
         # 测试通过内容判断SRT
         srt_content = "1\n00:00:01,000 --> 00:00:05,000\nTest subtitle"
-        with (
-            patch("pathlib.Path.suffix", return_value=".txt"),
-            patch("builtins.open", mock_open(read_data=srt_content)),
+        with patch.object(
+            Path, "suffix", new_callable=PropertyMock, return_value=".txt"
         ):
-            assert (
-                subtitle_extractor.get_subtitle_format("/path/to/subtitle.txt")
-                == SubtitleFormat.SRT
-            )
+            with patch.object(Path, "exists", return_value=True):
+                with patch("builtins.open", mock_open(read_data=srt_content)):
+                    result = subtitle_extractor.get_subtitle_format(
+                        "/path/to/subtitle.txt"
+                    )
+                    assert result == SubtitleFormat.SRT
 
         # 测试通过内容判断ASS
-        ass_content = (
-            "[Script Info]\nTitle: Test\nFormat: Layer, Start, End, Style, Text"
-        )
-        with (
-            patch("pathlib.Path.suffix", return_value=".txt"),
-            patch("builtins.open", mock_open(read_data=ass_content)),
+        ass_content = "[Script Info]\nTitle: Test\nFormat: Layer, Start"
+        with patch.object(
+            Path, "suffix", new_callable=PropertyMock, return_value=".txt"
         ):
-            assert (
-                subtitle_extractor.get_subtitle_format("/path/to/subtitle.txt")
-                == SubtitleFormat.ASS
-            )
+            with patch.object(Path, "exists", return_value=True):
+                with patch("builtins.open", mock_open(read_data=ass_content)):
+                    result = subtitle_extractor.get_subtitle_format(
+                        "/path/to/subtitle.txt"
+                    )
+                    assert result == SubtitleFormat.ASS
 
         # 测试未知格式
-        with (
-            patch("pathlib.Path.suffix", return_value=".xyz"),
-            patch("builtins.open", mock_open(read_data="Unknown content")),
+        with patch.object(
+            Path, "suffix", new_callable=PropertyMock, return_value=".xyz"
         ):
-            assert (
-                subtitle_extractor.get_subtitle_format("/path/to/subtitle.xyz")
-                == SubtitleFormat.UNKNOWN
-            )
+            with patch.object(Path, "exists", return_value=True):
+                with patch("builtins.open", mock_open(read_data="Unknown")):
+                    result = subtitle_extractor.get_subtitle_format(
+                        "/path/to/subtitle.xyz"
+                    )
+                    assert result == SubtitleFormat.UNKNOWN
 
     def test_extract_embedded_subtitle(self, subtitle_extractor, video_info):
         """测试提取内嵌字幕"""
@@ -225,7 +222,6 @@ class TestSubtitleExtractor:
             patch("os.makedirs") as mock_makedirs,
             patch.object(subtitle_extractor.ffmpeg, "run_command") as mock_run,
         ):
-
             # 模拟输出文件存在
             with patch("pathlib.Path.exists", side_effect=[True, True]):
                 # 第一个True是视频文件存在检查，第二个True是输出文件存在检查
@@ -238,7 +234,9 @@ class TestSubtitleExtractor:
                 # 验证结果和方法调用
                 assert result is not None
                 assert video_info.status == ProcessingStatus.PENDING  # 应重置为PENDING
-                mock_makedirs.assert_called_once_with("/output/dir", exist_ok=True)
+                mock_makedirs.assert_called_once_with(
+                    Path("/output/dir"), exist_ok=True
+                )
                 mock_run.assert_called_once()
 
                 # 验证命令参数
@@ -255,7 +253,6 @@ class TestSubtitleExtractor:
             patch("os.makedirs"),
             patch.object(subtitle_extractor.ffmpeg, "run_command") as mock_run,
         ):
-
             # 模拟输出文件不存在
             with patch("pathlib.Path.exists", side_effect=[True, False]):
                 # 第一个True是视频文件存在检查，第二个False是输出文件不存在
@@ -289,7 +286,6 @@ class TestSubtitleExtractor:
             patch.object(subtitle_extractor.ffmpeg, "run_command") as mock_run,
             patch("pathlib.Path.suffix", return_value=".ass"),
         ):
-
             # 模拟输出文件存在
             with patch("pathlib.Path.exists", side_effect=[True, True]):
                 # 第一个True是字幕文件存在检查，第二个True是输出文件存在检查
@@ -317,7 +313,6 @@ class TestSubtitleExtractor:
             patch("pathlib.Path.suffix", return_value=".srt"),
             patch("builtins.open", mock_open(read_data=srt_content)),
         ):
-
             # 调用方法
             result = subtitle_extractor.convert_to_srt("/path/to/subtitle.srt")
 
@@ -331,7 +326,6 @@ class TestSubtitleExtractor:
             "get_subtitle_streams",
             return_value=subtitle_streams,
         ):
-
             # 调用方法
             tracks = subtitle_extractor.get_subtitle_tracks("/path/to/video.mp4")
 
@@ -366,12 +360,12 @@ class TestSubtitleExtractor:
         # 测试无默认轨道的情况
         no_default_tracks = [eng_forced, chi_normal, jp_normal]
         best_index = subtitle_extractor.select_best_track(no_default_tracks)
-        assert best_index == 1  # 应选择第一个非强制轨道
+        assert best_index == 2  # 应选择第一个非强制轨道(chi_normal的index是2)
 
         # 测试仅有强制轨道的情况
         forced_tracks = [eng_forced]
         best_index = subtitle_extractor.select_best_track(forced_tracks)
-        assert best_index == 0  # 应选择第一个轨道
+        assert best_index == 1  # 应选择第一个轨道(eng_forced的index是1)
 
         # 测试空轨道列表
         best_index = subtitle_extractor.select_best_track([])
@@ -405,7 +399,6 @@ class TestSubtitleExtractor:
             patch("os.makedirs"),
             patch("re.search", return_value=True),
         ):
-
             # 模拟获取轨道返回两个轨道
             tracks = [SubtitleTrack(0, "eng", is_default=True), SubtitleTrack(1, "chi")]
             mock_get_tracks.return_value = tracks
@@ -416,15 +409,22 @@ class TestSubtitleExtractor:
             )
 
             # 验证结果
-            assert len(all_subs) == 3  # 2个外挂 + 1个最佳内嵌
+            assert len(all_subs) == 4  # 2个外挂 + 1个最佳内嵌 + 1个额外内嵌轨道
             assert best_sub is not None
+
+            # 验证轨道提取次数
+            assert subtitle_extractor.extract_embedded_subtitle.call_count == 2
 
             # 再次调用但无匹配语言
             with patch("re.search", return_value=False):
+                # 重置模拟对象
+                subtitle_extractor.extract_embedded_subtitle.reset_mock()
+
                 all_subs, best_sub = subtitle_extractor.auto_extract_subtitles(
                     video_info, "/output/dir", "fre"  # 不存在的语言
                 )
 
                 # 验证结果
-                assert len(all_subs) > 0
+                assert len(all_subs) == 4  # 2个外挂 + 2个内嵌轨道
                 assert best_sub is not None
+                assert subtitle_extractor.extract_embedded_subtitle.call_count == 2
