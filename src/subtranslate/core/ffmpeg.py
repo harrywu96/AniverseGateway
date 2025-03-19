@@ -141,29 +141,35 @@ class FFmpegTool:
             info = self.get_video_info(video_path)
             format_name = info.get("format", {}).get("format_name", "")
 
-            # 处理FFmpeg返回的格式字符串，可能包含多个格式
-            formats = format_name.lower().split(",")
+            # 将格式名转为小写并处理
+            format_name_lower = format_name.lower()
+            format_list = [fmt.strip() for fmt in format_name_lower.split(",")]
 
-            # 检查是否包含 matroska 格式
-            if "matroska" in formats:
+            # 1. 优先检查MKV格式 - 特殊情况处理
+            if "matroska" in format_name_lower:
                 return VideoFormat.MKV
 
-            for fmt in formats:
-                fmt = fmt.strip()
-                if fmt in ["mp4", "mov"]:
-                    return VideoFormat.MP4
-                elif fmt == "avi":
-                    return VideoFormat.AVI
-                elif fmt == "webm":
-                    return VideoFormat.WEBM
+            # 2. 检查MP4相关格式
+            mp4_formats = ["mp4", "mov", "m4a", "3gp", "3g2", "mj2"]
+            if any(fmt in mp4_formats for fmt in format_list):
+                return VideoFormat.MP4
 
-            # 尝试从文件扩展名判断
+            # 3. 检查AVI格式
+            if "avi" in format_list:
+                return VideoFormat.AVI
+
+            # 4. 检查WEBM格式
+            if "webm" in format_list:
+                return VideoFormat.WEBM
+
+            # 5. 尝试从文件扩展名判断
             suffix = Path(video_path).suffix.lower().lstrip(".")
             try:
                 return VideoFormat(suffix)
             except ValueError:
                 pass
 
+            # 6. 返回其他格式
             return VideoFormat.OTHER
         except Exception as e:
             logger.error(f"检测视频格式失败: {str(e)}")
