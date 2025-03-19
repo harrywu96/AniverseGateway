@@ -1,0 +1,28 @@
+# 运行时依赖
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.0
+pysrt==1.1.2
+openai==1.6.0
+python-dotenv==1.0.0
+requests==2.31.0
+ffmpeg-python==0.2.0
+websockets==12.0
+python-multipart==0.0.6
+typer==0.9.0  # 用于命令行界面
+rich==13.4.2  # 用于命令行格式化输出
+httpx==0.24.1  # 用于异步HTTP请求
+aiofiles==23.1.0  # 用于异步文件操作
+uuid==1.30  # 用于生成唯一标识符
+click==8.1.7  # Typer的依赖
+tqdm==4.66.1  # 用于显示进度条
+
+# 开发依赖
+pytest==7.4.0; extra == 'dev'
+pytest-cov==4.1.0; extra == 'dev'
+black==23.7.0; extra == 'dev'
+isort==5.12.0; extra == 'dev'
+mypy==1.5.1; extra == 'dev'
+ruff==0.0.286; extra == 'dev'
+pytest-asyncio==0.21.1; extra == 'dev'  # 用于测试异步代码
+pre-commit==3.3.3; extra == 'dev'  # 用于提交前代码检查 

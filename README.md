@@ -1,0 +1,107 @@
+# SubTranslate - 智能视频字幕翻译系统
+
+SubTranslate是一个自动化视频字幕提取、翻译和整合系统，能够从各种视频格式中提取字幕，借助AI进行智能翻译，并将翻译后的字幕与原视频关联。
+
+## 功能特点
+
+- 自动从MKV、MP4等视频格式中提取字幕
+- 通过GPT进行智能翻译，保持对话自然流畅
+- 智能处理文化差异和上下文连贯性
+- 支持批量处理多个视频文件
+- 提供友好的Web界面和命令行接口
+- 自动保存翻译后的字幕到原视频所在目录
+
+## 安装指南
+
+### 使用Python venv环境（推荐使用UV）
+
+```bash
+# 安装UV（如果尚未安装）
+curl -sSf https://install.python-poetry.org | python3 -
+
+# 创建并激活虚拟环境
+uv venv
+source .venv/bin/activate  # Linux/macOS
+# 或
+.venv\Scripts\activate  # Windows
+
+# 安装依赖
+uv pip sync requirements.txt
+```
+
+### 使用Docker（可选）
+
+```bash
+docker pull yourusername/subtranslate:latest
+docker run -p 8000:8000 -v /path/to/videos:/videos yourusername/subtranslate
+```
+
+## 快速开始
+
+### 配置
+
+1. 复制示例配置文件
+```bash
+cp .env.example .env
+```
+
+2. 编辑配置文件，添加您的OpenAI API密钥
+```
+OPENAI_API_KEY=your_api_key_here
+```
+
+### 使用Web界面
+
+1. 启动服务器
+```bash
+python -m subtranslate.main
+```
+
+2. 在浏览器中访问 http://localhost:8000
+
+### 使用命令行
+
+```bash
+# 翻译单个视频字幕
+subtranslate translate /path/to/video.mp4
+
+# 批量翻译目录中的所有视频
+subtranslate translate-batch /path/to/videos/
+```
+
+## 系统要求
+
+- Python 3.10+
+- FFmpeg（用于视频处理）
+- 活跃的互联网连接（用于API访问）
+
+## 项目结构
+
+```
+subtranslate/
+├── src/
+│   └── subtranslate/
+│       ├── api/            # FastAPI后端
+│       ├── cli/            # 命令行接口
+│       ├── core/           # 核心业务逻辑
+│       ├── schemas/        # Pydantic数据模型
+│       ├── services/       # 业务服务
+│       └── ui/             # 前端资源
+├── frontend/               # React前端应用
+├── tests/                  # 测试目录
+├── docs/                   # 文档
+├── pyproject.toml          # 项目配置
+└── README.md               # 项目说明
+```
+
+## 详细文档
+
+请参阅 [docs/README.md](docs/README.md) 获取更详细的项目文档，包括API参考、架构细节和开发指南。
+
+## 贡献指南
+
+欢迎贡献代码、报告问题或提出改进建议！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
+
+## 许可证
+
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。 

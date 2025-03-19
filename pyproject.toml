@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "subtranslate"
+version = "0.1.0"
+description = "智能视频字幕翻译系统"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "SubTranslate Team"}
+]
+keywords = ["subtitle", "translation", "video", "ai", "gpt"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.5.0",
+    "pysrt>=1.1.2",
+    "openai>=1.6.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "ffmpeg-python>=0.2.0",
+    "websockets>=12.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.1",
+    "ruff>=0.0.286",
+    "pytest-asyncio>=0.21.1",
+    "pre-commit>=3.3.3"
+]
+
+[project.urls]
+Documentation = "https://github.com/yourusername/subtranslate#readme"
+Issues = "https://github.com/yourusername/subtranslate/issues"
+Source = "https://github.com/yourusername/subtranslate"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/subtranslate"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.ruff]
+select = ["E", "F", "B"]
+ignore = []
+line-length = 88
+target-version = "py310" 
