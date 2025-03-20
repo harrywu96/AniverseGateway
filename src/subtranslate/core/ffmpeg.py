@@ -78,7 +78,13 @@ class FFmpegTool:
             kwargs = {}
             if capture_output:
                 kwargs.update(
-                    {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE, "text": True}
+                    {
+                        "stdout": subprocess.PIPE,
+                        "stderr": subprocess.PIPE,
+                        "text": True,
+                        "encoding": "utf-8",
+                        "errors": "replace",
+                    }
                 )
 
             result = subprocess.run(cmd, check=check, **kwargs)
@@ -220,14 +226,28 @@ class FFmpegTool:
 
         try:
             # 检测格式并更新
-            format_value = self.detect_video_format(video_path)
-            video_info.format = format_value
+            try:
+                format_value = self.detect_video_format(video_path)
+                video_info.format = format_value
+            except Exception as e:
+                logger.warning(f"检测视频格式失败: {str(e)}")
+                # 保持默认格式
 
             # 获取持续时间
-            video_info.duration = self.get_video_duration(video_path)
+            try:
+                video_info.duration = self.get_video_duration(video_path)
+            except Exception as e:
+                logger.warning(f"获取视频时长失败: {str(e)}")
+                # duration将保持为None
 
             # 检测是否包含内嵌字幕
-            video_info.has_embedded_subtitle = self.has_embedded_subtitles(video_path)
+            try:
+                video_info.has_embedded_subtitle = self.has_embedded_subtitles(
+                    video_path
+                )
+            except Exception as e:
+                logger.warning(f"检测内嵌字幕失败: {str(e)}")
+                video_info.has_embedded_subtitle = False
 
             return video_info
         except Exception as e:
