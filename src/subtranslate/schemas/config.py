@@ -1,17 +1,126 @@
 """系统配置相关的数据模型。"""
 
-from typing import Optional, List, Dict, Any
+from enum import Enum
+from typing import Optional, List, Dict, Any, Union
 
 from pydantic import BaseModel, Field, SecretStr
 
 
-class OpenAIConfig(BaseModel):
+class AIProviderType(str, Enum):
+    """AI服务提供商类型"""
+
+    OPENAI = "openai"
+    ZHIPUAI = "zhipuai"  # 智谱AI（如ChatGLM）
+    VOLCENGINE = "volcengine"  # 火山引擎
+    BAIDU = "baidu"  # 百度文心一言
+    AZURE = "azure"  # Azure OpenAI服务
+    ANTHROPIC = "anthropic"  # Anthropic Claude
+    CUSTOM = "custom"  # 自定义API
+
+
+class BaseAIConfig(BaseModel):
+    """基础AI服务配置"""
+
+    api_key: SecretStr = Field(..., description="API密钥")
+    base_url: Optional[str] = Field(None, description="API基础URL")
+    timeout: int = Field(default=60, description="请求超时时间（秒）")
+    max_retries: int = Field(default=3, description="最大重试次数")
+
+
+class OpenAIConfig(BaseAIConfig):
     """OpenAI配置模型"""
 
-    api_key: SecretStr = Field(..., description="OpenAI API密钥")
     model: str = Field(default="gpt-4", description="使用的模型")
     max_tokens: int = Field(default=4096, description="最大token数")
     temperature: float = Field(default=0.3, description="温度参数")
+
+
+class ZhipuAIConfig(BaseAIConfig):
+    """智谱AI配置模型"""
+
+    model: str = Field(default="glm-4", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+
+
+class VolcengineConfig(BaseAIConfig):
+    """火山引擎配置模型"""
+
+    model: str = Field(default="skylark-pro", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+
+
+class BaiduConfig(BaseAIConfig):
+    """百度文心一言配置模型"""
+
+    model: str = Field(default="ernie-bot-4", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    secret_key: Optional[SecretStr] = Field(None, description="API密钥")
+
+
+class AzureOpenAIConfig(BaseAIConfig):
+    """Azure OpenAI配置模型"""
+
+    model: str = Field(default="gpt-4", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    deployment_name: str = Field(..., description="部署名称")
+    api_version: str = Field(default="2023-05-15", description="API版本")
+
+
+class AnthropicConfig(BaseAIConfig):
+    """Anthropic Claude配置模型"""
+
+    model: str = Field(default="claude-3-opus", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+
+
+class CustomAPIConfig(BaseAIConfig):
+    """自定义API配置模型"""
+
+    model: str = Field(default="default", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    headers: Dict[str, str] = Field(default_factory=dict, description="自定义请求头")
+    model_parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="模型参数"
+    )
+
+
+class AIServiceConfig(BaseModel):
+    """AI服务配置"""
+
+    provider: AIProviderType = Field(
+        default=AIProviderType.OPENAI, description="服务提供商"
+    )
+    openai: Optional[OpenAIConfig] = None
+    zhipuai: Optional[ZhipuAIConfig] = None
+    volcengine: Optional[VolcengineConfig] = None
+    baidu: Optional[BaiduConfig] = None
+    azure: Optional[AzureOpenAIConfig] = None
+    anthropic: Optional[AnthropicConfig] = None
+    custom: Optional[CustomAPIConfig] = None
+
+    def get_provider_config(self) -> Union[BaseAIConfig, None]:
+        """获取当前选择的服务提供商配置"""
+        if self.provider == AIProviderType.OPENAI:
+            return self.openai
+        elif self.provider == AIProviderType.ZHIPUAI:
+            return self.zhipuai
+        elif self.provider == AIProviderType.VOLCENGINE:
+            return self.volcengine
+        elif self.provider == AIProviderType.BAIDU:
+            return self.baidu
+        elif self.provider == AIProviderType.AZURE:
+            return self.azure
+        elif self.provider == AIProviderType.ANTHROPIC:
+            return self.anthropic
+        elif self.provider == AIProviderType.CUSTOM:
+            return self.custom
+        return None
 
 
 class FFmpegConfig(BaseModel):
@@ -48,7 +157,7 @@ class APIConfig(BaseModel):
 class SystemConfig(BaseModel):
     """系统配置模型，包含应用程序所有配置项"""
 
-    openai: OpenAIConfig
+    ai_service: AIServiceConfig = Field(..., description="AI服务配置")
     ffmpeg: FFmpegConfig = Field(default_factory=FFmpegConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     api: APIConfig = Field(default_factory=APIConfig)
@@ -73,13 +182,95 @@ class SystemConfig(BaseModel):
         # 加载.env文件
         load_dotenv()
 
-        # 创建OpenAI配置
-        openai_config = OpenAIConfig(
-            api_key=SecretStr(os.getenv("OPENAI_API_KEY", "")),
-            model=os.getenv("OPENAI_MODEL", "gpt-4"),
-            max_tokens=int(os.getenv("OPENAI_MAX_TOKENS", "4096")),
-            temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.3")),
-        )
+        # 确定AI服务提供商类型
+        provider_str = os.getenv("AI_PROVIDER", "openai").lower()
+        try:
+            provider = AIProviderType(provider_str)
+        except ValueError:
+            provider = AIProviderType.OPENAI
+
+        # 创建相应的AI服务配置
+        ai_service_config = AIServiceConfig(provider=provider)
+
+        # 配置OpenAI
+        if provider == AIProviderType.OPENAI:
+            ai_service_config.openai = OpenAIConfig(
+                api_key=SecretStr(os.getenv("OPENAI_API_KEY", "")),
+                base_url=os.getenv("OPENAI_BASE_URL"),
+                model=os.getenv("OPENAI_MODEL", "gpt-4"),
+                max_tokens=int(os.getenv("OPENAI_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.3")),
+            )
+        # 配置智谱AI
+        elif provider == AIProviderType.ZHIPUAI:
+            ai_service_config.zhipuai = ZhipuAIConfig(
+                api_key=SecretStr(os.getenv("ZHIPUAI_API_KEY", "")),
+                base_url=os.getenv("ZHIPUAI_BASE_URL"),
+                model=os.getenv("ZHIPUAI_MODEL", "glm-4"),
+                max_tokens=int(os.getenv("ZHIPUAI_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("ZHIPUAI_TEMPERATURE", "0.3")),
+            )
+        # 配置火山引擎
+        elif provider == AIProviderType.VOLCENGINE:
+            ai_service_config.volcengine = VolcengineConfig(
+                api_key=SecretStr(os.getenv("VOLCENGINE_API_KEY", "")),
+                base_url=os.getenv("VOLCENGINE_BASE_URL"),
+                model=os.getenv("VOLCENGINE_MODEL", "skylark-pro"),
+                max_tokens=int(os.getenv("VOLCENGINE_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("VOLCENGINE_TEMPERATURE", "0.3")),
+            )
+        # 配置百度文心一言
+        elif provider == AIProviderType.BAIDU:
+            ai_service_config.baidu = BaiduConfig(
+                api_key=SecretStr(os.getenv("BAIDU_API_KEY", "")),
+                secret_key=SecretStr(os.getenv("BAIDU_SECRET_KEY", "")),
+                base_url=os.getenv("BAIDU_BASE_URL"),
+                model=os.getenv("BAIDU_MODEL", "ernie-bot-4"),
+                max_tokens=int(os.getenv("BAIDU_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("BAIDU_TEMPERATURE", "0.3")),
+            )
+        # 配置Azure OpenAI
+        elif provider == AIProviderType.AZURE:
+            ai_service_config.azure = AzureOpenAIConfig(
+                api_key=SecretStr(os.getenv("AZURE_OPENAI_API_KEY", "")),
+                base_url=os.getenv("AZURE_OPENAI_BASE_URL", ""),
+                deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", ""),
+                api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2023-05-15"),
+                model=os.getenv("AZURE_OPENAI_MODEL", "gpt-4"),
+                max_tokens=int(os.getenv("AZURE_OPENAI_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3")),
+            )
+        # 配置Anthropic
+        elif provider == AIProviderType.ANTHROPIC:
+            ai_service_config.anthropic = AnthropicConfig(
+                api_key=SecretStr(os.getenv("ANTHROPIC_API_KEY", "")),
+                base_url=os.getenv("ANTHROPIC_BASE_URL"),
+                model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus"),
+                max_tokens=int(os.getenv("ANTHROPIC_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("ANTHROPIC_TEMPERATURE", "0.3")),
+            )
+        # 配置自定义API
+        elif provider == AIProviderType.CUSTOM:
+            headers_str = os.getenv("CUSTOM_API_HEADERS", "{}")
+            params_str = os.getenv("CUSTOM_API_MODEL_PARAMS", "{}")
+            import json
+
+            try:
+                headers = json.loads(headers_str)
+                model_parameters = json.loads(params_str)
+            except json.JSONDecodeError:
+                headers = {}
+                model_parameters = {}
+
+            ai_service_config.custom = CustomAPIConfig(
+                api_key=SecretStr(os.getenv("CUSTOM_API_KEY", "")),
+                base_url=os.getenv("CUSTOM_API_BASE_URL"),
+                model=os.getenv("CUSTOM_API_MODEL", "default"),
+                max_tokens=int(os.getenv("CUSTOM_API_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("CUSTOM_API_TEMPERATURE", "0.3")),
+                headers=headers,
+                model_parameters=model_parameters,
+            )
 
         # 创建FFmpeg配置
         ffmpeg_config = FFmpegConfig(
@@ -112,7 +303,7 @@ class SystemConfig(BaseModel):
         # 创建系统配置
         allowed_formats = os.getenv("ALLOWED_FORMATS", "mp4,mkv")
         return cls(
-            openai=openai_config,
+            ai_service=ai_service_config,
             ffmpeg=ffmpeg_config,
             logging=logging_config,
             api=api_config,

@@ -1,261 +1,245 @@
 #!/usr/bin/env python
-"""
-SubTranslate 项目 UV 依赖管理脚本
+"""UV 包管理工具
 
-此脚本提供了常用的 UV 命令封装，以简化依赖管理操作。
-使用方法：
-    python uv_setup.py [命令]
-
-可用命令:
-    setup       - 创建虚拟环境并安装所有依赖
-    update      - 更新所有依赖
-    add [包名]  - 添加新的依赖包
-    dev [包名]  - 添加开发依赖包
-    freeze      - 更新 requirements.txt
-    clean       - 清理虚拟环境并重新安装
-    check       - 检查环境和依赖状态
+该脚本提供了使用 UV 包管理器安装和更新依赖项的工具函数。
 """
 
+import argparse
 import os
-import sys
 import subprocess
-import platform
+import sys
 from pathlib import Path
 
 
-# 确定 UV 命令，优先使用系统中安装的版本
-UV_CMD = "uv"
-if platform.system() == "Windows":
-    ACTIVATE_CMD = str(Path(".venv/Scripts/activate"))
-else:
-    ACTIVATE_CMD = ". .venv/bin/activate"
-
-# 项目根目录
-PROJECT_ROOT = Path(__file__).parent
-
-
-def run_command(cmd, shell=True):
-    """运行系统命令并打印输出"""
-    print(f"\033[1;34m执行命令: {cmd}\033[0m")
-    result = subprocess.run(cmd, shell=shell, text=True, capture_output=True)
-    if result.stdout:
-        print(result.stdout)
-    if result.stderr:
-        print(f"\033[1;31m{result.stderr}\033[0m")
-    return result.returncode
-
-
-def check_uv():
-    """检查 UV 是否已安装"""
+def ensure_uv_installed():
+    """检查并安装 UV 包管理器"""
     try:
-        result = subprocess.run([UV_CMD, "--version"], capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"\033[1;32mUV 已安装: {result.stdout.strip()}\033[0m")
-            return True
-    except FileNotFoundError:
-        pass
-
-    print("\033[1;31mUV 未安装，请按照以下指南安装：\033[0m")
-    print(
-        "\033[1;33m- Windows: curl.exe -sSf https://astral.sh/uv/install.ps1"
-        " | powershell\033[0m"
-    )
-    print(
-        "\033[1;33m- macOS/Linux: curl -sSf https://astral.sh/uv/install.sh"
-        " | sh\033[0m"
-    )
-    print("\033[1;33m安装后，请重新运行此脚本。\033[0m")
-    return False
-
-
-def setup_env():
-    """创建虚拟环境并安装所有依赖"""
-    print("\033[1;32m===== 设置 SubTranslate 开发环境 =====\033[0m")
-
-    # 创建虚拟环境
-    if not Path(".venv").exists():
-        print("创建虚拟环境...")
-        run_command(f"{UV_CMD} venv")
-    else:
-        print("虚拟环境已存在。")
-
-    # 安装依赖
-    print("安装项目依赖...")
-    if platform.system() == "Windows":
-        run_command(f".venv\\Scripts\\activate && {UV_CMD} pip sync requirements.txt")
-    else:
-        run_command(f"source .venv/bin/activate && {UV_CMD} pip sync requirements.txt")
-
-    print("\033[1;32m===== 环境设置完成 =====\033[0m")
-    print("要激活环境，请运行:")
-    if platform.system() == "Windows":
-        print("  .venv\\Scripts\\activate")
-    else:
-        print("  source .venv/bin/activate")
-
-
-def update_deps():
-    """更新所有依赖"""
-    print("\033[1;32m===== 更新 SubTranslate 依赖 =====\033[0m")
-    if platform.system() == "Windows":
-        run_command(
-            f".venv\\Scripts\\activate && {UV_CMD} pip sync requirements.txt --upgrade"
+        subprocess.run(
+            ["uv", "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
         )
-    else:
-        run_command(
-            f"source .venv/bin/activate && {UV_CMD} pip sync requirements.txt --upgrade"
-        )
-
-    # 更新 requirements.txt
-    freeze_deps()
-
-
-def add_package(package_name, dev=False):
-    """添加新的依赖包"""
-    if not package_name:
-        print("\033[1;31m错误: 请指定要添加的包名\033[0m")
-        return
-
-    dev_flag = "--dev" if dev else ""
-    print(
-        f"\033[1;32m===== 添加{'开发' if dev else ''}依赖: "
-        f"{package_name} =====\033[0m"
-    )
-
-    if platform.system() == "Windows":
-        run_command(
-            f".venv\\Scripts\\activate && {UV_CMD} pip add {dev_flag} {package_name}"
-        )
-    else:
-        run_command(
-            f"source .venv/bin/activate && {UV_CMD} pip add {dev_flag} {package_name}"
-        )
-
-    # 更新 requirements.txt
-    freeze_deps()
-
-
-def freeze_deps():
-    """更新 requirements.txt"""
-    print("\033[1;32m===== 更新 requirements.txt =====\033[0m")
-
-    if platform.system() == "Windows":
-        # 运行时依赖
-        run_command(
-            f".venv\\Scripts\\activate && {UV_CMD} pip freeze --exclude-extras > "
-            f"requirements.tmp"
-        )
-        # 开发依赖
-        run_command(
-            f".venv\\Scripts\\activate && {UV_CMD} pip freeze --only-extras=dev >> "
-            f"requirements.tmp"
-        )
-    else:
-        # 运行时依赖
-        run_command(
-            f"source .venv/bin/activate && {UV_CMD} pip freeze --exclude-extras > "
-            f"requirements.tmp"
-        )
-        # 开发依赖
-        run_command(
-            f"source .venv/bin/activate && {UV_CMD} pip freeze --only-extras=dev >> "
-            f"requirements.tmp"
-        )
-
-    # 添加注释
-    with open("requirements.tmp", "r") as f:
-        content = f.read()
-
-    # 添加分隔和注释
-    with open("requirements.txt", "w") as f:
-        f.write("# 运行时依赖\n")
-        runtime_deps = []
-        dev_deps = []
-
-        for line in content.splitlines():
-            if "extra == 'dev'" in line:
-                dev_deps.append(line)
+        print("✅ UV 已安装")
+        return True
+    except (subprocess.SubprocessError, FileNotFoundError):
+        print("⚠️ UV 未安装，正在尝试安装...")
+        try:
+            if sys.platform == "win32":
+                # Windows 安装方式
+                subprocess.run(
+                    ["pip", "install", "--user", "uv"],
+                    check=True,
+                )
             else:
-                runtime_deps.append(line)
+                # Linux/macOS 安装方式
+                subprocess.run(
+                    ["curl", "-LsSf", "https://astral.sh/uv/install.sh"],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=True,
+                )
+            print("✅ UV 安装成功")
+            return True
+        except subprocess.SubprocessError:
+            print("❌ 无法安装 UV，请手动安装: https://github.com/astral-sh/uv")
+            return False
 
-        f.write("\n".join(runtime_deps))
-        f.write("\n\n# 开发依赖\n")
-        f.write("\n".join(dev_deps))
 
-    # 删除临时文件
-    os.remove("requirements.tmp")
-    print("\033[1;32mrequirements.txt 已更新\033[0m")
-
-
-def clean_env():
-    """清理虚拟环境并重新安装"""
-    print("\033[1;32m===== 清理 SubTranslate 环境 =====\033[0m")
-
-    if Path(".venv").exists():
-        print("删除旧虚拟环境...")
-        if platform.system() == "Windows":
-            run_command("rmdir /s /q .venv")
+def setup_venv():
+    """创建并激活虚拟环境"""
+    print("📦 创建虚拟环境...")
+    try:
+        if not os.path.exists(".venv"):
+            subprocess.run(
+                ["uv", "venv"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            print("✅ 虚拟环境创建成功")
         else:
-            run_command("rm -rf .venv")
+            print("✅ 虚拟环境已存在")
+        return True
+    except subprocess.SubprocessError as e:
+        print(f"❌ 创建虚拟环境失败: {e}")
+        return False
 
-    # 重新设置环境
-    setup_env()
+
+def install_dependencies(dev=False):
+    """安装依赖项
+
+    Args:
+        dev: 是否安装开发依赖
+    """
+    print("📦 安装依赖项...")
+    try:
+        if dev:
+            subprocess.run(
+                ["uv", "pip", "install", "-e", ".[dev]"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+        else:
+            subprocess.run(
+                ["uv", "pip", "install", "-e", "."],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+        print("✅ 依赖项安装成功")
+        return True
+    except subprocess.SubprocessError as e:
+        print(f"❌ 安装依赖项失败: {e}")
+        return False
 
 
-def check_status():
-    """检查环境和依赖状态"""
-    print("\033[1;32m===== 检查 SubTranslate 环境状态 =====\033[0m")
+def sync_dependencies():
+    """使用 requirements.txt 同步依赖项"""
+    print("📦 同步依赖项...")
+    try:
+        subprocess.run(
+            ["uv", "pip", "sync", "requirements.txt"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        print("✅ 依赖项同步成功")
+        return True
+    except subprocess.SubprocessError as e:
+        print(f"❌ 同步依赖项失败: {e}")
+        return False
+
+
+def clean_environment():
+    """清理环境，移除虚拟环境和缓存"""
+    print("🧹 清理环境...")
+    try:
+        if os.path.exists(".venv"):
+            import shutil
+
+            shutil.rmtree(".venv")
+            print("✅ 虚拟环境已移除")
+        else:
+            print("✅ 没有找到虚拟环境，无需清理")
+
+        if os.path.exists(".pytest_cache"):
+            import shutil
+
+            shutil.rmtree(".pytest_cache")
+            print("✅ pytest 缓存已清理")
+
+        if os.path.exists("__pycache__"):
+            import shutil
+
+            shutil.rmtree("__pycache__")
+            print("✅ Python 缓存已清理")
+
+        # 查找并清理所有 __pycache__ 目录
+        for path in Path(".").rglob("__pycache__"):
+            import shutil
+
+            shutil.rmtree(path)
+        print("✅ 所有 Python 缓存已清理")
+
+        return True
+    except Exception as e:
+        print(f"❌ 清理环境失败: {e}")
+        return False
+
+
+def check_environment():
+    """检查环境是否设置正确"""
+    print("🔍 检查环境...")
 
     # 检查虚拟环境
-    if not Path(".venv").exists():
-        print("\033[1;31m虚拟环境未创建\033[0m")
-    else:
-        print("\033[1;32m虚拟环境已创建\033[0m")
+    if not os.path.exists(".venv"):
+        print("❌ 虚拟环境不存在")
+        return False
 
-    # 检查已安装的包
-    print("\n已安装的依赖:")
-    if platform.system() == "Windows":
-        run_command(f".venv\\Scripts\\activate && {UV_CMD} pip list")
-    else:
-        run_command(f"source .venv/bin/activate && {UV_CMD} pip list")
+    # 检查项目安装
+    try:
+        import subtranslate
 
-    # 检查过时的依赖
-    print("\n过时的依赖:")
-    if platform.system() == "Windows":
-        run_command(f".venv\\Scripts\\activate && {UV_CMD} pip list --outdated")
+        print(
+            f"✅ SubTranslate 已安装 (版本: {getattr(subtranslate, '__version__', 'unknown')})"
+        )
+    except ImportError:
+        print("❌ SubTranslate 未安装")
+        return False
+
+    # 检查必要的依赖项
+    dependencies = ["pydantic", "httpx", "ffmpeg"]
+    missing = []
+
+    for dep in dependencies:
+        try:
+            __import__(dep)
+        except ImportError:
+            missing.append(dep)
+
+    if missing:
+        print(f"❌ 缺少依赖项: {', '.join(missing)}")
+        return False
     else:
-        run_command(f"source .venv/bin/activate && {UV_CMD} pip list --outdated")
+        print("✅ 所有核心依赖项已安装")
+
+    # 检查环境变量
+    if not os.path.exists(".env"):
+        print("⚠️ .env 文件不存在，建议从 .env.example 创建")
+    else:
+        print("✅ .env 文件存在")
+
+    # 检查 OpenAI API 密钥
+    if "OPENAI_API_KEY" in os.environ:
+        print("✅ OPENAI_API_KEY 环境变量已设置")
+    else:
+        print("⚠️ OPENAI_API_KEY 环境变量未设置")
+
+    print("✅ 环境检查完成")
+    return True
 
 
 def main():
     """主函数"""
-    if not check_uv():
-        return
+    parser = argparse.ArgumentParser(description="UV 包管理工具")
+    parser.add_argument(
+        "action",
+        choices=["setup", "install", "sync", "clean", "check"],
+        help="要执行的操作",
+    )
+    parser.add_argument(
+        "--dev",
+        action="store_true",
+        help="是否包含开发依赖",
+    )
 
-    # 解析命令行参数
-    if len(sys.argv) < 2:
-        print(__doc__)
-        return
+    args = parser.parse_args()
 
-    command = sys.argv[1].lower()
+    if not ensure_uv_installed():
+        return 1
 
-    if command == "setup":
-        setup_env()
-    elif command == "update":
-        update_deps()
-    elif command == "add" and len(sys.argv) > 2:
-        add_package(sys.argv[2])
-    elif command == "dev" and len(sys.argv) > 2:
-        add_package(sys.argv[2], dev=True)
-    elif command == "freeze":
-        freeze_deps()
-    elif command == "clean":
-        clean_env()
-    elif command == "check":
-        check_status()
-    else:
-        print(__doc__)
+    if args.action == "setup":
+        if not setup_venv():
+            return 1
+        if not install_dependencies(args.dev):
+            return 1
+    elif args.action == "install":
+        if not install_dependencies(args.dev):
+            return 1
+    elif args.action == "sync":
+        if not sync_dependencies():
+            return 1
+    elif args.action == "clean":
+        if not clean_environment():
+            return 1
+    elif args.action == "check":
+        if not check_environment():
+            return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

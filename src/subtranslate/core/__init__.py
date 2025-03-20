@@ -1,16 +1,14 @@
-"""核心模块，包含业务逻辑的实现。"""
+"""核心功能模块
 
-from subtranslate.core.ffmpeg import FFmpegTool, FFmpegError
-from subtranslate.core.subtitle_extractor import (
-    SubtitleFormat,
-    SubtitleTrack,
-    SubtitleExtractor,
-)
+提供SubTranslate的核心功能实现，包括视频处理、字幕提取和翻译等。"""
+
+from .ffmpeg import FFmpegTool
+from .subtitle_extractor import SubtitleExtractor, SubtitleTrack
+from .subtitle_translator import SubtitleTranslator
 
 __all__ = [
     "FFmpegTool",
-    "FFmpegError",
-    "SubtitleFormat",
-    "SubtitleTrack",
     "SubtitleExtractor",
+    "SubtitleTrack",
+    "SubtitleTranslator",
 ]

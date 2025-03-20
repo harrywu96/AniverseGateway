@@ -1,1 +1,8 @@
-"""服务子包，提供业务服务逻辑，包括FFmpeg和OpenAI等外部服务的集成。"""
+"""服务集成模块
+
+包含与外部服务和API的集成功能。"""
+
+from .ai_service import AIService, AIServiceFactory
+from .translator import SubtitleTranslator
+
+__all__ = ["AIService", "AIServiceFactory", "SubtitleTranslator"]

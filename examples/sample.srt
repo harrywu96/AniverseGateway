@@ -1,0 +1,39 @@
+1
+00:00:01,000 --> 00:00:04,000
+Hello and welcome to this introduction to SubTranslate.
+
+2
+00:00:05,000 --> 00:00:09,000
+Today, we're going to demonstrate how to translate subtitles automatically.
+
+3
+00:00:10,000 --> 00:00:15,000
+SubTranslate is a powerful tool that can translate subtitles between multiple languages.
+
+4
+00:00:16,000 --> 00:00:20,000
+It uses advanced AI to ensure translations are accurate and natural sounding.
+
+5
+00:00:21,000 --> 00:00:25,000
+You can choose between different translation styles, like literal or colloquial.
+
+6
+00:00:26,000 --> 00:00:30,000
+The system also maintains context between sentences for better coherence.
+
+7
+00:00:31,000 --> 00:00:36,000
+Additionally, you can customize the translation prompts to fit your specific needs.
+
+8
+00:00:37,000 --> 00:00:42,000
+For technical terms, you can provide a glossary to ensure consistent translations.
+
+9
+00:00:43,000 --> 00:00:48,000
+SubTranslate works with various subtitle formats and can be integrated into your workflow.
+
+10
+00:00:49,000 --> 00:00:54,000
+Thank you for watching this introduction. Let's see how it works in practice. 
