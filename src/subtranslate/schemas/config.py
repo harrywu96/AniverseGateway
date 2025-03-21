@@ -16,6 +16,7 @@ class AIProviderType(str, Enum):
     AZURE = "azure"  # Azure OpenAI服务
     ANTHROPIC = "anthropic"  # Anthropic Claude
     CUSTOM = "custom"  # 自定义API
+    SILICONFLOW = "siliconflow"  # SiliconFlow AI服务
 
 
 class BaseAIConfig(BaseModel):
@@ -84,18 +85,31 @@ class CustomAPIConfig(BaseAIConfig):
     model: str = Field(default="default", description="使用的模型")
     max_tokens: int = Field(default=4096, description="最大token数")
     temperature: float = Field(default=0.3, description="温度参数")
-    headers: Dict[str, str] = Field(default_factory=dict, description="自定义请求头")
+    headers: Dict[str, str] = Field(
+        default_factory=dict, description="自定义请求头"
+    )
     model_parameters: Dict[str, Any] = Field(
         default_factory=dict, description="模型参数"
     )
 
 
-class AIServiceConfig(BaseModel):
-    """AI服务配置"""
+class SiliconFlowConfig(BaseAIConfig):
+    """SiliconFlow AI服务配置"""
 
-    provider: AIProviderType = Field(
-        default=AIProviderType.OPENAI, description="服务提供商"
-    )
+    api_key: SecretStr
+    base_url: Optional[str] = "https://api.siliconflow.cn/v1"
+    model: str = "deepseek-ai/DeepSeek-V2.5"  # 默认模型
+    max_tokens: int = 4096
+    temperature: float = 0.3
+    top_p: Optional[float] = 0.7
+    top_k: Optional[int] = 50
+    frequency_penalty: Optional[float] = 0.0
+
+
+class AIServiceConfig(BaseModel):
+    """AI服务配置，包含所有可能的AI服务配置"""
+
+    provider: AIProviderType
     openai: Optional[OpenAIConfig] = None
     zhipuai: Optional[ZhipuAIConfig] = None
     volcengine: Optional[VolcengineConfig] = None
@@ -103,6 +117,7 @@ class AIServiceConfig(BaseModel):
     azure: Optional[AzureOpenAIConfig] = None
     anthropic: Optional[AnthropicConfig] = None
     custom: Optional[CustomAPIConfig] = None
+    siliconflow: Optional[SiliconFlowConfig] = None
 
     def get_provider_config(self) -> Union[BaseAIConfig, None]:
         """获取当前选择的服务提供商配置"""
@@ -120,14 +135,20 @@ class AIServiceConfig(BaseModel):
             return self.anthropic
         elif self.provider == AIProviderType.CUSTOM:
             return self.custom
+        elif self.provider == AIProviderType.SILICONFLOW:
+            return self.siliconflow
         return None
 
 
 class FFmpegConfig(BaseModel):
     """FFmpeg配置模型"""
 
-    ffmpeg_path: Optional[str] = Field(None, description="FFmpeg可执行文件路径")
-    ffprobe_path: Optional[str] = Field(None, description="FFprobe可执行文件路径")
+    ffmpeg_path: Optional[str] = Field(
+        None, description="FFmpeg可执行文件路径"
+    )
+    ffprobe_path: Optional[str] = Field(
+        None, description="FFprobe可执行文件路径"
+    )
     threads: int = Field(default=4, description="使用的线程数")
 
 
@@ -235,10 +256,14 @@ class SystemConfig(BaseModel):
                 api_key=SecretStr(os.getenv("AZURE_OPENAI_API_KEY", "")),
                 base_url=os.getenv("AZURE_OPENAI_BASE_URL", ""),
                 deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", ""),
-                api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2023-05-15"),
+                api_version=os.getenv(
+                    "AZURE_OPENAI_API_VERSION", "2023-05-15"
+                ),
                 model=os.getenv("AZURE_OPENAI_MODEL", "gpt-4"),
                 max_tokens=int(os.getenv("AZURE_OPENAI_MAX_TOKENS", "4096")),
-                temperature=float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3")),
+                temperature=float(
+                    os.getenv("AZURE_OPENAI_TEMPERATURE", "0.3")
+                ),
             )
         # 配置Anthropic
         elif provider == AIProviderType.ANTHROPIC:
@@ -248,6 +273,24 @@ class SystemConfig(BaseModel):
                 model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus"),
                 max_tokens=int(os.getenv("ANTHROPIC_MAX_TOKENS", "4096")),
                 temperature=float(os.getenv("ANTHROPIC_TEMPERATURE", "0.3")),
+            )
+        # 配置SiliconFlow
+        elif provider == AIProviderType.SILICONFLOW:
+            ai_service_config.siliconflow = SiliconFlowConfig(
+                api_key=SecretStr(os.getenv("SILICONFLOW_API_KEY", "")),
+                base_url=os.getenv(
+                    "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1"
+                ),
+                model=os.getenv(
+                    "SILICONFLOW_MODEL", "deepseek-ai/DeepSeek-V2.5"
+                ),
+                max_tokens=int(os.getenv("SILICONFLOW_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("SILICONFLOW_TEMPERATURE", "0.3")),
+                top_p=float(os.getenv("SILICONFLOW_TOP_P", "0.7")),
+                top_k=int(os.getenv("SILICONFLOW_TOP_K", "50")),
+                frequency_penalty=float(
+                    os.getenv("SILICONFLOW_FREQUENCY_PENALTY", "0.0")
+                ),
             )
         # 配置自定义API
         elif provider == AIProviderType.CUSTOM:
@@ -284,7 +327,8 @@ class SystemConfig(BaseModel):
             level=os.getenv("LOG_LEVEL", "INFO"),
             file_path=os.getenv("LOG_FILE"),
             format=os.getenv(
-                "LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                "LOG_FORMAT",
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             ),
         )
 
@@ -296,7 +340,9 @@ class SystemConfig(BaseModel):
             workers=int(os.getenv("API_WORKERS", "4")),
             allowed_origins=allowed_origins.split(","),
             api_key=(
-                SecretStr(os.getenv("API_KEY", "")) if os.getenv("API_KEY") else None
+                SecretStr(os.getenv("API_KEY", ""))
+                if os.getenv("API_KEY")
+                else None
             ),
         )
 
@@ -311,5 +357,6 @@ class SystemConfig(BaseModel):
             output_dir=os.getenv("DEFAULT_OUTPUT_DIR"),
             temp_dir=os.getenv("TEMP_DIR", "./temp"),
             allowed_formats=allowed_formats.split(","),
-            debug=os.getenv("APP_DEBUG", "false").lower() in ("true", "1", "yes"),
+            debug=os.getenv("APP_DEBUG", "false").lower()
+            in ("true", "1", "yes"),
         )

@@ -45,9 +45,20 @@ docker run -p 8000:8000 -v /path/to/videos:/videos yourusername/subtranslate
 cp .env.example .env
 ```
 
-2. 编辑配置文件，添加您的OpenAI API密钥
+2. 编辑配置文件，添加您的API密钥
 ```
+# 使用OpenAI
+AI_PROVIDER=openai
 OPENAI_API_KEY=your_api_key_here
+
+# 或使用智谱AI
+AI_PROVIDER=zhipuai
+ZHIPUAI_API_KEY=your_api_key_here
+
+# 或使用SiliconFlow
+AI_PROVIDER=siliconflow
+SILICONFLOW_API_KEY=your_api_key_here
+SILICONFLOW_MODEL=deepseek-ai/DeepSeek-V2.5
 ```
 
 ### 使用Web界面
@@ -133,4 +144,19 @@ subtranslate/
 
 ## 许可证
 
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。 
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+
+## 支持的AI服务提供商
+
+SubTranslate支持多种AI服务提供商，您可以根据需要选择：
+
+- **OpenAI**：支持GPT-3.5和GPT-4等模型
+- **智谱AI**：支持ChatGLM等国产大语言模型
+- **火山引擎**：字节跳动的AI服务
+- **百度文心一言**：百度的大语言模型
+- **Anthropic**：Claude系列模型
+- **Azure OpenAI**：微软Azure上的OpenAI服务
+- **SiliconFlow**：支持DeepSeek、Qwen等多种开源大模型
+- **自定义API**：支持自定义兼容OpenAI API格式的服务
+
+要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。 

@@ -18,6 +18,7 @@ from ..schemas.config import (
     BaiduConfig,
     CustomAPIConfig,
     OpenAIConfig,
+    SiliconFlowConfig,
     VolcengineConfig,
     ZhipuAIConfig,
 )
@@ -136,9 +137,14 @@ class OpenAIService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -172,7 +178,9 @@ class ZhipuAIService(AIService):
             config: 智谱AI配置
         """
         self.api_key = config.api_key.get_secret_value()
-        self.base_url = config.base_url or "https://open.bigmodel.cn/api/paas/v3"
+        self.base_url = (
+            config.base_url or "https://open.bigmodel.cn/api/paas/v3"
+        )
         self.model = config.model
         self.max_tokens = config.max_tokens
         self.temperature = config.temperature
@@ -237,9 +245,14 @@ class ZhipuAIService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -311,9 +324,14 @@ class VolcengineService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -328,7 +346,9 @@ class VolcengineService(AIService):
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             for attempt in range(self.max_retries):
                 try:
-                    response = await client.post(url, headers=headers, json=payload)
+                    response = await client.post(
+                        url, headers=headers, json=payload
+                    )
                     response.raise_for_status()
                     data = response.json()
                     return data["choices"][0]["message"]["content"].strip()
@@ -349,7 +369,9 @@ class VolcengineService(AIService):
             int: 估算的token数量
         """
         # 简单估计：中文每字一个token，英文每4个字符一个token
-        chinese_char_count = sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+        chinese_char_count = sum(
+            1 for char in text if "\u4e00" <= char <= "\u9fff"
+        )
         non_chinese_char_count = len(text) - chinese_char_count
         return chinese_char_count + (non_chinese_char_count // 4)
 
@@ -433,9 +455,14 @@ class BaiduService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -472,7 +499,9 @@ class BaiduService(AIService):
             int: 估算的token数量
         """
         # 简单估计：中文每字一个token，英文每4个字符一个token
-        chinese_char_count = sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+        chinese_char_count = sum(
+            1 for char in text if "\u4e00" <= char <= "\u9fff"
+        )
         non_chinese_char_count = len(text) - chinese_char_count
         return chinese_char_count + (non_chinese_char_count // 4)
 
@@ -529,9 +558,14 @@ class AzureOpenAIService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -545,7 +579,9 @@ class AzureOpenAIService(AIService):
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             for attempt in range(self.max_retries):
                 try:
-                    response = await client.post(url, headers=headers, json=payload)
+                    response = await client.post(
+                        url, headers=headers, json=payload
+                    )
                     response.raise_for_status()
                     data = response.json()
                     return data["choices"][0]["message"]["content"].strip()
@@ -566,7 +602,9 @@ class AzureOpenAIService(AIService):
             int: 估算的token数量
         """
         # 简单估计：中文每字一个token，英文每4个字符一个token
-        chinese_char_count = sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+        chinese_char_count = sum(
+            1 for char in text if "\u4e00" <= char <= "\u9fff"
+        )
         non_chinese_char_count = len(text) - chinese_char_count
         return chinese_char_count + (non_chinese_char_count // 4)
 
@@ -624,7 +662,9 @@ class AnthropicService(AIService):
             for example in examples:
                 if "subtitle" in example and "translation" in example:
                     examples_text += f"Subtitle: {example['subtitle']}\n"
-                    examples_text += f"Translation: {example['translation']}\n\n"
+                    examples_text += (
+                        f"Translation: {example['translation']}\n\n"
+                    )
 
         # 构建用户消息，包含系统提示、示例和用户提示
         full_prompt = f"{system_prompt}\n\n{examples_text}{user_prompt}"
@@ -640,7 +680,9 @@ class AnthropicService(AIService):
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             for attempt in range(self.max_retries):
                 try:
-                    response = await client.post(url, headers=headers, json=payload)
+                    response = await client.post(
+                        url, headers=headers, json=payload
+                    )
                     response.raise_for_status()
                     data = response.json()
                     return data["content"][0]["text"].strip()
@@ -661,7 +703,9 @@ class AnthropicService(AIService):
             int: 估算的token数量
         """
         # 简单估计：中文每字一个token，英文每4个字符一个token
-        chinese_char_count = sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+        chinese_char_count = sum(
+            1 for char in text if "\u4e00" <= char <= "\u9fff"
+        )
         non_chinese_char_count = len(text) - chinese_char_count
         return chinese_char_count + (non_chinese_char_count // 4)
 
@@ -718,9 +762,14 @@ class CustomAPIService(AIService):
         if examples and len(examples) > 0:
             for example in examples:
                 if "subtitle" in example and "translation" in example:
-                    messages.append({"role": "user", "content": example["subtitle"]})
                     messages.append(
-                        {"role": "assistant", "content": example["translation"]}
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
                     )
 
         messages.append({"role": "user", "content": user_prompt})
@@ -770,9 +819,150 @@ class CustomAPIService(AIService):
             int: 估算的token数量
         """
         # 简单估计：中文每字一个token，英文每4个字符一个token
-        chinese_char_count = sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+        chinese_char_count = sum(
+            1 for char in text if "\u4e00" <= char <= "\u9fff"
+        )
         non_chinese_char_count = len(text) - chinese_char_count
         return chinese_char_count + (non_chinese_char_count // 4)
+
+
+class SiliconFlowService(AIService):
+    """SiliconFlow AI服务实现"""
+
+    def __init__(self, config: SiliconFlowConfig):
+        """初始化SiliconFlow服务
+
+        Args:
+            config: SiliconFlow服务配置
+        """
+        self.config = config
+        self.api_key = config.api_key.get_secret_value()
+        self.base_url = config.base_url
+        self.model = config.model
+        self.max_tokens = config.max_tokens
+        self.temperature = config.temperature
+        self.top_p = config.top_p
+        self.top_k = config.top_k
+        self.frequency_penalty = config.frequency_penalty
+        self.token_counter = TokenCounter()
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+    @async_retry(
+        max_retries=3,
+        retry_delay=1,
+        backoff_factor=2,
+        exceptions=(httpx.HTTPError,),
+    )
+    async def chat_completion(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        examples: Optional[List[Dict[str, str]]] = None,
+    ) -> str:
+        """发送聊天完成请求到SiliconFlow
+
+        Args:
+            system_prompt: 系统提示
+            user_prompt: 用户提示
+            examples: 可选的少样本示例
+
+        Returns:
+            str: AI的响应文本
+
+        Raises:
+            Exception: 请求失败时抛出
+        """
+        url = f"{self.base_url}/chat/completions"
+
+        # 构建消息列表
+        messages = [
+            {"role": "system", "content": system_prompt},
+        ]
+
+        # 添加少样本示例（如果有）
+        if examples:
+            for example in examples:
+                if "user" in example:
+                    messages.append(
+                        {"role": "user", "content": example["user"]}
+                    )
+                if "assistant" in example:
+                    messages.append(
+                        {"role": "assistant", "content": example["assistant"]}
+                    )
+
+        # 添加用户消息
+        messages.append({"role": "user", "content": user_prompt})
+
+        # 构建请求数据
+        data = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "stream": False,
+        }
+
+        # 添加可选参数
+        if self.top_p is not None:
+            data["top_p"] = self.top_p
+        if self.top_k is not None:
+            data["top_k"] = self.top_k
+        if self.frequency_penalty is not None:
+            data["frequency_penalty"] = self.frequency_penalty
+
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                logger.info(f"发送请求到SiliconFlow: {url}")
+                logger.debug(f"请求数据: {data}")
+
+                response = await client.post(
+                    url, headers=self.headers, json=data
+                )
+                response.raise_for_status()
+
+                result = response.json()
+                logger.debug(f"SiliconFlow响应: {result}")
+
+                if "choices" in result and len(result["choices"]) > 0:
+                    message = result["choices"][0]["message"]
+                    if "content" in message:
+                        return message["content"]
+
+                # 如果没有内容，抛出异常
+                err_msg = f"响应格式错误: {result}"
+                raise Exception(err_msg)
+        except httpx.HTTPError as e:
+            logger.error(f"SiliconFlow服务请求失败: {str(e)}")
+            if e.response and e.response.content:
+                try:
+                    error_data = e.response.json()
+                    logger.error(f"错误详情: {error_data}")
+                except json.JSONDecodeError:
+                    err_msg = f"错误响应: {e.response.content}"
+                    logger.error(err_msg)
+            raise
+
+    @async_retry(
+        max_retries=3,
+        retry_delay=1,
+        backoff_factor=2,
+        exceptions=(httpx.HTTPError,),
+    )
+    async def count_tokens(self, text: str) -> int:
+        """计算文本的token数量
+
+        Args:
+            text: 要计算的文本
+
+        Returns:
+            int: token数量
+        """
+        # SiliconFlow没有提供token计数API，使用通用计数器
+        return self.token_counter.count_tokens(text)
 
 
 class AIServiceFactory:
@@ -809,6 +999,8 @@ class AIServiceFactory:
             return AzureOpenAIService(provider_config)
         elif provider == AIProviderType.ANTHROPIC:
             return AnthropicService(provider_config)
+        elif provider == AIProviderType.SILICONFLOW:
+            return SiliconFlowService(provider_config)
         elif provider == AIProviderType.CUSTOM:
             return CustomAPIService(provider_config)
         else:

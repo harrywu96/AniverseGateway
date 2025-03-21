@@ -41,6 +41,7 @@
   - [x] 集成智谱 AI (如 ChatGLM) 实现
   - [x] 集成火山引擎 API 实现
   - [x] 集成其他提供商 (百度文心、Azure、Anthropic等)
+  - [x] 集成 SiliconFlow API 实现 (deepseek系列、Qwen系列等模型支持)
   - [x] 添加 API 密钥验证和管理
   - [x] 实现响应解析和统一错误处理
   - [x] 添加 token 计数和限制管理
