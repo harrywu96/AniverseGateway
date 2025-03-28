@@ -9,14 +9,15 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any, Callable
+from typing import Dict, List, Optional, Callable
 
 from pydantic import BaseModel
 
 from ..schemas.config import AIServiceConfig
 from ..schemas.task import PromptTemplate, SubtitleTask, TranslationStyle
-from .ai_service import AIService, AIServiceFactory
+from .ai_service import AIServiceFactory
 from .validators import TranslationValidator, ValidationLevel, ValidationResult
+from .utils import SRTOptimizer
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,9 @@ class SubtitleTranslator:
     """字幕翻译器，负责将SRT字幕翻译为目标语言"""
 
     def __init__(
-        self, ai_service_config: AIServiceConfig, template_dir: Optional[str] = None
+        self,
+        ai_service_config: AIServiceConfig,
+        template_dir: Optional[str] = None,
     ):
         """初始化字幕翻译器
 
@@ -60,7 +63,9 @@ class SubtitleTranslator:
         self.custom_templates: Dict[str, PromptTemplate] = (
             self._load_custom_templates() if template_dir else {}
         )
-        self.validator = TranslationValidator(validation_level=ValidationLevel.BASIC)
+        self.validator = TranslationValidator(
+            validation_level=ValidationLevel.BASIC
+        )
 
     def _load_default_templates(self) -> Dict[str, PromptTemplate]:
         """加载默认提示模板
@@ -346,17 +351,17 @@ class SubtitleTranslator:
             Exception: 翻译失败时抛出异常
         """
         # 获取翻译风格名称
-        style_name = task.config.style.value
-        style_names = {
+        style_display_name = {
             TranslationStyle.LITERAL: "直译",
             TranslationStyle.NATURAL: "自然流畅",
             TranslationStyle.COLLOQUIAL: "口语化",
             TranslationStyle.FORMAL: "正式",
-        }
-        style_display_name = style_names.get(task.config.style, "自然流畅")
+        }.get(task.config.style, "自然流畅")
 
         # 准备翻译参数
-        params = self._prepare_translation_parameters(chunk, task, style_display_name)
+        params = self._prepare_translation_parameters(
+            chunk, task, style_display_name
+        )
 
         # 获取提示模板
         template = None
@@ -375,7 +380,9 @@ class SubtitleTranslator:
                 TranslationStyle.COLLOQUIAL: "colloquial",
                 TranslationStyle.FORMAL: "formal",
             }
-            template_name = style_template_map.get(task.config.style, "standard")
+            template_name = style_template_map.get(
+                task.config.style, "standard"
+            )
             template = self.get_template(template_name)
 
         # 格式化提示
@@ -405,20 +412,38 @@ class SubtitleTranslator:
                     if i < len(translated_lines):
                         line.translated_text = translated_lines[i]
 
+                        # 验证翻译质量
+                        validation_result = None
+                        if task.config.validate_translation:
+                            try:
+                                validation_result = self.validator.validate(
+                                    source_text=line.text,
+                                    translated_text=line.translated_text,
+                                    source_language=task.source_language,
+                                    target_language=task.target_language,
+                                )
+                            except Exception as e:
+                                logger.warning(f"翻译验证失败: {e}")
+
+                        line.validation_result = validation_result
+
+                # 返回翻译后的行
                 return chunk.lines
 
             except Exception as e:
-                logger.error(f"翻译失败 (尝试 {attempt+1}/{max_retries}): {e}")
                 last_error = e
-                # 最后一次尝试失败时抛出异常
-                if attempt == max_retries - 1:
-                    raise Exception(f"翻译失败，已达最大重试次数: {e}") from last_error
+                logger.warning(f"翻译尝试 {attempt+1}/{max_retries} 失败: {e}")
+                # 如果不是最后一次尝试，等待一段时间再重试
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(2**attempt)  # 指数退避
 
-                # 简单的退避策略，等待一段时间后重试
-                await asyncio.sleep(2**attempt)  # 指数退避
-
-        # 不应该到达这里，但为了代码完整性
-        raise Exception("翻译失败，未知错误") from last_error
+        # 超过最大重试次数，抛出异常
+        if last_error:
+            raise Exception(
+                f"翻译失败，达到最大重试次数 ({max_retries}): {last_error}"
+            )
+        else:
+            raise Exception(f"翻译失败，达到最大重试次数 ({max_retries})")
 
     def _parse_translation_response(
         self, response: str, original_lines: List[SubtitleLine]
@@ -438,7 +463,9 @@ class SubtitleTranslator:
                 response = response.strip("```")
 
             # 尝试解析JSON格式
-            if response.strip().startswith("{") and response.strip().endswith("}"):
+            if response.strip().startswith("{") and response.strip().endswith(
+                "}"
+            ):
                 try:
                     data = json.loads(response)
                     if "translations" in data and isinstance(
@@ -461,7 +488,9 @@ class SubtitleTranslator:
                 return [match.strip() for match in matches]
 
             # 如果以上都失败，简单地按行拆分并过滤空行
-            lines = [line.strip() for line in response.split("\n") if line.strip()]
+            lines = [
+                line.strip() for line in response.split("\n") if line.strip()
+            ]
             # 如果行数匹配，直接返回
             if len(lines) == len(original_lines):
                 return lines
@@ -521,62 +550,98 @@ class SubtitleTranslator:
     async def translate_file(
         self, task: SubtitleTask, progress_callback: Optional[Callable] = None
     ) -> str:
-        """翻译字幕文件
+        """将字幕文件翻译为目标语言
 
         Args:
             task: 字幕任务
-            progress_callback: 进度回调函数，接受任务ID和进度百分比
+            progress_callback: 进度回调函数
 
         Returns:
-            str: 翻译后的字幕文件路径
+            str: 翻译结果文件路径
 
         Raises:
-            Exception: 翻译失败时抛出异常
+            FileNotFoundError: 源文件不存在时抛出
+            Exception: 翻译过程中出现错误时抛出
         """
+        # 检查源文件是否存在
+        if not os.path.exists(task.source_path):
+            raise FileNotFoundError(f"源文件不存在: {task.source_path}")
+
         try:
-            # 读取源字幕文件
+            # 读取源文件
             with open(task.source_path, "r", encoding="utf-8") as f:
                 srt_content = f.read()
 
-            # 解析字幕
-            subtitle_lines = self.parse_srt(srt_content)
-
-            # 分块
-            chunks = self.split_into_chunks(
-                subtitle_lines,
-                task.config.chunk_size,
-                task.config.context_window,
+            # 优化 SRT 内容，提取纯文本并保存格式信息
+            optimized_srt, format_map = SRTOptimizer.optimize_srt_content(
+                srt_content
             )
 
-            # 更新任务总块数
-            task.total_chunks = len(chunks)
-            task.completed_chunks = 0
+            # 解析 SRT 文件内容
+            subtitle_lines = self.parse_srt(optimized_srt)
 
-            # 翻译各块
+            # 统计字幕行数
+            total_lines = len(subtitle_lines)
+            logger.info(f"共解析到 {total_lines} 行字幕")
+
+            # 确定分块大小和上下文窗口大小
+            chunk_size = task.config.chunk_size
+            context_window = task.config.context_window
+
+            # 将字幕分块
+            chunks = self.split_into_chunks(
+                subtitle_lines, chunk_size, context_window
+            )
+            total_chunks = len(chunks)
+            logger.info(f"分成 {total_chunks} 个块进行翻译")
+
+            # 异步翻译每个块
+            processed_chunks = 0
+            tasks = []
+            for chunk in chunks:
+                tasks.append(self.translate_chunk(chunk, task))
+
+            # 收集翻译结果
             translated_lines = []
-            for i, chunk in enumerate(chunks):
-                # 更新状态
-                logger.info(f"翻译块 {i+1}/{len(chunks)}")
-
-                # 翻译当前块
-                translated_chunk = await self.translate_chunk(chunk, task)
-                translated_lines.extend(translated_chunk)
+            for i, chunk_task in enumerate(asyncio.as_completed(tasks)):
+                chunk_lines = await chunk_task
+                translated_lines.extend(chunk_lines)
+                processed_chunks += 1
 
                 # 更新进度
-                task.completed_chunks += 1
                 if progress_callback:
-                    # 计算进度百分比
-                    progress = (task.completed_chunks / task.total_chunks) * 100
-                    task.update_chunk_progress(task.completed_chunks)
-                    await progress_callback(task.id, progress)
+                    progress = processed_chunks / total_chunks
+                    progress_callback(progress)
 
-            # 生成结果文件
-            result_path = self._generate_result_file(task, translated_lines)
+                logger.info(f"已翻译 {processed_chunks}/{total_chunks} 个块")
 
-            return result_path
+            # 按索引重新排序
+            translated_lines.sort(key=lambda x: x.index)
+
+            # 生成临时结果文件
+            temp_result_path = self._generate_result_file(
+                task, translated_lines
+            )
+
+            # 读取临时结果文件
+            with open(temp_result_path, "r", encoding="utf-8") as f:
+                translated_srt = f.read()
+
+            # 恢复格式信息
+            final_srt = SRTOptimizer.restore_srt_format(
+                translated_srt, format_map
+            )
+
+            # 生成最终结果文件
+            final_result_path = temp_result_path
+            with open(final_result_path, "w", encoding="utf-8") as f:
+                f.write(final_srt)
+
+            logger.info(f"翻译完成，结果保存至: {final_result_path}")
+            return final_result_path
 
         except Exception as e:
-            logger.error(f"翻译文件失败: {e}")
+            logger.error(f"翻译失败: {e}")
             raise
 
     def _generate_result_file(
@@ -605,7 +670,9 @@ class SubtitleTranslator:
         for line in translated_lines:
             lines.append(f"{line.index}")
             lines.append(f"{line.start_time} --> {line.end_time}")
-            lines.append(f"{line.translated_text or line.text}")  # 如果没有翻译使用原文
+            lines.append(
+                f"{line.translated_text or line.text}"
+            )  # 如果没有翻译使用原文
             lines.append("")  # 空行分隔
 
         # 写入文件

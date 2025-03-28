@@ -116,6 +116,9 @@ subtranslate/
 │       │   ├── ffmpeg.py       # FFmpeg集成工具类
 │       │   ├── subtitle_extractor.py # 字幕提取模块
 │       │   └── subtitle_translator.py # 字幕翻译模块
+│       ├── examples/           # 示例代码
+│       │   ├── srt_optimizer_demo.py # SRT 优化器演示
+│       │   └── srt_translation_with_optimizer.py # SRT 翻译优化演示
 │       ├── main.py             # 应用主入口
 │       ├── schemas/            # Pydantic数据模型
 │       │   ├── __init__.py
@@ -128,7 +131,7 @@ subtranslate/
 │       │   ├── ai_service.py   # AI服务接口和实现
 │       │   ├── translator.py   # 字幕翻译服务
 │       │   ├── validators.py   # 翻译验证器
-│       │   └── utils.py        # 工具函数和装饰器
+│       │   └── utils.py        # 工具函数、装饰器和 SRT 优化器
 │       └── ui/                 # 前端资源（待实现）
 │           └── __init__.py
 ├── tests/                      # 测试目录
@@ -147,12 +150,14 @@ subtranslate/
 │   │   └── test_video.py       # 视频模型测试
 │   └── services/               # 服务测试
 │       ├── __init__.py
-│       └── test_validators.py  # 验证器测试
+│       ├── test_validators.py  # 验证器测试
+│       └── test_srt_optimizer.py # SRT 优化器测试
 ├── docs/                       # 文档
 │   ├── README.md               # 详细需求文档
 │   ├── DEVELOPMENT_STEPS.md    # 开发步骤清单
 │   ├── SCHEMA_DRIVEN_DEVELOPMENT.md # Schema驱动开发指南
 │   ├── UV_DEPENDENCY_MANAGEMENT.md  # UV依赖管理指南
+│   ├── SRT_OPTIMIZATION_GUIDE.md # SRT 优化器使用指南
 │   └── DEVELOPER_GUIDE.md      # 开发者指南
 ├── .env.example                # 环境变量示例
 ├── DEVELOPMENT_PROGRESS.md     # 本文件，开发进度总结
@@ -167,6 +172,7 @@ subtranslate/
 根据开发步骤清单，下一阶段将实现以下功能：
 
 ### 字幕翻译子系统完善
+- [x] SRT 格式优化器实现，减少不必要的 token 消耗
 - [ ] 完善单元测试
   - [ ] 添加性能和并发性测试
   - [ ] 测试多种提供商的切换场景
@@ -188,14 +194,23 @@ subtranslate/
 - [ ] 实现基本错误处理和日志记录
 - [ ] 编写命令行使用文档
 
-## 当前挑战和问题
+## 当前进展
 
-字幕翻译子系统已经基本实现，我们现在能够：
+字幕翻译子系统已经基本实现，并增加了 SRT 格式优化器功能。目前我们能够：
 1. 集成多种 AI 服务提供商进行字幕翻译
 2. 使用自定义提示模板系统
 3. 实现字幕的分块处理和上下文记忆
 4. 支持多种翻译风格和验证机制
 5. 处理异常情况和重试翻译
+6. 在翻译前优化 SRT 内容，去除不需要翻译的格式标记
+7. 在翻译后恢复原始格式，确保输出与原始字幕格式一致
+
+新增的 SRT 优化器（`SRTOptimizer`）功能可以显著减少 token 消耗：
+1. 提取纯文本内容并保存格式信息
+2. 翻译只处理纯文本内容
+3. 翻译后重新应用格式信息
+
+此功能对于包含大量 HTML 标签（如 `<font>`, `<i>`, `<b>` 等）的字幕尤其有效，可以减少 30-60% 的 token 消耗。
 
 下一步需要解决的主要挑战包括：
 1. 完善字幕整合输出子系统，提供更好的输出格式和质量
@@ -214,8 +229,9 @@ subtranslate/
 - 多种 AI API 集成：OpenAI、Azure OpenAI、智谱 AI、百度文心、火山引擎、Anthropic 等
 - 异步处理：使用 asyncio 和 httpx
 - 自定义重试机制和验证系统
+- 正则表达式用于字幕格式处理和优化
 - 计划中：FastAPI 用于 Web API
 
 ## 备注
 
-项目进展顺利，核心数据模型、字幕提取子系统和字幕翻译子系统已经基本完成。字幕翻译子系统实现了与多种 AI 服务提供商的集成，支持复杂的提示模板系统，并提供了字幕分块处理、上下文记忆和翻译验证等功能。接下来将重点完善字幕整合输出子系统和命令行界面，为最终用户提供更完整的体验。 
+项目进展顺利，核心数据模型、字幕提取子系统和字幕翻译子系统已经基本完成。最新的 SRT 优化器功能增强了系统对格式化字幕的处理能力，显著减少了翻译过程中的 token 消耗。接下来将重点完善字幕整合输出子系统和命令行界面，为最终用户提供更完整的体验。 
