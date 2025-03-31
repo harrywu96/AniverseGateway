@@ -39,7 +39,7 @@ class PromptTemplate(BaseModel):
     is_default: bool = Field(default=False, description="是否为默认模板")
     version: str = Field(default="1.0", description="模板版本")
     created_at: str = Field(
-        default_factory=lambda: datetime.datetime.now().isoformat(),
+        default_factory=lambda: datetime.now().isoformat(),
         description="创建时间",
     )
 
@@ -71,7 +71,9 @@ class PromptTemplate(BaseModel):
         Returns:
             str: 格式化后的系统提示
         """
-        return self.system_prompt.format(**{k: v for k, v in kwargs.items() if v})
+        return self.system_prompt.format(
+            **{k: v for k, v in kwargs.items() if v}
+        )
 
     def format_user_prompt(self, **kwargs) -> str:
         """格式化用户提示
@@ -82,7 +84,9 @@ class PromptTemplate(BaseModel):
         Returns:
             str: 格式化后的用户提示
         """
-        return self.user_prompt.format(**{k: v for k, v in kwargs.items() if v})
+        return self.user_prompt.format(
+            **{k: v for k, v in kwargs.items() if v}
+        )
 
 
 class TranslationConfig(BaseModel):
@@ -92,15 +96,29 @@ class TranslationConfig(BaseModel):
         default=TranslationStyle.NATURAL, description="翻译风格"
     )
     preserve_formatting: bool = Field(default=True, description="保留原格式")
-    handle_cultural_references: bool = Field(default=True, description="处理文化差异")
-    glossary: Dict[str, str] = Field(default_factory=dict, description="术语表")
-    forbidden_terms: List[str] = Field(default_factory=list, description="禁用术语列表")
-    context_preservation: bool = Field(default=True, description="保持上下文一致性")
+    handle_cultural_references: bool = Field(
+        default=True, description="处理文化差异"
+    )
+    glossary: Dict[str, str] = Field(
+        default_factory=dict, description="术语表"
+    )
+    forbidden_terms: List[str] = Field(
+        default_factory=list, description="禁用术语列表"
+    )
+    context_preservation: bool = Field(
+        default=True, description="保持上下文一致性"
+    )
     chunk_size: int = Field(default=10, description="字幕分块大小（单位：条）")
-    context_window: int = Field(default=3, description="上下文窗口大小（单位：条）")
+    context_window: int = Field(
+        default=3, description="上下文窗口大小（单位：条）"
+    )
     max_retries: int = Field(default=3, description="翻译失败最大重试次数")
-    validate_translations: bool = Field(default=True, description="是否验证翻译结果")
-    strict_validation: bool = Field(default=False, description="是否使用严格验证模式")
+    validate_translations: bool = Field(
+        default=True, description="是否验证翻译结果"
+    )
+    strict_validation: bool = Field(
+        default=False, description="是否使用严格验证模式"
+    )
     prompt_template: Optional[PromptTemplate] = Field(
         None, description="使用的提示模板"
     )
@@ -132,20 +150,24 @@ class TranslationConfig(BaseModel):
 class SubtitleTask(BaseModel):
     """字幕处理任务模型，包含任务状态、进度和配置信息。"""
 
-    id: str = Field(default_factory=lambda: str(uuid4()), description="任务唯一标识符")
+    id: str = Field(
+        default_factory=lambda: str(uuid4()), description="任务唯一标识符"
+    )
     video_id: str = Field(..., description="关联视频ID")
     source_language: str = Field(default="en", description="源语言")
     target_language: str = Field(default="zh", description="目标语言")
-    status: TaskStatus = Field(default=TaskStatus.PENDING, description="任务状态")
+    status: TaskStatus = Field(
+        default=TaskStatus.PENDING, description="任务状态"
+    )
     progress: float = Field(default=0.0, description="进度百分比")
     source_path: str = Field(..., description="源字幕路径")
     result_path: Optional[str] = Field(None, description="结果字幕路径")
     created_at: str = Field(
-        default_factory=lambda: datetime.datetime.now().isoformat(),
+        default_factory=lambda: datetime.now().isoformat(),
         description="创建时间",
     )
     updated_at: str = Field(
-        default_factory=lambda: datetime.datetime.now().isoformat(),
+        default_factory=lambda: datetime.now().isoformat(),
         description="更新时间",
     )
     completed_at: Optional[str] = Field(None, description="完成时间")
@@ -183,7 +205,7 @@ class SubtitleTask(BaseModel):
         self.status = TaskStatus.COMPLETED
         self.progress = 100.0
         self.result_path = result_path
-        self.completed_at = datetime.datetime.now().isoformat()
+        self.completed_at = datetime.now().isoformat()
         self.updated_at = self.completed_at
 
     def mark_failed(self, error_message: str) -> None:
@@ -194,7 +216,7 @@ class SubtitleTask(BaseModel):
         """
         self.status = TaskStatus.FAILED
         self.error_message = error_message
-        self.completed_at = datetime.datetime.now().isoformat()
+        self.completed_at = datetime.now().isoformat()
         self.updated_at = self.completed_at
 
     def to_dict(self) -> dict:

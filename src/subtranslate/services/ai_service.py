@@ -21,6 +21,7 @@ from ..schemas.config import (
     SiliconFlowConfig,
     VolcengineConfig,
     ZhipuAIConfig,
+    GeminiConfig,
 )
 from .utils import async_retry, TokenCounter
 
@@ -965,6 +966,137 @@ class SiliconFlowService(AIService):
         return self.token_counter.count_tokens(text)
 
 
+class GeminiService(AIService):
+    """Google Gemini AI服务实现"""
+
+    def __init__(self, config: GeminiConfig):
+        """初始化Gemini服务
+
+        Args:
+            config: Gemini配置
+        """
+        self.api_key = config.api_key.get_secret_value()
+        self.base_url = (
+            config.base_url or "https://generativelanguage.googleapis.com/v1"
+        )
+        self.model = config.model
+        self.max_tokens = config.max_tokens
+        self.temperature = config.temperature
+        self.top_p = config.top_p
+        self.top_k = config.top_k
+        self.timeout = config.timeout
+        self.max_retries = config.max_retries
+
+    @async_retry(exceptions=(httpx.HTTPError, json.JSONDecodeError))
+    async def _make_chat_request(
+        self, messages: List[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """发送聊天请求到Gemini API
+
+        Args:
+            messages: 消息列表
+
+        Returns:
+            Dict[str, Any]: API响应
+
+        Raises:
+            Exception: 请求失败时抛出异常
+        """
+        url = f"{self.base_url}/models/{self.model}:generateContent"
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": self.api_key,
+        }
+
+        # 转换消息格式为Gemini API格式
+        contents = []
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+
+            if role == "system":
+                # Gemini没有system role，将system提示作为user消息
+                contents.append({"role": "user", "parts": [{"text": content}]})
+            elif role == "user":
+                contents.append({"role": "user", "parts": [{"text": content}]})
+            elif role == "assistant":
+                contents.append(
+                    {"role": "model", "parts": [{"text": content}]}
+                )
+
+        payload = {
+            "contents": contents,
+            "generationConfig": {
+                "maxOutputTokens": self.max_tokens,
+                "temperature": self.temperature,
+                "topP": self.top_p,
+                "topK": self.top_k,
+            },
+        }
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()
+
+    async def chat_completion(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        examples: Optional[List[Dict[str, str]]] = None,
+    ) -> str:
+        """使用Gemini API发送聊天完成请求
+
+        Args:
+            system_prompt: 系统提示
+            user_prompt: 用户提示
+            examples: 可选的少样本示例
+
+        Returns:
+            str: AI的响应文本
+
+        Raises:
+            Exception: 请求失败时抛出异常
+        """
+        messages = [{"role": "system", "content": system_prompt}]
+
+        # 如果有少样本示例，添加到消息中
+        if examples and len(examples) > 0:
+            for example in examples:
+                if "subtitle" in example and "translation" in example:
+                    messages.append(
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
+                    )
+
+        messages.append({"role": "user", "content": user_prompt})
+
+        try:
+            response_data = await self._make_chat_request(messages)
+            return response_data["candidates"][0]["content"]["parts"][0][
+                "text"
+            ].strip()
+        except Exception as e:
+            logger.error(f"Gemini API请求失败: {e}")
+            raise
+
+    async def get_token_count(self, text: str) -> int:
+        """估算文本的token数量
+
+        Args:
+            text: 需要计算的token数量的文本
+
+        Returns:
+            int: 估算的token数量
+        """
+        return TokenCounter.estimate_tokens(text)
+
+
 class AIServiceFactory:
     """AI服务工厂，根据配置创建相应的AI服务实例"""
 
@@ -1003,5 +1135,7 @@ class AIServiceFactory:
             return SiliconFlowService(provider_config)
         elif provider == AIProviderType.CUSTOM:
             return CustomAPIService(provider_config)
+        elif provider == AIProviderType.GEMINI:
+            return GeminiService(provider_config)
         else:
             raise ValueError(f"不支持的服务提供商: {provider}")

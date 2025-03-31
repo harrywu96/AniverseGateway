@@ -17,6 +17,7 @@ class AIProviderType(str, Enum):
     ANTHROPIC = "anthropic"  # Anthropic Claude
     CUSTOM = "custom"  # 自定义API
     SILICONFLOW = "siliconflow"  # SiliconFlow AI服务
+    GEMINI = "gemini"  # Google Gemini AI
 
 
 class BaseAIConfig(BaseModel):
@@ -106,6 +107,16 @@ class SiliconFlowConfig(BaseAIConfig):
     frequency_penalty: Optional[float] = 0.0
 
 
+class GeminiConfig(BaseAIConfig):
+    """Google Gemini配置模型"""
+
+    model: str = Field(default="gemini-pro", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    top_p: Optional[float] = Field(default=0.8, description="Top P参数")
+    top_k: Optional[int] = Field(default=40, description="Top K参数")
+
+
 class AIServiceConfig(BaseModel):
     """AI服务配置，包含所有可能的AI服务配置"""
 
@@ -118,6 +129,7 @@ class AIServiceConfig(BaseModel):
     anthropic: Optional[AnthropicConfig] = None
     custom: Optional[CustomAPIConfig] = None
     siliconflow: Optional[SiliconFlowConfig] = None
+    gemini: Optional[GeminiConfig] = None
 
     def get_provider_config(self) -> Union[BaseAIConfig, None]:
         """获取当前选择的服务提供商配置"""
@@ -137,6 +149,8 @@ class AIServiceConfig(BaseModel):
             return self.custom
         elif self.provider == AIProviderType.SILICONFLOW:
             return self.siliconflow
+        elif self.provider == AIProviderType.GEMINI:
+            return self.gemini
         return None
 
 
@@ -291,6 +305,20 @@ class SystemConfig(BaseModel):
                 frequency_penalty=float(
                     os.getenv("SILICONFLOW_FREQUENCY_PENALTY", "0.0")
                 ),
+            )
+        # 配置Gemini
+        elif provider == AIProviderType.GEMINI:
+            ai_service_config.gemini = GeminiConfig(
+                api_key=SecretStr(os.getenv("GEMINI_API_KEY", "")),
+                base_url=os.getenv(
+                    "GEMINI_BASE_URL",
+                    "https://generativelanguage.googleapis.com/v1",
+                ),
+                model=os.getenv("GEMINI_MODEL", "gemini-pro"),
+                max_tokens=int(os.getenv("GEMINI_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("GEMINI_TEMPERATURE", "0.3")),
+                top_p=float(os.getenv("GEMINI_TOP_P", "0.8")),
+                top_k=int(os.getenv("GEMINI_TOP_K", "40")),
             )
         # 配置自定义API
         elif provider == AIProviderType.CUSTOM:

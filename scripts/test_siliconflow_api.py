@@ -33,7 +33,7 @@ def load_environment_variables() -> Dict[str, str]:
         print("可以参考.env.example文件中的示例进行配置")
         sys.exit(1)
 
-    load_dotenv(env_path)
+    load_dotenv(env_path, override=True)
 
     # 获取SiliconFlow配置
     config = {
@@ -50,7 +50,7 @@ def load_environment_variables() -> Dict[str, str]:
             os.getenv("SILICONFLOW_FREQUENCY_PENALTY", "0.0")
         ),
     }
-
+    print(config)
     # 验证API密钥是否存在
     if not config["api_key"]:
         print("错误: SILICONFLOW_API_KEY 未在.env文件中设置")

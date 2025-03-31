@@ -5,9 +5,16 @@
 
 import os
 import sys
+import asyncio
+import argparse
 
 from .schemas.video import VideoInfo, VideoFormat, ProcessingStatus
-from .schemas.task import SubtitleTask, TaskStatus, TranslationConfig, TranslationStyle
+from .schemas.task import (
+    SubtitleTask,
+    TaskStatus,
+    TranslationConfig,
+    TranslationStyle,
+)
 from .schemas.api import (
     APIResponse,
     VideoUploadRequest,
@@ -26,6 +33,8 @@ from .schemas.config import (
     LoggingConfig,
     APIConfig,
 )
+from .core.subtitle_translator import SubtitleTranslator
+from .services.subtitle_export import SubtitleExporter
 
 
 def test_models():
@@ -52,7 +61,9 @@ def test_models():
     print(f"翻译风格: {task.config.style}")
 
     # 测试API模型
-    response = APIResponse(success=True, message="操作成功", data={"id": task.id})
+    response = APIResponse(
+        success=True, message="操作成功", data={"id": task.id}
+    )
     print(f"API响应: {response.model_dump_json()}")
 
     # 测试配置模型
@@ -61,6 +72,63 @@ def test_models():
     print(f"系统配置: {system_config.model_dump()}")
 
 
+def main():
+    """应用程序主入口点"""
+    # 获取命令行参数
+    parser = argparse.ArgumentParser(
+        description="SubTranslate - 智能视频字幕翻译系统"
+    )
+    parser.add_argument("--video", "-v", help="视频文件路径")
+    parser.add_argument("--subtitle", "-s", help="字幕文件路径（可选）")
+    parser.add_argument(
+        "--source-lang", "-sl", default="en", help="源语言代码（默认：en）"
+    )
+    parser.add_argument(
+        "--target-lang", "-tl", default="zh", help="目标语言代码（默认：zh）"
+    )
+    parser.add_argument(
+        "--style", default="natural", help="翻译风格（默认：natural）"
+    )
+
+    args = parser.parse_args()
+
+    if not args.video and not args.subtitle:
+        parser.print_help()
+        return
+
+    # 从环境变量加载配置
+    config = SystemConfig.from_env()
+
+    # 如果有视频文件，先处理视频提取字幕
+    if args.video:
+        # 视频处理逻辑...
+        pass
+
+    # 如果直接提供了字幕文件，或者已从视频提取了字幕
+    subtitle_path = args.subtitle  # 或者从视频提取的字幕路径
+
+    if subtitle_path:
+        # 创建翻译任务
+        task = SubtitleTranslator.create_task(
+            video_id="manual_task",
+            source_path=subtitle_path,
+            source_language=args.source_lang,
+            target_language=args.target_lang,
+            style=args.style,
+        )
+
+        # 执行翻译
+        translator = SubtitleTranslator(config)
+        asyncio.run(translator.translate_task(task))
+
+        # 如果任务成功，显示输出文件路径
+        if task.status == "completed":
+            print(f"翻译完成！输出文件：{task.result_path}")
+        else:
+            print(f"翻译失败：{task.error_message}")
+
+
 if __name__ == "__main__":
     test_models()
+    main()
     print("所有模型测试通过！")

@@ -1,0 +1,11 @@
+1
+00:00:01,000 --> 00:00:05,000
+<font face="Arial">Hello, welcome to the test!</font>
+
+2
+00:00:05,500 --> 00:00:10,000
+<i>This is a subtitle with <b>formatting</b></i>
+
+3
+00:00:10,500 --> 00:00:15,000
+<font color="yellow">Testing the export system</font>

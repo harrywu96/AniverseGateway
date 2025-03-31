@@ -9,7 +9,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, Optional, Callable, Any
 
 from pydantic import BaseModel
 
@@ -549,100 +549,89 @@ class SubtitleTranslator:
 
     async def translate_file(
         self, task: SubtitleTask, progress_callback: Optional[Callable] = None
-    ) -> str:
-        """将字幕文件翻译为目标语言
+    ) -> Dict[str, Any]:
+        """翻译字幕文件
 
         Args:
             task: 字幕任务
             progress_callback: 进度回调函数
 
         Returns:
-            str: 翻译结果文件路径
-
-        Raises:
-            FileNotFoundError: 源文件不存在时抛出
-            Exception: 翻译过程中出现错误时抛出
+            Dict[str, Any]: 包含翻译结果和格式映射的字典
         """
-        # 检查源文件是否存在
-        if not os.path.exists(task.source_path):
-            raise FileNotFoundError(f"源文件不存在: {task.source_path}")
-
         try:
-            # 读取源文件
+            # 读取源文件内容
             with open(task.source_path, "r", encoding="utf-8") as f:
                 srt_content = f.read()
 
-            # 优化 SRT 内容，提取纯文本并保存格式信息
+            # 优化SRT内容
             optimized_srt, format_map = SRTOptimizer.optimize_srt_content(
                 srt_content
             )
 
-            # 解析 SRT 文件内容
-            subtitle_lines = self.parse_srt(optimized_srt)
+            # 解析优化后的SRT
+            lines = self.parse_srt(optimized_srt)
 
-            # 统计字幕行数
-            total_lines = len(subtitle_lines)
-            logger.info(f"共解析到 {total_lines} 行字幕")
-
-            # 确定分块大小和上下文窗口大小
-            chunk_size = task.config.chunk_size
-            context_window = task.config.context_window
-
-            # 将字幕分块
+            # 分块处理
             chunks = self.split_into_chunks(
-                subtitle_lines, chunk_size, context_window
+                lines, task.config.chunk_size, task.config.context_window
             )
+
+            # 设置进度跟踪
             total_chunks = len(chunks)
-            logger.info(f"分成 {total_chunks} 个块进行翻译")
+            task.total_chunks = total_chunks
 
-            # 异步翻译每个块
-            processed_chunks = 0
-            tasks = []
-            for chunk in chunks:
-                tasks.append(self.translate_chunk(chunk, task))
-
-            # 收集翻译结果
+            # 逐块翻译
             translated_lines = []
-            for i, chunk_task in enumerate(asyncio.as_completed(tasks)):
-                chunk_lines = await chunk_task
-                translated_lines.extend(chunk_lines)
-                processed_chunks += 1
+            for i, chunk in enumerate(chunks):
+                # 翻译当前块
+                chunk_result = await self.translate_chunk(chunk, task)
+                translated_lines.extend(chunk_result)
 
                 # 更新进度
+                task.update_chunk_progress(i + 1)
                 if progress_callback:
-                    progress = processed_chunks / total_chunks
-                    progress_callback(progress)
+                    await progress_callback(task.id, task.progress)
 
-                logger.info(f"已翻译 {processed_chunks}/{total_chunks} 个块")
-
-            # 按索引重新排序
-            translated_lines.sort(key=lambda x: x.index)
-
-            # 生成临时结果文件
-            temp_result_path = self._generate_result_file(
-                task, translated_lines
+            # 生成翻译后的SRT内容
+            translated_srt = self._generate_translated_content(
+                translated_lines
             )
 
-            # 读取临时结果文件
-            with open(temp_result_path, "r", encoding="utf-8") as f:
-                translated_srt = f.read()
-
-            # 恢复格式信息
-            final_srt = SRTOptimizer.restore_srt_format(
-                translated_srt, format_map
-            )
-
-            # 生成最终结果文件
-            final_result_path = temp_result_path
-            with open(final_result_path, "w", encoding="utf-8") as f:
-                f.write(final_srt)
-
-            logger.info(f"翻译完成，结果保存至: {final_result_path}")
-            return final_result_path
+            # 返回翻译结果和格式映射
+            return {
+                "translated_content": translated_srt,
+                "format_map": format_map,
+                "result_path": self._generate_result_file(
+                    task, translated_lines
+                ),
+            }
 
         except Exception as e:
-            logger.error(f"翻译失败: {e}")
+            logger.error(f"文件翻译失败: {e}")
             raise
+
+    def _generate_translated_content(
+        self, translated_lines: List[SubtitleLine]
+    ) -> str:
+        """根据翻译后的字幕行生成SRT内容
+
+        Args:
+            translated_lines: 翻译后的字幕行列表
+
+        Returns:
+            str: 生成的SRT内容
+        """
+        result = []
+        for line in translated_lines:
+            srt_entry = (
+                f"{line.index}\n"
+                f"{line.start_time} --> {line.end_time}\n"
+                f"{line.translated_text or line.text}\n"
+            )
+            result.append(srt_entry)
+
+        return "\n".join(result)
 
     def _generate_result_file(
         self, task: SubtitleTask, translated_lines: List[SubtitleLine]
