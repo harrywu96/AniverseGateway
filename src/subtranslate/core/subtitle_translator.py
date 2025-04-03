@@ -10,7 +10,6 @@ from typing import Callable, Optional, Dict
 from ..schemas.config import SystemConfig
 from ..schemas.task import SubtitleTask, PromptTemplate
 from ..services.translator import SubtitleTranslator as ServiceTranslator
-from ..services.utils import SRTOptimizer
 from ..services.subtitle_export import SubtitleExporter
 
 

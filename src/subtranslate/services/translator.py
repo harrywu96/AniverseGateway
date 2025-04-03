@@ -149,18 +149,13 @@ class SubtitleTranslator:
                     "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
                     "请不要翻译，这是字幕的格式控制手段。"
                     "字幕格式如下：\n"
-                    "序号. 字幕开始时间帧 --> 字幕结束时间帧\n"
-                    "字幕内容\n\n"
+                    "序号. 字幕内容\n\n"
                     "例如我输入的内容是：\n"
-                    "1. 00:00:00,000 --> 00:00:05,000\n"
-                    "hello everyone\n\n"
-                    "2. 00:00:05,001 --> 00:00:10,000\n"
-                    "today is a good day\n\n"
+                    "1. hello everyone\n\n"
+                    "2. today is a good day\n\n"
                     "你需要输出的是：\n"
-                    "1. 00:00:00,000 --> 00:00:05,000\n"
-                    "大家好\n\n"
-                    "2. 00:00:05,001 --> 00:00:10,000\n"
-                    "今天是个好日子\n\n"
+                    "1. 大家好\n\n"
+                    "2. 今天是个好日子\n\n"
                     "上下文信息（如有）：\n{context}\n\n"
                     "现在请翻译这段字幕：\n{subtitle_text}"
                 ),
@@ -570,71 +565,42 @@ class SubtitleTranslator:
                 except json.JSONDecodeError:
                     pass
 
-            # 首先尝试匹配编号格式: "1. 翻译文本"
+            # 主要解析方式：匹配编号格式: "1. 翻译文本"
             number_pattern = r"(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
             matches = re.findall(number_pattern, response)
-            if matches and len(matches) == len(original_lines):
-                return [match[1].strip() for match in matches]
 
-            # 尝试匹配时间码格式: "00:00:00,000 --> 00:00:00,000"
-            timecode_pattern = r"\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n((?:.+\n?)+?)(?=\n\d{2}:\d{2}:\d{2},\d{3}|\Z)"
-            matches = re.findall(timecode_pattern, response)
-            if matches and len(matches) == len(original_lines):
-                return [match.strip() for match in matches]
+            # 创建结果字典，以确保按正确顺序匹配原始行
+            result_dict = {}
+            for match in matches:
+                index = int(match[0])
+                text = match[1].strip()
+                result_dict[index] = text
 
-            # 如果以上都失败，简单地按行拆分并过滤空行
+            # 按照原始行顺序整理结果
+            result = []
+            for line in original_lines:
+                if line.index in result_dict:
+                    result.append(result_dict[line.index])
+                else:
+                    # 如果没有找到对应的翻译，使用原文
+                    logger.warning(f"未找到行 {line.index} 的翻译，使用原文")
+                    result.append(line.text)
+
+            # 如果结果不为空，返回
+            if result:
+                return result
+
+            # 如果以上解析失败，简单地按行拆分并过滤空行
             lines = [
                 line.strip() for line in response.split("\n") if line.strip()
             ]
+
             # 如果行数匹配，直接返回
             if len(lines) == len(original_lines):
                 return lines
 
-            # 如果行数不匹配但内容合理，进行简单的分组
-            # 这是一个后备方案，可能不太准确
-            result = []
-            current_text = ""
-            for line in lines:
-                # 跳过可能的元数据行
-                if (
-                    line.startswith("-")
-                    or line.startswith("*")
-                    or re.match(r"^\d+\.", line)
-                ):
-                    if current_text:
-                        result.append(current_text.strip())
-                        current_text = ""
-                    line = re.sub(r"^\d+\.\s*", "", line)
-                    line = re.sub(r"^[-*]\s*", "", line)
-                    current_text = line
-                else:
-                    if current_text:
-                        current_text += " " + line
-                    else:
-                        current_text = line
-
-            if current_text:
-                result.append(current_text.strip())
-
-            # 如果解析结果合理，使用它
-            if result and len(result) == len(original_lines):
-                return result
-
-            # 最后的后备方案，尽可能合理地分配翻译文本
-            if lines:
-                # 平均分配行
-                result = []
-                avg_lines = max(1, len(lines) // len(original_lines))
-                for i in range(0, len(original_lines)):
-                    start_idx = i * avg_lines
-                    end_idx = min(start_idx + avg_lines, len(lines))
-                    if start_idx < len(lines):
-                        result.append(" ".join(lines[start_idx:end_idx]))
-                    else:
-                        result.append("")
-                return result
-
-            # 如果所有方法都失败，返回原始响应作为单一翻译
+            # 最后的后备方案，返回原始响应作为单一翻译
+            logger.warning("解析翻译响应失败，返回原始响应")
             return [response] + [""] * (len(original_lines) - 1)
 
         except Exception as e:
