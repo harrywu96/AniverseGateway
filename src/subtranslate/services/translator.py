@@ -22,6 +22,60 @@ from .utils import SRTOptimizer
 logger = logging.getLogger(__name__)
 
 
+# 添加语言代码到名称的映射
+def get_language_name(language_code: str) -> str:
+    """将语言代码转换为可读语言名称
+
+    Args:
+        language_code: 语言代码，如'en', 'zh'
+
+    Returns:
+        str: 语言名称，如'英语', '中文'
+    """
+    language_map = {
+        # 常用语言
+        "en": "英语",
+        "zh": "中文",
+        "fr": "法语",
+        "de": "德语",
+        "es": "西班牙语",
+        "it": "意大利语",
+        "ja": "日语",
+        "ko": "韩语",
+        "ru": "俄语",
+        "pt": "葡萄牙语",
+        "ar": "阿拉伯语",
+        "hi": "印地语",
+        "bn": "孟加拉语",
+        "nl": "荷兰语",
+        "sv": "瑞典语",
+        "vi": "越南语",
+        "th": "泰语",
+        "tr": "土耳其语",
+        "id": "印度尼西亚语",
+        "ms": "马来语",
+        "fa": "波斯语",
+        "pl": "波兰语",
+        "uk": "乌克兰语",
+        "ro": "罗马尼亚语",
+        "cs": "捷克语",
+        "hu": "匈牙利语",
+        "fi": "芬兰语",
+        "no": "挪威语",
+        "da": "丹麦语",
+        "he": "希伯来语",
+        "el": "希腊语",
+        "bg": "保加利亚语",
+        "ca": "加泰罗尼亚语",
+        "hr": "克罗地亚语",
+        "sr": "塞尔维亚语",
+        "sk": "斯洛伐克语",
+        "sl": "斯洛文尼亚语",
+        # 如需添加更多语言，请在此处扩展
+    }
+    return language_map.get(language_code, language_code)
+
+
 class SubtitleLine(BaseModel):
     """字幕行模型"""
 
@@ -63,6 +117,7 @@ class SubtitleTranslator:
         self.custom_templates: Dict[str, PromptTemplate] = (
             self._load_custom_templates() if template_dir else {}
         )
+        # 使用基本验证级别初始化验证器
         self.validator = TranslationValidator(
             validation_level=ValidationLevel.BASIC
         )
@@ -79,17 +134,35 @@ class SubtitleTranslator:
                 name="标准字幕翻译",
                 description="适用于一般场景的字幕翻译",
                 system_prompt=(
-                    "你是一个专业的视频字幕翻译助手，精通{source_language}和{target_language}。"
-                    "你的任务是将字幕从{source_language}翻译成流畅、自然的{target_language}。"
-                    "翻译时应当符合目标语言的表达习惯，保持原文的意思和风格。"
+                    "你是一个专业的视频字幕翻译助手，"
+                    "精通{source_language}和{target_language}，并且非常了解日本动漫。"
+                    "你的任务是考虑日本动漫的表达方式，"
+                    "将字幕从{source_language}翻译成带有二次元风格的{target_language}。"
+                    "请参考日本动漫中的日常交流，翻译结果自然、生动、符合中文的语言习惯。"
+                    "尽可能的忠于原文，保留原文的表达方式。"
                 ),
                 user_prompt=(
                     "请将以下字幕从{source_language}翻译成{target_language}，"
                     "保持{style}风格。\n\n"
-                    "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
-                    "请保持字幕的格式，只翻译内容部分。"
+                    # "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
+                    "请严格保留字幕的格式，只翻译字幕内容，不要翻译序号、字幕开始时间帧、字幕结束时间帧，这对我非常重要。"
+                    "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
+                    "请不要翻译，这是字幕的格式控制手段。"
+                    "字幕格式如下：\n"
+                    "序号. 字幕开始时间帧 --> 字幕结束时间帧\n"
+                    "字幕内容\n\n"
+                    "例如我输入的内容是：\n"
+                    "1. 00:00:00,000 --> 00:00:05,000\n"
+                    "hello everyone\n\n"
+                    "2. 00:00:05,001 --> 00:00:10,000\n"
+                    "today is a good day\n\n"
+                    "你需要输出的是：\n"
+                    "1. 00:00:00,000 --> 00:00:05,000\n"
+                    "大家好\n\n"
+                    "2. 00:00:05,001 --> 00:00:10,000\n"
+                    "今天是个好日子\n\n"
                     "上下文信息（如有）：\n{context}\n\n"
-                    "需要翻译的字幕：\n{subtitle_text}"
+                    "现在请翻译这段字幕：\n{subtitle_text}"
                 ),
                 is_default=True,
             ),
@@ -106,6 +179,8 @@ class SubtitleTranslator:
                     "尽可能忠实原文，保持原文的句式结构。\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
+                    "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
+                    "请不要翻译，这是字幕的格式控制手段。"
                     "上下文信息（如有）：\n{context}\n\n"
                     "需要翻译的字幕：\n{subtitle_text}"
                 ),
@@ -123,6 +198,8 @@ class SubtitleTranslator:
                     "使用常见的口语表达，就像人们日常交谈那样。\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
+                    "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
+                    "请不要翻译，这是字幕的格式控制手段。"
                     "上下文信息（如有）：\n{context}\n\n"
                     "需要翻译的字幕：\n{subtitle_text}"
                 ),
@@ -140,6 +217,8 @@ class SubtitleTranslator:
                     "使用规范、庄重的表达方式，避免口语化和俚语表达。\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
+                    "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
+                    "请不要翻译，这是字幕的格式控制手段。"
                     "上下文信息（如有）：\n{context}\n\n"
                     "需要翻译的字幕：\n{subtitle_text}"
                 ),
@@ -292,12 +371,9 @@ class SubtitleTranslator:
         Returns:
             Dict[str, str]: 翻译参数字典
         """
-        # 准备字幕文本
+        # 准备字幕文本 - 简化为只包含序号和文本内容
         subtitle_text = "\n\n".join(
-            [
-                f"{line.index}. {line.start_time} --> {line.end_time}\n{line.text}"
-                for line in chunk.lines
-            ]
+            [f"{line.index}. {line.text}" for line in chunk.lines]
         )
 
         # 准备上下文信息
@@ -318,20 +394,24 @@ class SubtitleTranslator:
 
         # 准备术语表
         glossary_text = ""
-        if task.config.glossary:
+        if task.config.glossary and len(task.config.glossary) > 0:
             glossary_items = [
                 f"{term} -> {translation}"
                 for term, translation in task.config.glossary.items()
             ]
             glossary_text = "\n".join(glossary_items)
+        else:
+            # 确保 glossary 参数存在，即使为空
+            glossary_text = "无特定术语"
 
         # 返回格式化参数
         return {
-            "source_language": task.source_language,
-            "target_language": task.target_language,
+            "source_language": get_language_name(task.source_language),
+            "target_language": get_language_name(task.target_language),
             "style": style_name,
             "subtitle_text": subtitle_text,
-            "context": context,
+            "context": context
+            or "无上下文",  # 确保 context 参数存在，即使为空
             "glossary": glossary_text,
         }
 
@@ -385,9 +465,14 @@ class SubtitleTranslator:
             )
             template = self.get_template(template_name)
 
+        print("!!!!!template:", template)
+
         # 格式化提示
         system_prompt = template.format_system_prompt(**params)
         user_prompt = template.format_user_prompt(**params)
+
+        print("!!!system_prompt:", system_prompt)
+        print("!!!user_prompt:", user_prompt)
 
         # 翻译重试
         max_retries = task.config.max_retries
@@ -402,6 +487,8 @@ class SubtitleTranslator:
                     examples=template.examples,
                 )
 
+                print("翻译后的结果response", response)
+
                 # 解析翻译结果
                 translated_lines = self._parse_translation_response(
                     response, chunk.lines
@@ -414,13 +501,21 @@ class SubtitleTranslator:
 
                         # 验证翻译质量
                         validation_result = None
-                        if task.config.validate_translation:
+                        if task.config.validate_translations:
                             try:
+                                # 使用主验证器进行验证
                                 validation_result = self.validator.validate(
                                     source_text=line.text,
                                     translated_text=line.translated_text,
                                     source_language=task.source_language,
                                     target_language=task.target_language,
+                                    validation_level=(
+                                        ValidationLevel.STRICT
+                                        if task.config.strict_validation
+                                        else ValidationLevel.BASIC
+                                    ),
+                                    glossary=task.config.glossary,
+                                    forbidden_terms=task.config.forbidden_terms,
                                 )
                             except Exception as e:
                                 logger.warning(f"翻译验证失败: {e}")
@@ -609,6 +704,9 @@ class SubtitleTranslator:
 
         except Exception as e:
             logger.error(f"文件翻译失败: {e}")
+            import traceback
+
+            logger.error(f"详细错误堆栈: {traceback.format_exc()}")
             raise
 
     def _generate_translated_content(

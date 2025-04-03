@@ -17,21 +17,22 @@ import os
 import sys
 import asyncio
 import logging
+import traceback
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Tuple
 from dotenv import load_dotenv
 
 # 添加项目根目录到 sys.path
 project_root = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+# 导入项目模块
 from src.subtranslate.schemas.video import VideoInfo
 from src.subtranslate.schemas.config import SystemConfig
-from src.subtranslate.schemas.task import SubtitleTask, TranslationStyle
+from src.subtranslate.schemas.task import TranslationStyle
 from src.subtranslate.core.subtitle_extractor import SubtitleExtractor
 from src.subtranslate.core.subtitle_translator import SubtitleTranslator
 from src.subtranslate.services.utils import SRTOptimizer
-from src.subtranslate.services.subtitle_export import SubtitleExporter
 
 # 配置日志
 logging.basicConfig(
@@ -76,12 +77,8 @@ async def extract_subtitle_from_video(
     try:
         # 创建字幕提取器
         extractor = SubtitleExtractor()
-
         # 获取视频信息
-        video_info = VideoInfo(
-            file_path=video_path,
-            title=Path(video_path).stem,
-        )
+        video_info = VideoInfo.from_file_path(video_path)
 
         # 检测外挂字幕文件
         external_subtitles = extractor.detect_subtitle_files(video_path)
@@ -141,7 +138,7 @@ async def translate_subtitle(
     source_language: str = "en",
     target_language: str = "zh",
     translation_style: TranslationStyle = TranslationStyle.NATURAL,
-) -> Optional[str]:
+) -> Optional[Tuple[str, dict, object]]:
     """翻译字幕文件
 
     Args:
@@ -152,7 +149,7 @@ async def translate_subtitle(
         translation_style: 翻译风格
 
     Returns:
-        Optional[str]: 翻译后的字幕内容，如果失败则返回None
+        Optional[Tuple[str, dict, object]]: 包含翻译内容、格式映射和任务对象的元组，如果失败则返回None
     """
     logger.info(f"开始翻译字幕: {subtitle_path}")
 
@@ -184,8 +181,15 @@ async def translate_subtitle(
             target_language=target_language,
             style=translation_style,
             preserve_formatting=True,
-            chunk_size=10,  # 每次翻译10条字幕
+            chunk_size=30,  # 每次翻译30条字幕
             context_window=3,  # 上下文窗口为3条字幕
+            glossary={},  # 添加空的术语表
+            forbidden_terms=[],  # 添加空的禁用术语列表
+            context_preservation=True,  # 保持上下文一致性
+            handle_cultural_references=True,  # 处理文化差异
+            validate_translations=True,  # 启用翻译验证
+            strict_validation=False,  # 使用非严格验证模式
+            max_retries=3,  # 翻译失败最大重试次数
         )
 
         # 执行翻译任务
@@ -206,13 +210,14 @@ async def translate_subtitle(
 
     except Exception as e:
         logger.error(f"翻译过程中发生错误: {e}")
+        logger.error(f"错误详情: {traceback.format_exc()}")
         return None
 
 
 async def main():
     """主函数"""
     # 加载环境变量
-    load_dotenv()
+    load_dotenv(override=True)
 
     # 检查命令行参数
     if len(sys.argv) < 2:
@@ -235,7 +240,8 @@ async def main():
         # 验证是否使用 SiliconFlow API
         if config.ai_service.provider != "siliconflow":
             logger.warning(
-                "当前配置不是使用 SiliconFlow API，请在 .env 文件中设置 AI_PROVIDER=siliconflow"
+                "当前配置不是使用 SiliconFlow API，"
+                "请在 .env 文件中设置 AI_PROVIDER=siliconflow"
             )
             choice = input("是否继续使用当前 AI 提供商进行测试? (y/n): ")
             if choice.lower() != "y":

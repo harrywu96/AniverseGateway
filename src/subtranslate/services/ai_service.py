@@ -953,7 +953,7 @@ class SiliconFlowService(AIService):
         backoff_factor=2,
         exceptions=(httpx.HTTPError,),
     )
-    async def count_tokens(self, text: str) -> int:
+    async def get_token_count(self, text: str) -> int:
         """计算文本的token数量
 
         Args:

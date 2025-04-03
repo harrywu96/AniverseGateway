@@ -50,6 +50,7 @@ def load_environment_variables() -> Dict[str, str]:
             os.getenv("SILICONFLOW_FREQUENCY_PENALTY", "0.0")
         ),
     }
+    # 获取gemini配置
     print(config)
     # 验证API密钥是否存在
     if not config["api_key"]:
