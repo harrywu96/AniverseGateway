@@ -15,7 +15,7 @@ from ...schemas.task import SubtitleTask, TranslationConfig, TaskStatus
 from ...schemas.config import SystemConfig
 from ...core.subtitle_translator import SubtitleTranslator
 from ..dependencies import get_system_config, get_subtitle_translator
-from ..app import manager  # 导入WebSocket连接管理器
+from ..websocket import manager  # 从websocket模块导入manager
 
 
 # 配置日志

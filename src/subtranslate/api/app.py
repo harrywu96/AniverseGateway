@@ -6,7 +6,7 @@
 import logging
 import asyncio
 import os
-from typing import Callable, Dict, List, Optional, Any
+from typing import Optional, Any
 
 from fastapi import (
     FastAPI,
@@ -23,15 +23,7 @@ from ..schemas.config import SystemConfig
 from ..schemas.api import APIResponse, ErrorResponse
 from ..core.subtitle_translator import SubtitleTranslator
 from ..core.subtitle_extractor import SubtitleExtractor
-from .routers import (
-    videos,
-    subtitles,
-    tasks,
-    translate,
-    config,
-    templates,
-    export,
-)
+from .websocket import manager  # 从新模块导入manager
 from .dependencies import (
     get_system_config,
     get_subtitle_translator,
@@ -70,71 +62,6 @@ def configure_cors(app: FastAPI, config: SystemConfig):
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-
-# WebSocket连接管理器
-class ConnectionManager:
-    """WebSocket连接管理器，用于处理实时进度更新"""
-
-    def __init__(self):
-        # 每个任务ID对应一组客户端连接
-        self.active_connections: Dict[str, List[WebSocket]] = {}
-
-    async def connect(self, websocket: WebSocket, task_id: str):
-        """添加新连接
-
-        Args:
-            websocket: WebSocket连接
-            task_id: 任务ID
-        """
-        await websocket.accept()
-        if task_id not in self.active_connections:
-            self.active_connections[task_id] = []
-        self.active_connections[task_id].append(websocket)
-        logger.info(
-            f"新WebSocket连接: 任务{task_id}, 当前连接数: {len(self.active_connections[task_id])}"
-        )
-
-    def disconnect(self, websocket: WebSocket, task_id: str):
-        """移除连接
-
-        Args:
-            websocket: WebSocket连接
-            task_id: 任务ID
-        """
-        if task_id in self.active_connections:
-            if websocket in self.active_connections[task_id]:
-                self.active_connections[task_id].remove(websocket)
-            # 如果任务没有活跃连接，则移除任务键
-            if not self.active_connections[task_id]:
-                del self.active_connections[task_id]
-        logger.info(f"WebSocket连接关闭: 任务{task_id}")
-
-    async def broadcast(self, task_id: str, message: dict):
-        """向指定任务的所有连接广播消息
-
-        Args:
-            task_id: 任务ID
-            message: 消息内容
-        """
-        if task_id not in self.active_connections:
-            return
-
-        disconnected = []
-        for connection in self.active_connections[task_id]:
-            try:
-                await connection.send_json(message)
-            except Exception as e:
-                logger.error(f"发送WebSocket消息失败: {e}")
-                disconnected.append(connection)
-
-        # 移除断开的连接
-        for conn in disconnected:
-            self.disconnect(conn, task_id)
-
-
-# 初始化连接管理器
-manager = ConnectionManager()
 
 
 # WebSocket端点
@@ -219,22 +146,6 @@ async def shutdown_event():
     logger.info("SubTranslate API服务关闭")
 
 
-# 加载路由
-app.include_router(videos.router, prefix="/api/videos", tags=["视频管理"])
-app.include_router(
-    subtitles.router, prefix="/api/subtitles", tags=["字幕提取"]
-)
-app.include_router(tasks.router, prefix="/api/tasks", tags=["翻译任务"])
-app.include_router(
-    translate.router, prefix="/api/translate", tags=["实时翻译"]
-)
-app.include_router(config.router, prefix="/api/config", tags=["配置管理"])
-app.include_router(
-    templates.router, prefix="/api/templates", tags=["提示模板"]
-)
-app.include_router(export.router, prefix="/api/export", tags=["导出功能"])
-
-
 # 首页和健康检查端点
 @app.get("/", response_model=APIResponse, tags=["系统"])
 async def root():
@@ -250,5 +161,34 @@ async def root():
 async def health_check():
     """健康检查端点"""
     return APIResponse(
-        success=True, message="服务健康", data={"status": "healthy"}
+        success=True,
+        message="SubTranslate API服务健康状态正常",
+        data={"status": "healthy"},
     )
+
+
+# 这里先导入路由，避免循环导入
+from .routers import (
+    videos,
+    subtitles,
+    tasks,
+    translate,
+    config,
+    templates,
+    export,
+)
+
+# 加载路由
+app.include_router(videos.router, prefix="/api/videos", tags=["视频管理"])
+app.include_router(
+    subtitles.router, prefix="/api/subtitles", tags=["字幕提取"]
+)
+app.include_router(tasks.router, prefix="/api/tasks", tags=["翻译任务"])
+app.include_router(
+    translate.router, prefix="/api/translate", tags=["实时翻译"]
+)
+app.include_router(config.router, prefix="/api/config", tags=["配置管理"])
+app.include_router(
+    templates.router, prefix="/api/templates", tags=["提示模板"]
+)
+app.include_router(export.router, prefix="/api/export", tags=["导出功能"])
