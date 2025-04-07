@@ -18,6 +18,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
+from fastapi.responses import JSONResponse
 
 from ..schemas.config import SystemConfig
 from ..schemas.api import APIResponse, ErrorResponse
@@ -63,6 +64,10 @@ def configure_cors(app: FastAPI, config: SystemConfig):
         allow_headers=["*"],
     )
 
+# 立即配置CORS（在应用创建后，启动事件之前）
+config = get_system_config()
+configure_cors(app, config)
+
 
 # WebSocket端点
 @app.websocket("/ws/tasks/{task_id}")
@@ -93,33 +98,42 @@ async def websocket_task_progress(
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """HTTP异常处理"""
-    return ErrorResponse(
-        success=False,
-        message=str(exc.detail),
-        error_code=f"HTTP_{exc.status_code}",
-    ).model_dump()
+    return JSONResponse(
+        content=ErrorResponse(
+            success=False,
+            message=str(exc.detail),
+            error_code=f"HTTP_{exc.status_code}",
+        ).model_dump(),
+        status_code=exc.status_code,
+    )
 
 
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(request, exc):
     """验证错误处理"""
-    return ErrorResponse(
-        success=False,
-        message="请求参数验证失败",
-        error_code="VALIDATION_ERROR",
-        error_details={"errors": exc.errors()},
-    ).model_dump()
+    return JSONResponse(
+        content=ErrorResponse(
+            success=False,
+            message="请求参数验证失败",
+            error_code="VALIDATION_ERROR",
+            error_details={"errors": exc.errors()},
+        ).model_dump(),
+        status_code=422,
+    )
 
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     """通用异常处理"""
     logger.error(f"未处理的异常: {exc}", exc_info=True)
-    return ErrorResponse(
-        success=False,
-        message=f"服务器内部错误: {str(exc)}",
-        error_code="INTERNAL_ERROR",
-    ).model_dump()
+    return JSONResponse(
+        content=ErrorResponse(
+            success=False,
+            message=f"服务器内部错误: {str(exc)}",
+            error_code="INTERNAL_ERROR",
+        ).model_dump(),
+        status_code=500,
+    )
 
 
 # 应用启动和关闭事件
@@ -131,8 +145,8 @@ async def startup_event():
     # 获取配置
     config = get_system_config()
 
-    # 配置CORS
-    configure_cors(app, config)
+    # 不再在这里配置CORS
+    # configure_cors(app, config)
 
     # 创建必要的目录
     os.makedirs(config.temp_dir, exist_ok=True)

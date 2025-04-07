@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    # Core dependencies
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "python-dotenv>=1.0.0",
@@ -30,12 +31,20 @@ dependencies = [
     "httpx>=0.25.1",
     "aiofiles>=23.1.0",
     "requests>=2.31.0",
+    
+    # Video and subtitle processing
     "ffmpeg-python>=0.2.0",
     "pysrt>=1.1.2",
     "chardet>=5.2.0",
+    
+    # AI service integrations
     "openai>=1.6.0",
+    
+    # Web application components
     "websockets>=12.0",
     "python-multipart>=0.0.6",
+    
+    # CLI tools
     "typer>=0.9.0",
     "rich>=13.6.0",
     "asyncio>=3.4.3",
@@ -65,6 +74,12 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# UV specific configurations
+[tool.uv]
+python-version = "3.10"
+pip-compile-options = ["--generate-hashes"]
+dependency-mode = "development"
 
 [tool.black]
 line-length = 79

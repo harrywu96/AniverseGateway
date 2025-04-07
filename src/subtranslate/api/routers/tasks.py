@@ -9,8 +9,9 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
+from fastapi.responses import JSONResponse
 
-from ...schemas.api import APIResponse, ProgressUpdateEvent
+from ...schemas.api import APIResponse, ProgressUpdateEvent, ErrorResponse
 from ...schemas.task import SubtitleTask, TranslationConfig, TaskStatus
 from ...schemas.config import SystemConfig
 from ...core.subtitle_translator import SubtitleTranslator
@@ -153,10 +154,19 @@ async def create_task(
         TaskResponse: 任务响应，包含创建的任务信息
     """
     try:
-        # 验证字幕ID
-        # 由于未实现字幕存储，先返回未实现错误
-        raise HTTPException(status_code=501, detail="功能未实现")
-
+        # 日志记录请求参数，帮助调试
+        logger.info(f"收到创建任务请求: {request.model_dump()}")
+        
+        # 返回未实现功能，但返回501状态码而不是抛出验证错误
+        return JSONResponse(
+            content=ErrorResponse(
+                success=False,
+                message="功能未实现",
+                error_code="HTTP_501",
+            ).model_dump(),
+            status_code=501,
+        )
+        
     except Exception as e:
         logger.error(f"创建任务失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):

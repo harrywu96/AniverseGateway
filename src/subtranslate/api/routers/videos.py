@@ -207,3 +207,95 @@ async def get_video_subtitles(
     # 同样，这里需要先从存储中获取视频信息
     # 目前暂时返回错误
     raise HTTPException(status_code=501, detail="功能未实现")
+
+
+@router.post("/upload", response_model=VideoDetailResponse, tags=["视频管理"])
+async def upload_video(
+    file: UploadFile = File(...),
+    config: SystemConfig = Depends(get_system_config),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+):
+    """上传视频文件
+    
+    接收上传的视频文件，保存到临时目录，并返回基本信息。
+    
+    Args:
+        file: 上传的视频文件
+        config: 系统配置
+        extractor: 字幕提取器
+        
+    Returns:
+        VideoDetailResponse: 视频详情响应
+    """
+    try:
+        # 获取文件扩展名
+        filename = file.filename
+        if not filename:
+            raise HTTPException(status_code=400, detail="无效的文件名")
+            
+        file_extension = Path(filename).suffix.lower().lstrip(".")
+        
+        # 检查文件格式
+        if file_extension not in config.allowed_formats:
+            raise HTTPException(
+                status_code=400,
+                detail=f"不支持的视频格式: {file_extension}，支持的格式: {config.allowed_formats}"
+            )
+            
+        # 创建目标路径
+        file_id = str(uuid4())
+        temp_path = Path(config.temp_dir) / f"{file_id}.{file_extension}"
+        
+        # 保存文件
+        with open(temp_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+            
+        # 创建视频信息对象
+        video_format = VideoFormat(file_extension)
+        video_info = VideoInfo(
+            id=file_id,
+            filename=filename,
+            path=str(temp_path),
+            format=video_format,
+        )
+        
+        # 分析视频信息
+        video_info = await extractor.analyze_video(video_info)
+        
+        # 返回结果
+        return VideoDetailResponse(
+            success=True,
+            message="视频上传成功",
+            data=video_info
+        )
+    
+    except Exception as e:
+        logger.error(f"上传视频失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=500, detail=f"上传视频失败: {str(e)}")
+
+
+@router.get("", response_model=APIResponse, tags=["视频管理"])
+async def list_videos(
+    config: SystemConfig = Depends(get_system_config),
+):
+    """获取所有已加载视频列表
+    
+    返回系统中所有已加载的视频信息。
+    
+    Args:
+        config: 系统配置
+        
+    Returns:
+        APIResponse: 视频列表响应
+    """
+    # 这里应该实现从存储中获取所有视频的逻辑
+    # 由于目前还没有实现视频持久化存储，先返回空列表
+    
+    return APIResponse(
+        success=True,
+        message="获取视频列表成功",
+        data=[]
+    )

@@ -10,6 +10,7 @@ from functools import lru_cache
 from ..schemas.config import SystemConfig
 from ..core.subtitle_translator import SubtitleTranslator
 from ..core.subtitle_extractor import SubtitleExtractor
+from ..core.ffmpeg import FFmpegTool
 
 
 @lru_cache
@@ -54,7 +55,8 @@ def get_subtitle_extractor(
     Returns:
         SubtitleExtractor: 字幕提取器实例
     """
-    return SubtitleExtractor(config=config)
+    ffmpeg_tool = FFmpegTool()
+    return SubtitleExtractor(ffmpeg_tool)
 
 
 # 任务管理器实例存储

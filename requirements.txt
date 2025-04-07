@@ -1,4 +1,4 @@
-# 核心依赖
+# Core dependencies
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 python-dotenv>=1.0.0
@@ -8,31 +8,29 @@ httpx>=0.25.1
 aiofiles>=23.1.0
 requests>=2.31.0
 
-# 视频处理
+# Video and subtitle processing
 ffmpeg-python>=0.2.0
-
-# 字幕处理
 pysrt>=1.1.2
 chardet>=5.2.0
 
-# AI服务集成
-# 不同的AI服务可能需要不同的客户端库
+# AI service integrations
 openai>=1.6.0
-# zhipuai>=0.4.1  # 智谱AI客户端
-# volcengine>=1.0.119  # 火山引擎客户端
-# baidu-aip>=4.16.10  # 百度智能云客户端
-# anthropic>=0.5.0  # Anthropic Claude客户端
+# Uncomment as needed:
+# zhipuai>=0.4.1          # 智谱AI
+# volcengine>=1.0.119     # 火山引擎
+# baidu-aip>=4.16.10      # 百度智能云
+# anthropic>=0.5.0        # Anthropic Claude
 
-# Web应用
+# Web application components
 websockets>=12.0
 python-multipart>=0.0.6
 
-# CLI工具
+# CLI tools
 typer>=0.9.0
 rich>=13.6.0
 asyncio>=3.4.3
 
-# 开发工具 (使用 pip install -e ".[dev]" 安装)
+# Development dependencies - install with: uv pip install -e ".[dev]"
 pytest>=7.4.0; extra == 'dev'
 pytest-cov>=4.1.0; extra == 'dev'
 black>=23.11.0; extra == 'dev'

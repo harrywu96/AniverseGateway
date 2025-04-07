@@ -46,3 +46,6 @@ src/subtranslate/services/translator.py
 src/subtranslate/services/utils.py
 src/subtranslate/services/validators.py
 src/subtranslate/ui/__init__.py
+src/tests/api_endpoints_test.py
+src/tests/api_test.py
+src/tests/run_api_tests.py
