@@ -19,6 +19,8 @@ SubTranslate是一个自动化视频字幕提取、翻译和整合系统，能�
 # 安装UV（如果尚未安装）
 curl -sSf https://install.python-poetry.org | python3 -
 
+# 设置powershell执行策略
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 # 创建并激活虚拟环境
 uv venv
 source .venv/bin/activate  # Linux/macOS
@@ -160,3 +162,5 @@ SubTranslate支持多种AI服务提供商，您可以根据需要选择：
 - **自定义API**：支持自定义兼容OpenAI API格式的服务
 
 要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。 
+
+

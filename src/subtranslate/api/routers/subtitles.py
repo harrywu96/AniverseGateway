@@ -5,17 +5,22 @@
 
 import os
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Optional
 from pathlib import Path
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ...schemas.api import APIResponse
-from ...schemas.video import VideoInfo
 from ...schemas.config import SystemConfig
-from ...core.subtitle_extractor import SubtitleExtractor
-from ..dependencies import get_system_config, get_subtitle_extractor
+from ...core.subtitle_extractor import SubtitleExtractor, SubtitleFormat
+from ...services.video_storage import VideoStorageService
+from ..dependencies import (
+    get_system_config,
+    get_subtitle_extractor,
+    get_video_storage,
+)
 
 
 # 配置日志
@@ -104,6 +109,7 @@ async def extract_subtitle(
     request: SubtitleExtractRequest,
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """从视频中提取字幕
 
@@ -113,14 +119,44 @@ async def extract_subtitle(
         request: 提取请求
         config: 系统配置
         extractor: 字幕提取器
+        video_storage: 视频存储服务
 
     Returns:
         APIResponse: 操作响应，包含提取后的字幕ID
     """
     try:
-        # 这里需要先获取视频信息对象
-        # 由于目前没有实现视频存储，先返回未实现错误
-        raise HTTPException(status_code=501, detail="功能未实现")
+        # 获取视频信息
+        video_info = video_storage.get_video(request.video_id)
+        if not video_info:
+            raise HTTPException(status_code=404, detail="视频不存在")
+
+        # 提取字幕
+        output_dir = Path(config.temp_dir) / "subtitles"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        subtitle_path = await extractor.extract_embedded_subtitle(
+            video_info,
+            track_index=request.track_index,
+            output_dir=output_dir,
+            target_format=SubtitleFormat(request.output_format),
+        )
+
+        if not subtitle_path:
+            raise HTTPException(status_code=400, detail="提取字幕失败")
+
+        # 创建字幕ID
+        subtitle_id = str(uuid4())
+
+        # 返回成功响应
+        return APIResponse(
+            success=True,
+            message="提取字幕成功",
+            data={
+                "subtitle_id": subtitle_id,
+                "path": str(subtitle_path),
+                "format": request.output_format,
+            },
+        )
 
     except Exception as e:
         logger.error(f"提取字幕失败: {e}", exc_info=True)
@@ -134,6 +170,7 @@ async def load_subtitle(
     request: SubtitleLoadRequest,
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """加载外部字幕文件
 
@@ -143,6 +180,7 @@ async def load_subtitle(
         request: 加载请求
         config: 系统配置
         extractor: 字幕提取器
+        video_storage: 视频存储服务
 
     Returns:
         APIResponse: 操作响应，包含加载后的字幕ID
@@ -154,7 +192,6 @@ async def load_subtitle(
 
         # 获取文件信息
         file_path = Path(request.file_path)
-        file_extension = file_path.suffix.lower().lstrip(".")
 
         # 尝试加载字幕文件
         subtitle_format = await extractor.detect_subtitle_format(
@@ -163,15 +200,25 @@ async def load_subtitle(
         if not subtitle_format:
             raise HTTPException(status_code=400, detail="不支持的字幕格式")
 
-        # 这里需要创建字幕信息对象并保存
-        # 目前返回部分成功信息
+        # 创建字幕ID
+        subtitle_id = str(uuid4())
+
+        # 如果提供了视频ID，检查视频是否存在
+        if request.video_id:
+            video_info = video_storage.get_video(request.video_id)
+            if not video_info:
+                raise HTTPException(status_code=404, detail="关联的视频不存在")
+
+        # 返回成功响应
         return APIResponse(
             success=True,
             message="字幕加载成功",
             data={
-                "id": "temp_subtitle_id",
+                "id": subtitle_id,
                 "path": str(file_path),
                 "format": subtitle_format,
+                "language": request.language,
+                "video_id": request.video_id,
             },
         )
 

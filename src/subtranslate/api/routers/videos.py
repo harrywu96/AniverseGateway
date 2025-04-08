@@ -5,7 +5,7 @@
 
 import os
 import logging
-from typing import List, Optional
+from typing import Optional
 from pathlib import Path
 from uuid import uuid4
 
@@ -15,16 +15,20 @@ from fastapi import (
     HTTPException,
     File,
     UploadFile,
-    Form,
     Query,
 )
 from pydantic import BaseModel, Field
 
-from ...schemas.api import APIResponse, VideoDetailResponse, ErrorResponse
-from ...schemas.video import VideoInfo, VideoFormat
+from ...schemas.api import APIResponse, VideoDetailResponse
+from ...schemas.video import VideoFormat
 from ...schemas.config import SystemConfig
 from ...core.subtitle_extractor import SubtitleExtractor
-from ..dependencies import get_system_config, get_subtitle_extractor
+from ...services.video_storage import VideoStorageService
+from ..dependencies import (
+    get_system_config,
+    get_subtitle_extractor,
+    get_video_storage,
+)
 
 
 # 配置日志
@@ -94,6 +98,7 @@ async def load_video(
     request: VideoLoadRequest,
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """加载本地视频文件
 
@@ -103,6 +108,7 @@ async def load_video(
         request: 加载请求
         config: 系统配置
         extractor: 字幕提取器
+        video_storage: 视频存储服务
 
     Returns:
         VideoDetailResponse: 视频详情响应
@@ -123,14 +129,8 @@ async def load_video(
                 detail=f"不支持的视频格式: {file_extension}，支持的格式: {config.allowed_formats}",
             )
 
-        # 创建视频信息对象
-        video_format = VideoFormat(file_extension)
-        video_info = VideoInfo(
-            id=str(uuid4()),
-            filename=file_path.name,
-            path=str(file_path),
-            format=video_format,
-        )
+        # 保存到视频存储
+        video_info = video_storage.save_video(str(file_path), file_path.name)
 
         # 分析视频信息
         video_info = await extractor.analyze_video(video_info)
@@ -147,6 +147,9 @@ async def load_video(
             )
             video_info.external_subtitles = external_subtitles
 
+        # 更新存储中的视频信息
+        video_storage.videos[video_info.id] = video_info
+
         return VideoDetailResponse(
             success=True, message="视频加载成功", data=video_info
         )
@@ -162,7 +165,9 @@ async def load_video(
     "/{video_id}", response_model=VideoDetailResponse, tags=["视频管理"]
 )
 async def get_video_info(
-    video_id: str, config: SystemConfig = Depends(get_system_config)
+    video_id: str,
+    config: SystemConfig = Depends(get_system_config),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """获取视频信息
 
@@ -171,13 +176,18 @@ async def get_video_info(
     Args:
         video_id: 视频ID
         config: 系统配置
+        video_storage: 视频存储服务
 
     Returns:
         VideoDetailResponse: 视频详情响应
     """
-    # 在实际实现中，这里可能需要从某种存储中获取视频信息
-    # 目前暂时返回错误，表示功能未完全实现
-    raise HTTPException(status_code=501, detail="功能未实现")
+    video_info = video_storage.get_video(video_id)
+    if not video_info:
+        raise HTTPException(status_code=404, detail="视频不存在")
+
+    return VideoDetailResponse(
+        success=True, message="获取视频信息成功", data=video_info
+    )
 
 
 @router.get(
@@ -190,6 +200,7 @@ async def get_video_subtitles(
     refresh: bool = Query(False, description="是否重新扫描字幕"),
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """获取视频可用字幕轨道
 
@@ -200,13 +211,72 @@ async def get_video_subtitles(
         refresh: 是否重新扫描
         config: 系统配置
         extractor: 字幕提取器
+        video_storage: 视频存储服务
 
     Returns:
         VideoSubtitlesResponse: 视频字幕响应
     """
-    # 同样，这里需要先从存储中获取视频信息
-    # 目前暂时返回错误
-    raise HTTPException(status_code=501, detail="功能未实现")
+    try:
+        # 获取视频信息
+        video_info = video_storage.get_video(video_id)
+        if not video_info:
+            raise HTTPException(status_code=404, detail="视频不存在")
+
+        # 如果需要刷新或没有字幕信息
+        if refresh or not video_info.subtitle_tracks:
+            # 提取字幕轨道信息
+            subtitle_tracks = await extractor.list_subtitle_tracks(video_info)
+            video_info.subtitle_tracks = subtitle_tracks
+
+            # 查找外挂字幕
+            external_subtitles = await extractor.find_external_subtitles(
+                video_info
+            )
+            video_info.external_subtitles = external_subtitles
+
+            # 更新存储中的视频信息
+            video_storage.videos[video_id] = video_info
+
+        # 构建响应数据
+        internal_tracks = []
+        for track in video_info.subtitle_tracks:
+            internal_tracks.append(
+                {
+                    "index": track.index,
+                    "language": track.language,
+                    "title": track.title,
+                    "format": track.codec or "unknown",
+                    "is_default": track.is_default,
+                    "is_forced": track.is_forced,
+                }
+            )
+
+        external_subtitles = []
+        for subtitle in video_info.external_subtitles:
+            external_subtitles.append(
+                {
+                    "path": subtitle.path,
+                    "language": subtitle.language,
+                    "format": subtitle.format,
+                }
+            )
+
+        return VideoSubtitlesResponse(
+            success=True,
+            message="获取字幕轨道成功",
+            data={
+                "internal_tracks": internal_tracks,
+                "external_subtitles": external_subtitles,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"获取字幕轨道失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"获取字幕轨道失败: {str(e)}"
+        )
 
 
 @router.post("/upload", response_model=VideoDetailResponse, tags=["视频管理"])
@@ -214,16 +284,18 @@ async def upload_video(
     file: UploadFile = File(...),
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """上传视频文件
-    
+
     接收上传的视频文件，保存到临时目录，并返回基本信息。
-    
+
     Args:
         file: 上传的视频文件
         config: 系统配置
         extractor: 字幕提取器
-        
+        video_storage: 视频存储服务
+
     Returns:
         VideoDetailResponse: 视频详情响应
     """
@@ -232,70 +304,41 @@ async def upload_video(
         filename = file.filename
         if not filename:
             raise HTTPException(status_code=400, detail="无效的文件名")
-            
+
         file_extension = Path(filename).suffix.lower().lstrip(".")
-        
+
         # 检查文件格式
         if file_extension not in config.allowed_formats:
             raise HTTPException(
                 status_code=400,
-                detail=f"不支持的视频格式: {file_extension}，支持的格式: {config.allowed_formats}"
+                detail=f"不支持的视频格式: {file_extension}，支持的格式: {config.allowed_formats}",
             )
-            
-        # 创建目标路径
-        file_id = str(uuid4())
-        temp_path = Path(config.temp_dir) / f"{file_id}.{file_extension}"
-        
-        # 保存文件
-        with open(temp_path, "wb") as buffer:
+
+        # 创建临时文件
+        temp_file = (
+            Path(config.temp_dir) / f"upload_{uuid4()}.{file_extension}"
+        )
+
+        # 保存上传的文件
+        with open(temp_file, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
-            
-        # 创建视频信息对象
-        video_format = VideoFormat(file_extension)
-        video_info = VideoInfo(
-            id=file_id,
-            filename=filename,
-            path=str(temp_path),
-            format=video_format,
-        )
-        
+
+        # 保存到视频存储
+        video_info = video_storage.save_video(str(temp_file), filename)
+
         # 分析视频信息
         video_info = await extractor.analyze_video(video_info)
-        
-        # 返回结果
+
+        # 更新存储中的视频信息
+        video_storage.videos[video_info.id] = video_info
+
         return VideoDetailResponse(
-            success=True,
-            message="视频上传成功",
-            data=video_info
+            success=True, message="视频上传成功", data=video_info
         )
-    
+
     except Exception as e:
         logger.error(f"上传视频失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"上传视频失败: {str(e)}")
-
-
-@router.get("", response_model=APIResponse, tags=["视频管理"])
-async def list_videos(
-    config: SystemConfig = Depends(get_system_config),
-):
-    """获取所有已加载视频列表
-    
-    返回系统中所有已加载的视频信息。
-    
-    Args:
-        config: 系统配置
-        
-    Returns:
-        APIResponse: 视频列表响应
-    """
-    # 这里应该实现从存储中获取所有视频的逻辑
-    # 由于目前还没有实现视频持久化存储，先返回空列表
-    
-    return APIResponse(
-        success=True,
-        message="获取视频列表成功",
-        data=[]
-    )

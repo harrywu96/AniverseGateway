@@ -4,13 +4,14 @@
 """
 
 import os
-from typing import Optional, Dict
+from typing import Dict
 from functools import lru_cache
 
 from ..schemas.config import SystemConfig
 from ..core.subtitle_translator import SubtitleTranslator
 from ..core.subtitle_extractor import SubtitleExtractor
 from ..core.ffmpeg import FFmpegTool
+from ..services.video_storage import VideoStorageService
 
 
 @lru_cache
@@ -57,6 +58,20 @@ def get_subtitle_extractor(
     """
     ffmpeg_tool = FFmpegTool()
     return SubtitleExtractor(ffmpeg_tool)
+
+
+def get_video_storage(
+    config: SystemConfig = get_system_config(),
+) -> VideoStorageService:
+    """获取视频存储服务实例
+
+    Args:
+        config: 系统配置
+
+    Returns:
+        VideoStorageService: 视频存储服务实例
+    """
+    return VideoStorageService(config.temp_dir)
 
 
 # 任务管理器实例存储

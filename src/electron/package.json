@@ -1,0 +1,22 @@
+{
+  "name": "video-processor",
+  "version": "1.0.0",
+  "description": "Video processing application with Electron and FastAPI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "fluent-ffmpeg": "^2.1.2"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "extends": "./electron-builder.json"
+  }
+} 
