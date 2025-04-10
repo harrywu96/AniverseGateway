@@ -83,6 +83,35 @@ class SubtitlePreviewResponse(APIResponse):
         }
 
 
+# 字幕完整内容响应模型
+class SubtitleFullContentResponse(APIResponse):
+    """字幕完整内容响应模型"""
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "success": True,
+                "message": "获取字幕完整内容成功",
+                "data": {
+                    "lines": [
+                        {
+                            "index": 1,
+                            "start": "00:00:01,000",
+                            "end": "00:00:04,000",
+                            "text": "这是字幕内容",
+                            "start_ms": 1000,
+                            "end_ms": 4000,
+                        }
+                    ],
+                    "total_lines": 100,
+                    "language": "zh",
+                    "format": "srt",
+                    "duration_seconds": 600,
+                },
+            }
+        }
+
+
 # 字幕信息模型
 class SubtitleInfo(BaseModel):
     """字幕信息模型"""
@@ -318,6 +347,76 @@ async def preview_subtitle(
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"预览字幕失败: {str(e)}")
+
+
+@router.get(
+    "/{subtitle_id}/content",
+    response_model=SubtitleFullContentResponse,
+    tags=["字幕提取"],
+)
+async def get_subtitle_content(
+    subtitle_id: str,
+    config: SystemConfig = Depends(get_system_config),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
+):
+    """获取字幕完整内容
+
+    获取字幕的完整内容，用于前端显示。
+
+    Args:
+        subtitle_id: 字幕ID
+        config: 系统配置
+        subtitle_storage: 字幕存储服务
+
+    Returns:
+        SubtitleFullContentResponse: 字幕完整内容响应
+    """
+    try:
+        # 获取字幕信息
+        subtitle_info = subtitle_storage.get_subtitle(subtitle_id)
+        if not subtitle_info:
+            raise HTTPException(status_code=404, detail="字幕不存在")
+
+        # 检查文件是否存在
+        if not os.path.exists(subtitle_info.path):
+            raise HTTPException(status_code=404, detail="字幕文件不存在")
+
+        # 读取字幕文件
+        with open(subtitle_info.path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 解析字幕内容
+        lines = _parse_subtitle_lines(content, subtitle_info.format)
+
+        # 计算总行数和总时长
+        total_lines = len(lines)
+        duration_seconds = 0
+        if lines:
+            last_line = lines[-1]
+            duration_seconds = last_line.end_ms / 1000.0
+
+        # 构建完整内容响应
+        full_content = SubtitlePreview(
+            lines=lines,
+            total_lines=total_lines,
+            language=subtitle_info.language,
+            format=subtitle_info.format,
+            duration_seconds=duration_seconds,
+        )
+
+        return SubtitleFullContentResponse(
+            success=True,
+            message="获取字幕完整内容成功",
+            data=full_content,
+        )
+
+    except Exception as e:
+        logger.error(f"获取字幕完整内容失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"获取字幕完整内容失败: {str(e)}"
+        )
 
 
 @router.get("/{subtitle_id}", response_model=APIResponse, tags=["字幕提取"])
