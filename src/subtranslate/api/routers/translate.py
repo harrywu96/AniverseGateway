@@ -4,17 +4,28 @@
 """
 
 import logging
+import os
+import uuid
 from typing import Optional, Dict, List, Any
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    BackgroundTasks,
+    UploadFile,
+    File,
+    Form,
+)
 from pydantic import BaseModel, Field
 
-from ...schemas.api import APIResponse
-from ...schemas.task import TranslationConfig, TranslationStyle, PromptTemplate
+from ...schemas.api import APIResponse, ProgressUpdateEvent
+from ...schemas.task import TranslationConfig, TranslationStyle, SubtitleTask
 from ...schemas.config import SystemConfig, AIProviderType
 from ...core.subtitle_translator import SubtitleTranslator
-from ...services.translator import SubtitleTranslator as ServiceTranslator
+from ...services.utils import SRTOptimizer
 from ..dependencies import get_system_config, get_subtitle_translator
+from ..websocket import manager  # 导入WebSocket管理器
 
 
 # 配置日志
@@ -55,6 +66,25 @@ class SectionTranslateRequest(BaseModel):
     config: Optional[TranslationConfig] = Field(None, description="翻译配置")
 
 
+# 文件翻译请求模型
+class FileTranslateRequest(BaseModel):
+    """字幕文件翻译请求模型"""
+
+    source_language: str = Field(default="en", description="源语言")
+    target_language: str = Field(default="zh", description="目标语言")
+    style: TranslationStyle = Field(
+        default=TranslationStyle.NATURAL, description="翻译风格"
+    )
+    context_preservation: bool = Field(
+        default=True, description="保持上下文一致性"
+    )
+    preserve_formatting: bool = Field(default=True, description="保留原格式")
+    chunk_size: int = Field(default=30, description="字幕分块大小（单位：条）")
+    context_window: int = Field(
+        default=3, description="上下文窗口大小（单位：条）"
+    )
+
+
 # 翻译响应模型
 class TranslateResponse(APIResponse):
     """翻译响应模型"""
@@ -74,6 +104,47 @@ class TranslateResponse(APIResponse):
                 },
             }
         }
+
+
+# 文件翻译响应模型
+class FileTranslateResponse(APIResponse):
+    """文件翻译响应模型"""
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "success": True,
+                "message": "文件翻译任务已提交",
+                "data": {
+                    "task_id": "12345",
+                    "source_language": "en",
+                    "target_language": "zh",
+                    "style": "natural",
+                    "result_path": "/path/to/result.srt",
+                },
+            }
+        }
+
+
+async def progress_callback(
+    task_id: str, progress: float, status: str, message: Optional[str] = None
+):
+    """任务进度回调函数，用于向WebSocket客户端推送进度更新
+
+    Args:
+        task_id: 任务ID
+        progress: 进度百分比
+        status: 任务状态
+        message: 状态消息
+    """
+    # 创建进度更新事件
+    event = ProgressUpdateEvent(
+        task_id=task_id, progress=progress, status=status, message=message
+    )
+
+    # 广播给所有订阅此任务的客户端
+    await manager.broadcast(task_id, event.model_dump())
+    logger.info(f"任务 {task_id} 进度: {progress:.2f}% - 状态: {status}")
 
 
 @router.post("/line", response_model=TranslateResponse, tags=["实时翻译"])
@@ -119,9 +190,20 @@ async def translate_line(
         # 准备术语表
         glossary = request.glossary or {}
 
+        # 优化文本以减少token使用量（如果包含HTML标签或格式标记）
+        clean_text, format_tokens = SRTOptimizer.extract_text_and_format(
+            request.text
+        )
+
+        # 仅当文本存在格式标记时才使用优化版本
+        has_formatting = any(
+            token_type == "tag" for token_type, _ in format_tokens
+        )
+        text_to_translate = clean_text if has_formatting else request.text
+
         # 执行翻译
         result = await service_translator.translate_text(
-            text=request.text,
+            text=text_to_translate,
             source_language=request.source_language,
             target_language=request.target_language,
             style=request.style,
@@ -131,12 +213,20 @@ async def translate_line(
             with_details=True,
         )
 
+        translated_text = result.get("translated_text", "")
+
+        # 如果原文有格式，恢复格式
+        if has_formatting:
+            translated_text = SRTOptimizer.apply_translation_to_tokens(
+                format_tokens, translated_text
+            )
+
         # 返回翻译结果
         return TranslateResponse(
             success=True,
             message="翻译成功",
             data={
-                "translated_text": result.get("translated_text", ""),
+                "translated_text": translated_text,
                 "original_text": request.text,
                 "source_language": request.source_language,
                 "target_language": request.target_language,
@@ -182,6 +272,246 @@ async def translate_section(
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"翻译失败: {str(e)}")
+
+
+@router.post(
+    "/file", response_model=FileTranslateResponse, tags=["字幕文件翻译"]
+)
+async def translate_file(
+    background_tasks: BackgroundTasks,
+    subtitle_file: UploadFile = File(...),
+    data: str = Form(...),  # JSON序列化的配置数据
+    config: SystemConfig = Depends(get_system_config),
+    translator: SubtitleTranslator = Depends(get_subtitle_translator),
+):
+    """翻译整个字幕文件
+
+    上传SRT字幕文件并进行完整翻译，返回任务ID用于跟踪进度。
+
+    Args:
+        background_tasks: FastAPI后台任务
+        subtitle_file: 上传的SRT字幕文件
+        data: JSON格式的翻译配置参数
+        config: 系统配置
+        translator: 字幕翻译器
+
+    Returns:
+        FileTranslateResponse: 文件翻译响应
+    """
+    try:
+        # 解析请求数据
+        import json
+        from pydantic import ValidationError
+
+        try:
+            request_data = FileTranslateRequest.model_validate(
+                json.loads(data)
+            )
+        except (json.JSONDecodeError, ValidationError) as e:
+            raise HTTPException(
+                status_code=400, detail=f"请求数据格式错误: {str(e)}"
+            )
+
+        # 检查文件类型
+        filename = subtitle_file.filename
+        if not filename.lower().endswith(".srt"):
+            raise HTTPException(
+                status_code=400, detail="仅支持SRT格式字幕文件"
+            )
+
+        # 保存上传的文件
+        temp_dir = config.temp_dir
+        os.makedirs(temp_dir, exist_ok=True)
+
+        task_id = str(uuid.uuid4())
+        temp_file_path = os.path.join(temp_dir, f"{task_id}_{filename}")
+
+        # 读取并保存文件内容
+        content = await subtitle_file.read()
+        with open(temp_file_path, "wb") as f:
+            f.write(content)
+
+        logger.info(f"字幕文件已保存: {temp_file_path}")
+
+        # 创建任务
+        task = SubtitleTranslator.create_task(
+            video_id=task_id,
+            source_path=temp_file_path,
+            source_language=request_data.source_language,
+            target_language=request_data.target_language,
+            style=request_data.style,
+            preserve_formatting=request_data.preserve_formatting,
+            context_preservation=request_data.context_preservation,
+            chunk_size=request_data.chunk_size,
+            context_window=request_data.context_window,
+        )
+
+        # 定义异步翻译函数
+        async def process_translation_task():
+            try:
+                # 设置进度回调
+                callback = (
+                    lambda progress, status, message=None: progress_callback(
+                        task.id, progress, status, message
+                    )
+                )
+
+                # 读取字幕内容
+                with open(task.source_path, "r", encoding="utf-8") as f:
+                    srt_content = f.read()
+
+                # 优化字幕内容以减少token使用量
+                logger.info("优化字幕内容以减少token使用量...")
+                optimized_srt, format_map = SRTOptimizer.optimize_srt_content(
+                    srt_content
+                )
+
+                logger.info(f"优化前内容长度: {len(srt_content)} 字符")
+                logger.info(f"优化后内容长度: {len(optimized_srt)} 字符")
+                logger.info(
+                    f"节省: {len(srt_content) - len(optimized_srt)} 字符"
+                )
+
+                # 执行翻译任务
+                success = await translator.translate_task(task, callback)
+
+                if success:
+                    # 如果需要恢复格式
+                    if request_data.preserve_formatting and format_map:
+                        # 读取翻译后的内容
+                        with open(
+                            task.result_path, "r", encoding="utf-8"
+                        ) as f:
+                            translated_content = f.read()
+
+                        # 恢复格式
+                        logger.info("恢复字幕格式...")
+                        restored_content = SRTOptimizer.restore_srt_format(
+                            translated_content, format_map
+                        )
+
+                        # 保存恢复格式后的内容
+                        with open(
+                            task.result_path, "w", encoding="utf-8"
+                        ) as f:
+                            f.write(restored_content)
+
+                        logger.info(f"格式已恢复并保存到: {task.result_path}")
+
+                    # 任务完成通知
+                    await callback(100.0, "completed", "翻译完成")
+                else:
+                    # 任务失败通知
+                    await callback(
+                        task.progress,
+                        "failed",
+                        task.error_message or "翻译失败",
+                    )
+
+            except Exception as e:
+                logger.error(f"翻译任务 {task.id} 异常: {e}", exc_info=True)
+                # 通知失败
+                await callback(0.0, "failed", f"任务失败: {str(e)}")
+
+        # 添加到后台任务
+        background_tasks.add_task(process_translation_task)
+
+        # 返回任务信息
+        return FileTranslateResponse(
+            success=True,
+            message="字幕文件翻译任务已提交",
+            data={
+                "task_id": task.id,
+                "source_language": task.source_language,
+                "target_language": task.target_language,
+                "style": task.config.style.value,
+                "file_name": filename,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"提交字幕文件翻译任务失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"提交翻译任务失败: {str(e)}"
+        )
+
+
+@router.get(
+    "/file/{task_id}", response_model=APIResponse, tags=["字幕文件翻译"]
+)
+async def get_file_translation_status(
+    task_id: str,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """获取文件翻译任务状态
+
+    通过任务ID获取文件翻译的当前状态和进度。
+
+    Args:
+        task_id: 任务ID
+        config: 系统配置
+
+    Returns:
+        APIResponse: 任务状态响应
+    """
+    try:
+        # 检查任务ID格式是否有效
+        try:
+            uuid.UUID(task_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="无效的任务ID格式")
+
+        # 构建可能的结果文件路径模式
+        result_path_pattern = os.path.join(
+            config.temp_dir, f"{task_id}_*.srt.translated.srt"
+        )
+
+        # 查找可能的结果文件
+        import glob
+
+        result_files = glob.glob(result_path_pattern)
+
+        if result_files:
+            # 找到结果文件，任务已完成
+            return APIResponse(
+                success=True,
+                message="翻译任务已完成",
+                data={
+                    "task_id": task_id,
+                    "status": "completed",
+                    "progress": 100.0,
+                    "result_path": result_files[0],
+                },
+            )
+
+        # 检查临时文件是否存在
+        temp_file_pattern = os.path.join(config.temp_dir, f"{task_id}_*.srt")
+        temp_files = glob.glob(temp_file_pattern)
+
+        if temp_files:
+            # 找到临时文件，任务可能正在进行中
+            return APIResponse(
+                success=True,
+                message="翻译任务正在进行中",
+                data={
+                    "task_id": task_id,
+                    "status": "processing",
+                    "progress": -1,  # 无法确定具体进度
+                },
+            )
+
+        # 未找到相关文件
+        raise HTTPException(status_code=404, detail=f"未找到任务ID: {task_id}")
+
+    except Exception as e:
+        logger.error(f"获取翻译任务状态失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"获取任务状态失败: {str(e)}"
+        )
 
 
 @router.get("/providers", response_model=APIResponse, tags=["实时翻译"])

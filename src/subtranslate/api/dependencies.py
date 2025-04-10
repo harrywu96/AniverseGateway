@@ -12,6 +12,7 @@ from ..core.subtitle_translator import SubtitleTranslator
 from ..core.subtitle_extractor import SubtitleExtractor
 from ..core.ffmpeg import FFmpegTool
 from ..services.video_storage import VideoStorageService
+from ..services.subtitle_storage import SubtitleStorageService
 
 
 @lru_cache
@@ -72,6 +73,20 @@ def get_video_storage(
         VideoStorageService: 视频存储服务实例
     """
     return VideoStorageService(config.temp_dir)
+
+
+def get_subtitle_storage(
+    config: SystemConfig = get_system_config(),
+) -> SubtitleStorageService:
+    """获取字幕存储服务实例
+
+    Args:
+        config: 系统配置
+
+    Returns:
+        SubtitleStorageService: 字幕存储服务实例
+    """
+    return SubtitleStorageService(config.temp_dir)
 
 
 # 任务管理器实例存储

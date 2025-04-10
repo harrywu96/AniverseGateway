@@ -5,21 +5,24 @@
 
 import os
 import logging
-from typing import Optional
+import re
+from typing import Optional, List
 from pathlib import Path
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ...schemas.api import APIResponse
 from ...schemas.config import SystemConfig
+from ...schemas.subtitle import SubtitleLine, SubtitlePreview
 from ...core.subtitle_extractor import SubtitleExtractor, SubtitleFormat
 from ...services.video_storage import VideoStorageService
+from ...services.subtitle_storage import SubtitleStorageService
 from ..dependencies import (
     get_system_config,
     get_subtitle_extractor,
     get_video_storage,
+    get_subtitle_storage,
 )
 
 
@@ -80,18 +83,6 @@ class SubtitlePreviewResponse(APIResponse):
         }
 
 
-# 字幕行模型
-class SubtitleLine(BaseModel):
-    """字幕行模型"""
-
-    index: int
-    start: str
-    end: str
-    text: str
-    start_ms: int
-    end_ms: int
-
-
 # 字幕信息模型
 class SubtitleInfo(BaseModel):
     """字幕信息模型"""
@@ -110,6 +101,7 @@ async def extract_subtitle(
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
     video_storage: VideoStorageService = Depends(get_video_storage),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
 ):
     """从视频中提取字幕
 
@@ -120,6 +112,7 @@ async def extract_subtitle(
         config: 系统配置
         extractor: 字幕提取器
         video_storage: 视频存储服务
+        subtitle_storage: 字幕存储服务
 
     Returns:
         APIResponse: 操作响应，包含提取后的字幕ID
@@ -144,17 +137,25 @@ async def extract_subtitle(
         if not subtitle_path:
             raise HTTPException(status_code=400, detail="提取字幕失败")
 
-        # 创建字幕ID
-        subtitle_id = str(uuid4())
+        # 读取字幕内容
+        with open(subtitle_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 保存到字幕存储服务
+        subtitle_info = subtitle_storage.save_subtitle(
+            content=content,
+            format=request.output_format,
+            video_id=request.video_id,
+        )
 
         # 返回成功响应
         return APIResponse(
             success=True,
             message="提取字幕成功",
             data={
-                "subtitle_id": subtitle_id,
-                "path": str(subtitle_path),
-                "format": request.output_format,
+                "subtitle_id": subtitle_info.id,
+                "path": subtitle_info.path,
+                "format": subtitle_info.format,
             },
         )
 
@@ -171,6 +172,7 @@ async def load_subtitle(
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
     video_storage: VideoStorageService = Depends(get_video_storage),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
 ):
     """加载外部字幕文件
 
@@ -181,6 +183,7 @@ async def load_subtitle(
         config: 系统配置
         extractor: 字幕提取器
         video_storage: 视频存储服务
+        subtitle_storage: 字幕存储服务
 
     Returns:
         APIResponse: 操作响应，包含加载后的字幕ID
@@ -200,23 +203,31 @@ async def load_subtitle(
         if not subtitle_format:
             raise HTTPException(status_code=400, detail="不支持的字幕格式")
 
-        # 创建字幕ID
-        subtitle_id = str(uuid4())
+        # 读取字幕内容
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
 
-        # 如果提供了视频ID，检查视频是否存在
-        if request.video_id:
-            video_info = video_storage.get_video(request.video_id)
-            if not video_info:
-                raise HTTPException(status_code=404, detail="关联的视频不存在")
+        # 保存到字幕存储服务
+        subtitle_info = subtitle_storage.save_subtitle(
+            content=content,
+            format=subtitle_format,
+            video_id=request.video_id,
+        )
+
+        # 如果提供了语言信息，更新字幕信息
+        if request.language:
+            subtitle_storage.update_subtitle(
+                subtitle_info.id, language=request.language
+            )
 
         # 返回成功响应
         return APIResponse(
             success=True,
             message="字幕加载成功",
             data={
-                "id": subtitle_id,
-                "path": str(file_path),
-                "format": subtitle_format,
+                "id": subtitle_info.id,
+                "path": subtitle_info.path,
+                "format": subtitle_info.format,
                 "language": request.language,
                 "video_id": request.video_id,
             },
@@ -240,6 +251,7 @@ async def preview_subtitle(
     line_count: int = Query(20, description="预览行数"),
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
 ):
     """预览字幕内容
 
@@ -251,14 +263,55 @@ async def preview_subtitle(
         line_count: 预览行数
         config: 系统配置
         extractor: 字幕提取器
+        subtitle_storage: 字幕存储服务
 
     Returns:
         SubtitlePreviewResponse: 字幕预览响应
     """
     try:
-        # 这里需要根据字幕ID获取字幕信息
-        # 由于未实现存储，返回未实现错误
-        raise HTTPException(status_code=501, detail="功能未实现")
+        # 获取字幕信息
+        subtitle_info = subtitle_storage.get_subtitle(subtitle_id)
+        if not subtitle_info:
+            raise HTTPException(status_code=404, detail="字幕不存在")
+
+        # 检查文件是否存在
+        if not os.path.exists(subtitle_info.path):
+            raise HTTPException(status_code=404, detail="字幕文件不存在")
+
+        # 读取字幕文件
+        with open(subtitle_info.path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 解析字幕内容
+        lines = _parse_subtitle_lines(content, subtitle_info.format)
+
+        # 计算总行数和总时长
+        total_lines = len(lines)
+        duration_seconds = 0
+        if lines:
+            last_line = lines[-1]
+            duration_seconds = last_line.end_ms / 1000.0
+
+        # 分页处理
+        end_line = min(start_line + line_count, total_lines)
+        preview_lines = (
+            lines[start_line:end_line] if start_line < total_lines else []
+        )
+
+        # 构建预览响应
+        preview = SubtitlePreview(
+            lines=preview_lines,
+            total_lines=total_lines,
+            language=subtitle_info.language,
+            format=subtitle_info.format,
+            duration_seconds=duration_seconds,
+        )
+
+        return SubtitlePreviewResponse(
+            success=True,
+            message="获取预览成功",
+            data=preview,
+        )
 
     except Exception as e:
         logger.error(f"预览字幕失败: {e}", exc_info=True)
@@ -269,7 +322,9 @@ async def preview_subtitle(
 
 @router.get("/{subtitle_id}", response_model=APIResponse, tags=["字幕提取"])
 async def get_subtitle_info(
-    subtitle_id: str, config: SystemConfig = Depends(get_system_config)
+    subtitle_id: str,
+    config: SystemConfig = Depends(get_system_config),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
 ):
     """获取字幕信息
 
@@ -278,10 +333,111 @@ async def get_subtitle_info(
     Args:
         subtitle_id: 字幕ID
         config: 系统配置
+        subtitle_storage: 字幕存储服务
 
     Returns:
         APIResponse: 字幕信息响应
     """
-    # 这里需要从存储中获取字幕信息
-    # 目前返回未实现错误
-    raise HTTPException(status_code=501, detail="功能未实现")
+    try:
+        # 获取字幕信息
+        subtitle_info = subtitle_storage.get_subtitle(subtitle_id)
+        if not subtitle_info:
+            raise HTTPException(status_code=404, detail="字幕不存在")
+
+        return APIResponse(
+            success=True,
+            message="获取字幕信息成功",
+            data=subtitle_info,
+        )
+
+    except Exception as e:
+        logger.error(f"获取字幕信息失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"获取字幕信息失败: {str(e)}"
+        )
+
+
+def _parse_subtitle_lines(content: str, format: str) -> List[SubtitleLine]:
+    """解析字幕内容为字幕行列表
+
+    Args:
+        content: 字幕内容
+        format: 字幕格式
+
+    Returns:
+        List[SubtitleLine]: 字幕行列表
+    """
+    lines = []
+
+    # 目前只支持SRT格式的解析
+    if format.lower() == "srt":
+        # 分割字幕块
+        blocks = re.split(r"\n\s*\n", content.strip())
+
+        for block in blocks:
+            lines_in_block = block.strip().split("\n")
+            if len(lines_in_block) < 3:
+                continue
+
+            # 解析索引
+            try:
+                index = int(lines_in_block[0])
+            except ValueError:
+                continue
+
+            # 解析时间轴
+            time_line = lines_in_block[1]
+            time_match = re.match(
+                r"(\d+:\d+:\d+,\d+)\s*-->\s*(\d+:\d+:\d+,\d+)", time_line
+            )
+            if not time_match:
+                continue
+
+            start_time = time_match.group(1)
+            end_time = time_match.group(2)
+
+            # 转换时间为毫秒
+            start_ms = _time_to_ms(start_time)
+            end_ms = _time_to_ms(end_time)
+
+            # 获取字幕文本
+            text = "\n".join(lines_in_block[2:])
+
+            # 创建字幕行对象
+            line = SubtitleLine(
+                index=index,
+                start=start_time,
+                end=end_time,
+                text=text,
+                start_ms=start_ms,
+                end_ms=end_ms,
+            )
+
+            lines.append(line)
+
+    return lines
+
+
+def _time_to_ms(time_str: str) -> int:
+    """将时间字符串转换为毫秒
+
+    Args:
+        time_str: 时间字符串，格式为 HH:MM:SS,mmm
+
+    Returns:
+        int: 毫秒数
+    """
+    # 替换逗号为点，以便使用浮点数解析
+    time_str = time_str.replace(",", ".")
+
+    # 分割时间部分
+    hours, minutes, seconds = time_str.split(":")
+
+    # 计算总毫秒数
+    total_ms = int(
+        float(hours) * 3600000 + float(minutes) * 60000 + float(seconds) * 1000
+    )
+
+    return total_ms
