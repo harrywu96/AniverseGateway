@@ -97,19 +97,23 @@
 
         async function handleFile(file) {
             try {
-                status.textContent = '正在上传...';
+                status.textContent = '正在处理视频文件...';
                 status.className = '';
                 
                 const result = await ipcRenderer.invoke('upload-video', file.path);
                 
-                if (result.status === 'success') {
-                    status.textContent = '上传成功！';
+                if (result.success) {
+                    status.textContent = `视频处理成功！视频ID: ${result.data.id}`;
                     status.className = 'success';
+                    
+                    // 可以在这里添加更多处理逻辑，比如显示视频详情
+                    console.log('视频详情:', result.data);
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || '未知错误');
                 }
             } catch (error) {
-                status.textContent = `错误: ${error.message}`;
+                console.error('处理视频出错:', error);
+                status.textContent = `错误: ${error.message || '未知错误'}`;
                 status.className = 'error';
             }
         }

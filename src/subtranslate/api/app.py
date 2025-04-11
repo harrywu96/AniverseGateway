@@ -4,9 +4,7 @@
 """
 
 import logging
-import asyncio
 import os
-from typing import Optional, Any
 
 from fastapi import (
     FastAPI,
@@ -14,7 +12,6 @@ from fastapi import (
     HTTPException,
     WebSocket,
     WebSocketDisconnect,
-    BackgroundTasks,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
@@ -22,13 +19,9 @@ from fastapi.responses import JSONResponse
 
 from ..schemas.config import SystemConfig
 from ..schemas.api import APIResponse, ErrorResponse
-from ..core.subtitle_translator import SubtitleTranslator
-from ..core.subtitle_extractor import SubtitleExtractor
 from .websocket import manager  # 从新模块导入manager
 from .dependencies import (
     get_system_config,
-    get_subtitle_translator,
-    get_subtitle_extractor,
 )
 
 
@@ -63,6 +56,7 @@ def configure_cors(app: FastAPI, config: SystemConfig):
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
 
 # 立即配置CORS（在应用创建后，启动事件之前）
 config = get_system_config()
@@ -182,12 +176,12 @@ async def health_check():
 
 
 # 这里先导入路由，避免循环导入
-from .routers import (
+from .routers import (  # noqa: E402
     videos,
     subtitles,
     tasks,
     translate,
-    config,
+    config as config_router,
     templates,
     export,
 )
@@ -201,7 +195,9 @@ app.include_router(tasks.router, prefix="/api/tasks", tags=["翻译任务"])
 app.include_router(
     translate.router, prefix="/api/translate", tags=["实时翻译"]
 )
-app.include_router(config.router, prefix="/api/config", tags=["配置管理"])
+app.include_router(
+    config_router.router, prefix="/api/config", tags=["配置管理"]
+)
 app.include_router(
     templates.router, prefix="/api/templates", tags=["提示模板"]
 )

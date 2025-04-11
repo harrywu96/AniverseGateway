@@ -184,7 +184,14 @@ class APIConfig(BaseModel):
     port: int = Field(default=8000, description="监听端口")
     workers: int = Field(default=4, description="工作进程数")
     allowed_origins: List[str] = Field(
-        default=["http://localhost:3000"], description="允许的CORS源"
+        default=[
+            "http://localhost:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:8000",
+            "file://*",  # 允许Electron的file://协议访问
+        ],
+        description="允许的CORS源",
     )
     api_key: Optional[SecretStr] = Field(None, description="API访问密钥")
 

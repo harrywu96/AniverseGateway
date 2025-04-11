@@ -51,9 +51,12 @@ app.on('window-all-closed', () => {
 // 处理文件上传
 ipcMain.handle('upload-video', async (event, filePath) => {
     // 通过 HTTP 请求发送到 FastAPI 后端
-    const response = await fetch('http://localhost:8000/upload-video', {
+    const response = await fetch('http://localhost:8000/api/videos/upload-local', {
         method: 'POST',
-        body: JSON.stringify({ filePath }),
+        body: JSON.stringify({ 
+            file_path: filePath,
+            auto_extract_subtitles: true
+        }),
         headers: {
             'Content-Type': 'application/json'
         }

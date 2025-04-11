@@ -342,3 +342,28 @@ async def upload_video(
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"上传视频失败: {str(e)}")
+
+
+@router.post(
+    "/upload-local", response_model=VideoDetailResponse, tags=["视频管理"]
+)
+async def upload_local_video(
+    request: VideoLoadRequest,
+    config: SystemConfig = Depends(get_system_config),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
+):
+    """从本地路径加载视频文件（Electron应用专用）
+
+    接收本地视频文件路径，直接加载视频，用于与Electron前端集成。
+
+    Args:
+        request: 视频加载请求
+        config: 系统配置
+        extractor: 字幕提取器
+        video_storage: 视频存储服务
+
+    Returns:
+        VideoDetailResponse: 视频详情响应
+    """
+    return await load_video(request, config, extractor, video_storage)
