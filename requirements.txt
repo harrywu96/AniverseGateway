@@ -22,11 +22,11 @@ faster-whisper>=0.10.0
 # AI service integrations
 openai>=1.6.0
 zhipuai>=2.0.0          # 智谱AI
-volc-sdk-python>=1.0.180  # 火山引擎
+volcengine>=1.0.180  # 火山引擎核心SDK (正确的包名)
 dashscope>=1.10.0       # 通义千问
-baidu-aip>=4.16.10      # 百度智能云
-anthropic>=0.5.0        # Anthropic Claude
-google-generativeai>=0.3.0  # Google Gemini AI
+baidu-aip>=4.16.10      # 百度AI集成
+anthropic>=0.5.0        # Anthropic Claude集成
+google-generativeai>=0.3.0  # Google Gemini集成
 
 # Utility libraries
 tiktoken>=0.5.1         # OpenAI token counting

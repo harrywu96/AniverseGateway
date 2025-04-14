@@ -120,7 +120,7 @@ exclude = ["tests*", "examples*"]
 
 # UV specific configurations
 [tool.uv]
-pip-compile-options = ["--generate-hashes", "--allow-unsafe", "--quiet"]
+index-url = "https://pypi.org/simple/"
 dependency-mode = "development"
 cache-dir = "./.uv"
 respect-active-env = true
