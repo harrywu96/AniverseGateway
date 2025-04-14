@@ -7,42 +7,38 @@ uvicorn>=0.24.0
 httpx>=0.25.1
 aiofiles>=23.1.0
 requests>=2.31.0
+typer>=0.9.0
+rich>=13.6.0
+asyncio>=3.4.3
+websockets>=12.0
+python-multipart>=0.0.6
 
 # Video and subtitle processing
 ffmpeg-python>=0.2.0
 pysrt>=1.1.2
 chardet>=5.2.0
+faster-whisper>=0.10.0
 
 # AI service integrations
 openai>=1.6.0
-# Uncomment as needed:
-zhipuai>=0.4.1          # 智谱AI
-volcengine>=1.0.119     # 火山引擎
+zhipuai>=2.0.0          # 智谱AI
+volc-sdk-python>=1.0.180  # 火山引擎
+dashscope>=1.10.0       # 通义千问
 baidu-aip>=4.16.10      # 百度智能云
 anthropic>=0.5.0        # Anthropic Claude
 google-generativeai>=0.3.0  # Google Gemini AI
 
-# Web application components
-websockets>=12.0
-python-multipart>=0.0.6
-
-# CLI tools
-typer>=0.9.0
-rich>=13.6.0
-asyncio>=3.4.3
-
 # Utility libraries
-tiktoken>=0.5.1  # OpenAI token counting
+tiktoken>=0.5.1         # OpenAI token counting
+torch>=2.0.0            # PyTorch for AI models
 
 # Development dependencies - install with: uv pip install -e ".[dev]"
 pytest>=7.4.0; extra == 'dev'
 pytest-cov>=4.1.0; extra == 'dev'
+pytest-asyncio>=0.21.1; extra == 'dev'
+pytest-mock>=3.12.0; extra == 'dev'
 black>=23.11.0; extra == 'dev'
 isort>=5.12.0; extra == 'dev'
 mypy>=1.7.0; extra == 'dev'
 ruff>=0.1.5; extra == 'dev'
-pytest-asyncio>=0.21.1; extra == 'dev'
-pre-commit>=3.5.0; extra == 'dev'
-
-# 添加faster-whisper和相关语音转写库的依赖
-faster-whisper==0.10.0 
+pre-commit>=3.5.0; extra == 'dev' 

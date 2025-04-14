@@ -31,29 +31,30 @@ dependencies = [
     "httpx>=0.25.1",
     "aiofiles>=23.1.0",
     "requests>=2.31.0",
+    "typer>=0.9.0",
+    "rich>=13.6.0",
+    "asyncio>=3.4.3",
+    "websockets>=12.0",
+    "python-multipart>=0.0.6",
     
     # Video and subtitle processing
     "ffmpeg-python>=0.2.0",
     "pysrt>=1.1.2",
     "chardet>=5.2.0",
+    "faster-whisper>=0.10.0",
     
     # AI service integrations
     "openai>=1.6.0",
     "zhipuai>=2.0.0",  # 智谱AI集成
     "volc-sdk-python>=1.0.180",  # 火山引擎核心SDK
     "dashscope>=1.10.0",  # 通义千问集成
-    "baidu-aip>=4.16.3",  # 百度AI集成
+    "baidu-aip>=4.16.10",  # 百度AI集成
     "anthropic>=0.5.0",  # Anthropic Claude集成
     "google-generativeai>=0.3.0",  # Google Gemini集成
     
-    # Web application components
-    "websockets>=12.0",
-    "python-multipart>=0.0.6",
-    
-    # CLI tools
-    "typer>=0.9.0",
-    "rich>=13.6.0",
-    "asyncio>=3.4.3",
+    # Utility libraries
+    "tiktoken>=0.5.1",  # OpenAI token counting
+    "torch>=2.0.0",  # PyTorch for AI models
 ]
 
 [project.optional-dependencies]
@@ -78,12 +79,6 @@ dev = [
     "pydantic-extra-types>=2.1.0",  # 额外类型支持
     "types-requests>=2.31.0",
     "types-aiofiles>=23.1.0",
-    
-    # Documentation
-    "sphinx>=7.2.5",
-    "sphinx-rtd-theme>=1.3.0",
-    "mkdocs>=1.5.3",
-    "mkdocs-material>=9.4.3",
     
     # Development tools
     "pre-commit>=3.5.0",
