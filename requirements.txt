@@ -42,4 +42,7 @@ isort>=5.12.0; extra == 'dev'
 mypy>=1.7.0; extra == 'dev'
 ruff>=0.1.5; extra == 'dev'
 pytest-asyncio>=0.21.1; extra == 'dev'
-pre-commit>=3.5.0; extra == 'dev' 
+pre-commit>=3.5.0; extra == 'dev'
+
+# 添加faster-whisper和相关语音转写库的依赖
+faster-whisper==0.10.0 

@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Optional, List, Dict, Any, Union
 
 from pydantic import BaseModel, Field, SecretStr
+import torch
 
 
 class AIProviderType(str, Enum):
@@ -305,6 +306,30 @@ class APIConfig(BaseModel):
     api_key: Optional[SecretStr] = Field(None, description="API访问密钥")
 
 
+class SpeechToTextConfig(BaseModel):
+    """语音转文字配置"""
+
+    device: str = Field(
+        default="cuda" if torch.cuda.is_available() else "cpu",
+        description="运算设备，可选值: cuda, cpu, mps",
+    )
+    compute_type: str = Field(
+        default="float16" if torch.cuda.is_available() else "float32",
+        description="计算精度，可选值: float16, float32, int8_float16, int8_float32, int8_bfloat16, bfloat16",
+    )
+    model_dir: Optional[str] = Field(
+        default=None, description="模型文件存储目录，默认为~/.cache/whisper"
+    )
+    default_model: str = Field(
+        default="medium",
+        description="默认模型大小，可选值: tiny, base, small, medium, large, large-v2, large-v3",
+    )
+    vad_filter: bool = Field(default=True, description="是否使用VAD过滤静音段")
+    word_timestamps: bool = Field(
+        default=True, description="是否生成词级时间戳"
+    )
+
+
 class SystemConfig(BaseModel):
     """系统配置模型，包含应用程序所有配置项"""
 
@@ -319,6 +344,9 @@ class SystemConfig(BaseModel):
         default=["mp4", "mkv"], description="允许的视频格式"
     )
     debug: bool = Field(default=False, description="调试模式")
+    speech_to_text: Optional[SpeechToTextConfig] = Field(
+        default=None, description="语音转文字配置"
+    )
 
     @classmethod
     def from_env(cls) -> "SystemConfig":
@@ -539,4 +567,26 @@ class SystemConfig(BaseModel):
             allowed_formats=allowed_formats.split(","),
             debug=os.getenv("APP_DEBUG", "false").lower()
             in ("true", "1", "yes"),
+            speech_to_text=SpeechToTextConfig(
+                device=os.getenv(
+                    "SPEECH_TO_TEXT_DEVICE",
+                    "cuda" if torch.cuda.is_available() else "cpu",
+                ),
+                compute_type=os.getenv(
+                    "SPEECH_TO_TEXT_COMPUTE_TYPE",
+                    "float16" if torch.cuda.is_available() else "float32",
+                ),
+                model_dir=os.getenv("SPEECH_TO_TEXT_MODEL_DIR"),
+                default_model=os.getenv(
+                    "SPEECH_TO_TEXT_DEFAULT_MODEL", "medium"
+                ),
+                vad_filter=os.getenv(
+                    "SPEECH_TO_TEXT_VAD_FILTER", "true"
+                ).lower()
+                in ("true", "1", "yes"),
+                word_timestamps=os.getenv(
+                    "SPEECH_TO_TEXT_WORD_TIMESTAMPS", "true"
+                ).lower()
+                in ("true", "1", "yes"),
+            ),
         )

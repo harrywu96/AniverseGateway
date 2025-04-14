@@ -11,6 +11,12 @@ import logging
 
 from typing import Optional
 from .app import app
+from .routers import (
+    translate,
+    video,
+    settings,
+    speech_to_text,
+)
 
 
 def start_api_server(
@@ -89,3 +95,12 @@ def shutdown_api_server(pid: int) -> bool:
     except OSError as e:
         logging.error(f"关闭API服务器失败: {e}")
         return False
+
+
+# 确保在router_modules列表中包含speech_to_text模块
+router_modules = [
+    translate,
+    video,
+    settings,
+    speech_to_text,
+]
