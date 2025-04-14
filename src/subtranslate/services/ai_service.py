@@ -1101,11 +1101,12 @@ class AIServiceFactory:
     """AI服务工厂，根据配置创建相应的AI服务实例"""
 
     @staticmethod
-    def create_service(config: AIServiceConfig) -> AIService:
+    def create_service(provider_type: str, config) -> AIService:
         """创建AI服务实例
 
         Args:
-            config: AI服务配置
+            provider_type: 提供商类型
+            config: 提供商配置
 
         Returns:
             AIService: AI服务实例
@@ -1113,29 +1114,32 @@ class AIServiceFactory:
         Raises:
             ValueError: 配置无效时抛出异常
         """
-        provider = config.provider
-        provider_config = config.get_provider_config()
+        if provider_type == AIProviderType.OPENAI.value:
+            return OpenAIService(config)
+        elif provider_type == AIProviderType.ZHIPUAI.value:
+            return ZhipuAIService(config)
+        elif provider_type == AIProviderType.VOLCENGINE.value:
+            return VolcengineService(config)
+        elif provider_type == AIProviderType.BAIDU.value:
+            return BaiduService(config)
+        elif provider_type == AIProviderType.AZURE.value:
+            return AzureOpenAIService(config)
+        elif provider_type == AIProviderType.ANTHROPIC.value:
+            return AnthropicService(config)
+        elif provider_type == AIProviderType.SILICONFLOW.value:
+            return SiliconFlowService(config)
+        elif provider_type == AIProviderType.CUSTOM.value:
+            # 导入并使用增强的自定义服务
+            from .custom_ai_service import EnhancedCustomAPIService
 
-        if not provider_config:
-            raise ValueError(f"未找到有效的{provider}服务配置")
-
-        if provider == AIProviderType.OPENAI:
-            return OpenAIService(provider_config)
-        elif provider == AIProviderType.ZHIPUAI:
-            return ZhipuAIService(provider_config)
-        elif provider == AIProviderType.VOLCENGINE:
-            return VolcengineService(provider_config)
-        elif provider == AIProviderType.BAIDU:
-            return BaiduService(provider_config)
-        elif provider == AIProviderType.AZURE:
-            return AzureOpenAIService(provider_config)
-        elif provider == AIProviderType.ANTHROPIC:
-            return AnthropicService(provider_config)
-        elif provider == AIProviderType.SILICONFLOW:
-            return SiliconFlowService(provider_config)
-        elif provider == AIProviderType.CUSTOM:
-            return CustomAPIService(provider_config)
-        elif provider == AIProviderType.GEMINI:
-            return GeminiService(provider_config)
+            return EnhancedCustomAPIService(config)
+        elif provider_type == AIProviderType.GEMINI.value:
+            return GeminiService(config)
+        elif provider_type == AIProviderType.OLLAMA.value:
+            # 这里需要实现Ollama服务，但暂时不实现
+            raise ValueError(f"暂不支持的服务提供商: {provider_type}")
+        elif provider_type == AIProviderType.LOCAL.value:
+            # 这里需要实现Local服务，但暂时不实现
+            raise ValueError(f"暂不支持的服务提供商: {provider_type}")
         else:
-            raise ValueError(f"不支持的服务提供商: {provider}")
+            raise ValueError(f"不支持的服务提供商: {provider_type}")

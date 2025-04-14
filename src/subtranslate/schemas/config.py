@@ -18,6 +18,37 @@ class AIProviderType(str, Enum):
     CUSTOM = "custom"  # 自定义API
     SILICONFLOW = "siliconflow"  # SiliconFlow AI服务
     GEMINI = "gemini"  # Google Gemini AI
+    OLLAMA = "ollama"  # Ollama本地模型
+    LOCAL = "local"  # 其他本地模型服务
+
+
+class ChatRole(str, Enum):
+    """聊天角色类型"""
+
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    FUNCTION = "function"
+
+
+class FormatType(str, Enum):
+    """API请求/响应格式类型"""
+
+    OPENAI = "openai"  # OpenAI格式
+    ANTHROPIC = "anthropic"  # Anthropic Claude格式
+    TEXT_COMPLETION = "text_completion"  # 文本补全格式
+    CUSTOM = "custom"  # 自定义解析格式
+
+
+class ModelCapability(str, Enum):
+    """模型能力类型"""
+
+    CHAT = "chat"  # 聊天对话能力
+    COMPLETION = "completion"  # 文本补全能力
+    EMBEDDING = "embedding"  # 文本嵌入能力
+    IMAGE = "image"  # 图像生成能力
+    AUDIO = "audio"  # 音频处理能力
+    VISION = "vision"  # 图像理解能力
 
 
 class BaseAIConfig(BaseModel):
@@ -80,6 +111,36 @@ class AnthropicConfig(BaseAIConfig):
     temperature: float = Field(default=0.3, description="温度参数")
 
 
+class ModelEndpoint(BaseModel):
+    """模型端点配置"""
+
+    name: str = Field(..., description="端点名称")
+    path: str = Field(..., description="API路径")
+    capabilities: List[ModelCapability] = Field(
+        default=[ModelCapability.CHAT], description="模型能力列表"
+    )
+    format_type: FormatType = Field(
+        default=FormatType.OPENAI, description="API请求/响应格式"
+    )
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="端点特定参数"
+    )
+
+
+class CustomModelConfig(BaseModel):
+    """自定义模型配置"""
+
+    id: str = Field(..., description="模型ID")
+    name: str = Field(..., description="模型名称")
+    context_window: int = Field(default=4096, description="上下文窗口大小")
+    capabilities: List[ModelCapability] = Field(
+        default=[ModelCapability.CHAT], description="模型能力列表"
+    )
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="模型默认参数"
+    )
+
+
 class CustomAPIConfig(BaseAIConfig):
     """自定义API配置模型"""
 
@@ -91,6 +152,18 @@ class CustomAPIConfig(BaseAIConfig):
     )
     model_parameters: Dict[str, Any] = Field(
         default_factory=dict, description="模型参数"
+    )
+    format_type: FormatType = Field(
+        default=FormatType.OPENAI, description="API请求/响应格式"
+    )
+    endpoints: Dict[str, ModelEndpoint] = Field(
+        default_factory=dict, description="API端点配置"
+    )
+    models: List[CustomModelConfig] = Field(
+        default_factory=list, description="自定义模型列表"
+    )
+    custom_parser: Optional[str] = Field(
+        None, description="自定义响应解析器脚本（Python代码）"
     )
 
 
@@ -117,6 +190,36 @@ class GeminiConfig(BaseAIConfig):
     top_k: Optional[int] = Field(default=40, description="Top K参数")
 
 
+class OllamaConfig(BaseAIConfig):
+    """Ollama本地模型配置"""
+
+    api_key: Optional[SecretStr] = Field(None, description="API密钥（可选）")
+    base_url: str = Field(
+        default="http://localhost:11434", description="API基础URL"
+    )
+    model: str = Field(default="llama3", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    top_p: Optional[float] = Field(default=0.8, description="Top P参数")
+    top_k: Optional[int] = Field(default=40, description="Top K参数")
+
+
+class LocalModelConfig(BaseAIConfig):
+    """本地模型配置"""
+
+    api_key: Optional[SecretStr] = Field(None, description="API密钥（可选）")
+    base_url: str = Field(..., description="API基础URL")
+    model: str = Field(default="default", description="使用的模型")
+    max_tokens: int = Field(default=4096, description="最大token数")
+    temperature: float = Field(default=0.3, description="温度参数")
+    format_type: FormatType = Field(
+        default=FormatType.OPENAI, description="API请求/响应格式"
+    )
+    additional_parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="额外参数"
+    )
+
+
 class AIServiceConfig(BaseModel):
     """AI服务配置，包含所有可能的AI服务配置"""
 
@@ -130,6 +233,8 @@ class AIServiceConfig(BaseModel):
     custom: Optional[CustomAPIConfig] = None
     siliconflow: Optional[SiliconFlowConfig] = None
     gemini: Optional[GeminiConfig] = None
+    ollama: Optional[OllamaConfig] = None
+    local: Optional[LocalModelConfig] = None
 
     def get_provider_config(self) -> Union[BaseAIConfig, None]:
         """获取当前选择的服务提供商配置"""
@@ -151,6 +256,10 @@ class AIServiceConfig(BaseModel):
             return self.siliconflow
         elif self.provider == AIProviderType.GEMINI:
             return self.gemini
+        elif self.provider == AIProviderType.OLLAMA:
+            return self.ollama
+        elif self.provider == AIProviderType.LOCAL:
+            return self.local
         return None
 
 
@@ -327,6 +436,39 @@ class SystemConfig(BaseModel):
                 top_p=float(os.getenv("GEMINI_TOP_P", "0.8")),
                 top_k=int(os.getenv("GEMINI_TOP_K", "40")),
             )
+        # 配置Ollama
+        elif provider == AIProviderType.OLLAMA:
+            ai_service_config.ollama = OllamaConfig(
+                api_key=(
+                    SecretStr(os.getenv("OLLAMA_API_KEY", ""))
+                    if os.getenv("OLLAMA_API_KEY")
+                    else None
+                ),
+                base_url=os.getenv(
+                    "OLLAMA_BASE_URL", "http://localhost:11434"
+                ),
+                model=os.getenv("OLLAMA_MODEL", "llama3"),
+                max_tokens=int(os.getenv("OLLAMA_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.3")),
+                top_p=float(os.getenv("OLLAMA_TOP_P", "0.8")),
+                top_k=int(os.getenv("OLLAMA_TOP_K", "40")),
+            )
+        # 配置其他本地模型
+        elif provider == AIProviderType.LOCAL:
+            ai_service_config.local = LocalModelConfig(
+                api_key=(
+                    SecretStr(os.getenv("LOCAL_API_KEY", ""))
+                    if os.getenv("LOCAL_API_KEY")
+                    else None
+                ),
+                base_url=os.getenv("LOCAL_BASE_URL", ""),
+                model=os.getenv("LOCAL_MODEL", "default"),
+                max_tokens=int(os.getenv("LOCAL_MAX_TOKENS", "4096")),
+                temperature=float(os.getenv("LOCAL_TEMPERATURE", "0.3")),
+                format_type=FormatType(
+                    os.getenv("LOCAL_FORMAT_TYPE", "openai")
+                ),
+            )
         # 配置自定义API
         elif provider == AIProviderType.CUSTOM:
             headers_str = os.getenv("CUSTOM_API_HEADERS", "{}")
@@ -348,6 +490,9 @@ class SystemConfig(BaseModel):
                 temperature=float(os.getenv("CUSTOM_API_TEMPERATURE", "0.3")),
                 headers=headers,
                 model_parameters=model_parameters,
+                format_type=FormatType(
+                    os.getenv("CUSTOM_API_FORMAT_TYPE", "openai")
+                ),
             )
 
         # 创建FFmpeg配置

@@ -5,6 +5,7 @@
 
 import logging
 import os
+from functools import lru_cache
 
 from fastapi import (
     FastAPI,
@@ -12,6 +13,7 @@ from fastapi import (
     HTTPException,
     WebSocket,
     WebSocketDisconnect,
+    Request,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
@@ -22,6 +24,17 @@ from ..schemas.api import APIResponse, ErrorResponse
 from .websocket import manager  # 从新模块导入manager
 from .dependencies import (
     get_system_config,
+    verify_api_key,
+)
+from .routers import (
+    subtitles,
+    videos,
+    translate,
+    tasks,
+    export,
+    templates,
+    config,
+    providers,  # 添加新的providers路由
 )
 
 
@@ -33,22 +46,24 @@ logging.basicConfig(
 logger = logging.getLogger("subtranslate.api")
 
 
-# 创建FastAPI应用
-app = FastAPI(
-    title="SubTranslate API",
-    description="SubTranslate智能视频字幕翻译系统API",
-    version="0.1.0",
-)
+@lru_cache()
+def get_app() -> FastAPI:
+    """创建FastAPI应用程序实例
 
-
-# 配置CORS
-def configure_cors(app: FastAPI, config: SystemConfig):
-    """配置CORS中间件
-
-    Args:
-        app: FastAPI应用实例
-        config: 系统配置
+    Returns:
+        FastAPI: 应用程序实例
     """
+    # 创建应用程序
+    app = FastAPI(
+        title="SubTranslate API",
+        description="SubTranslate智能视频字幕翻译系统API",
+        version="0.1.0",
+    )
+
+    # 获取系统配置
+    config = get_system_config()
+
+    # 配置CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.api.allowed_origins,
@@ -57,10 +72,70 @@ def configure_cors(app: FastAPI, config: SystemConfig):
         allow_headers=["*"],
     )
 
+    # 注册异常处理
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        logger.error(
+            f"未处理的异常: {exc}",
+            exc_info=True,
+            extra={"path": request.url.path},
+        )
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"服务器内部错误: {str(exc)}",
+                "data": None,
+            },
+        )
 
-# 立即配置CORS（在应用创建后，启动事件之前）
-config = get_system_config()
-configure_cors(app, config)
+    # 注册路由
+    app.include_router(
+        subtitles.router,
+        prefix="/api/subtitles",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        videos.router,
+        prefix="/api/videos",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        translate.router,
+        prefix="/api/translate",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        tasks.router,
+        prefix="/api/tasks",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        export.router,
+        prefix="/api/export",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        templates.router,
+        prefix="/api/templates",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        config.router,
+        prefix="/api/config",
+        dependencies=[Depends(verify_api_key)],
+    )
+    # 添加新的提供商路由
+    app.include_router(
+        providers.router,
+        prefix="/api/providers",
+        dependencies=[Depends(verify_api_key)],
+    )
+
+    return app
+
+
+app = get_app()
 
 
 # WebSocket端点
@@ -116,20 +191,6 @@ async def validation_exception_handler(request, exc):
     )
 
 
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    """通用异常处理"""
-    logger.error(f"未处理的异常: {exc}", exc_info=True)
-    return JSONResponse(
-        content=ErrorResponse(
-            success=False,
-            message=f"服务器内部错误: {str(exc)}",
-            error_code="INTERNAL_ERROR",
-        ).model_dump(),
-        status_code=500,
-    )
-
-
 # 应用启动和关闭事件
 @app.on_event("startup")
 async def startup_event():
@@ -173,32 +234,3 @@ async def health_check():
         message="SubTranslate API服务健康状态正常",
         data={"status": "healthy"},
     )
-
-
-# 这里先导入路由，避免循环导入
-from .routers import (  # noqa: E402
-    videos,
-    subtitles,
-    tasks,
-    translate,
-    config as config_router,
-    templates,
-    export,
-)
-
-# 加载路由
-app.include_router(videos.router, prefix="/api/videos", tags=["视频管理"])
-app.include_router(
-    subtitles.router, prefix="/api/subtitles", tags=["字幕提取"]
-)
-app.include_router(tasks.router, prefix="/api/tasks", tags=["翻译任务"])
-app.include_router(
-    translate.router, prefix="/api/translate", tags=["实时翻译"]
-)
-app.include_router(
-    config_router.router, prefix="/api/config", tags=["配置管理"]
-)
-app.include_router(
-    templates.router, prefix="/api/templates", tags=["提示模板"]
-)
-app.include_router(export.router, prefix="/api/export", tags=["导出功能"])
