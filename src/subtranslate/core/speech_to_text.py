@@ -214,6 +214,31 @@ class SpeechToText:
         self.ffmpeg = ffmpeg_tool or FFmpegTool()
         self.model = None
 
+    @classmethod
+    def from_gui_config(
+        cls,
+        config_path: Union[str, Path],
+        ffmpeg_tool: Optional[FFmpegTool] = None,
+    ):
+        """从Faster Whisper GUI配置文件创建实例
+
+        Args:
+            config_path: GUI配置文件路径
+            ffmpeg_tool: FFmpeg工具实例，如果为None则创建新实例
+
+        Returns:
+            SpeechToText: 创建的实例
+        """
+        from subtranslate.core.faster_whisper_config_util import (
+            apply_gui_config_to_parameters,
+        )
+
+        # 从GUI配置加载参数
+        parameters = apply_gui_config_to_parameters(config_path)
+
+        # 创建并返回实例
+        return cls(parameters=parameters, ffmpeg_tool=ffmpeg_tool)
+
     def load_model(self) -> None:
         """加载语音识别模型"""
         try:
@@ -252,7 +277,7 @@ class SpeechToText:
 
         Args:
             video_path: 视频文件路径
-            output_path: 输出音频文件路径，如果为None则创建临时文件
+            output_path: 音频输出路径，如果为None则使用临时文件
 
         Returns:
             Path: 提取的音频文件路径
@@ -261,39 +286,49 @@ class SpeechToText:
         if not video_path.exists():
             raise FileNotFoundError(f"视频文件不存在: {video_path}")
 
-        # 如果未指定输出路径，创建临时文件
         if output_path is None:
-            temp_dir = Path(tempfile.gettempdir()) / "subtranslate"
-            os.makedirs(temp_dir, exist_ok=True)
-            output_path = temp_dir / f"{video_path.stem}_audio.wav"
-        else:
-            output_path = Path(output_path)
-            os.makedirs(output_path.parent, exist_ok=True)
+            # 创建临时文件作为音频输出
+            with tempfile.NamedTemporaryFile(
+                suffix=".wav", delete=False
+            ) as temp_file:
+                output_path = temp_file.name
 
-        # 构建FFmpeg命令
-        cmd = [
-            self.ffmpeg.ffmpeg_binary,
-            "-i",
-            str(video_path),
-            "-vn",  # 禁用视频
-            "-ar",
-            "16000",  # 设置采样率为16kHz
-            "-ac",
-            "1",  # 单声道
-            "-c:a",
-            "pcm_s16le",  # 16位PCM编码
-            "-y",  # 覆盖已有文件
-            str(output_path),
-        ]
+        output_path = Path(output_path)
 
-        # 执行命令
         try:
-            self.ffmpeg.run_command(cmd)
-            logger.info(f"成功从视频提取音频: {output_path}")
+            logger.info(f"从视频提取音频: {video_path} -> {output_path}")
+            self.ffmpeg.extract_audio(
+                input_file=str(video_path), output_file=str(output_path)
+            )
             return output_path
         except FFmpegError as e:
             logger.error(f"提取音频失败: {e}")
             raise
+
+    def _get_transcription_params(self) -> Dict[str, Any]:
+        """获取转写参数字典"""
+        params = {
+            "language": self.parameters.language,
+            "task": self.parameters.task,
+            "beam_size": self.parameters.beam_size,
+            "best_of": self.parameters.best_of,
+            "patience": self.parameters.patience,
+            "temperature": self.parameters.temperature,
+            "compression_ratio_threshold": self.parameters.compression_ratio_threshold,
+            "log_prob_threshold": -5.0,  # 默认值
+            "no_speech_threshold": self.parameters.no_speech_threshold,
+            "condition_on_previous_text": self.parameters.condition_on_previous_text,
+            "initial_prompt": self.parameters.initial_prompt,
+            "prefix": None,  # 默认值
+            "suppress_blank": self.parameters.suppress_blank,
+            "suppress_tokens": self.parameters.suppress_tokens,
+            "without_timestamps": not self.parameters.word_timestamps,
+            "word_timestamps": self.parameters.word_timestamps,
+            "vad_filter": self.parameters.vad_filter,
+            "vad_parameters": self.parameters.vad_parameters,
+        }
+
+        return params
 
     def transcribe_audio(
         self,
@@ -306,7 +341,7 @@ class SpeechToText:
         Args:
             audio_path: 音频文件路径
             output_dir: 输出目录，如果为None则使用音频文件所在目录
-            progress_callback: 进度回调函数，参数为0-1之间的进度值
+            progress_callback: 进度回调函数
 
         Returns:
             TranscriptionResult: 转写结果
@@ -318,101 +353,96 @@ class SpeechToText:
         if not audio_path.exists():
             raise FileNotFoundError(f"音频文件不存在: {audio_path}")
 
-        # 确定输出目录
+        # 设置输出目录
         if output_dir is None:
             output_dir = audio_path.parent
         else:
             output_dir = Path(output_dir)
-            os.makedirs(output_dir, exist_ok=True)
-
-        # 执行转写
-        logger.info(f"开始转写音频: {audio_path}")
+            output_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            # 准备参数
-            vad_parameters = None
-            if self.parameters.vad_filter:
-                vad_parameters = self.parameters.vad_parameters
+            # 获取转写参数
+            transcribe_params = self._get_transcription_params()
 
-            # 转写音频
-            segments_generator, info = self.model.transcribe(
-                audio=str(audio_path),
-                language=self.parameters.language,
-                task=self.parameters.task,
-                beam_size=self.parameters.beam_size,
-                best_of=self.parameters.best_of,
-                patience=self.parameters.patience,
-                temperature=self.parameters.temperature[0],
-                initial_prompt=self.parameters.initial_prompt,
-                compression_ratio_threshold=self.parameters.compression_ratio_threshold,
-                no_speech_threshold=self.parameters.no_speech_threshold,
-                condition_on_previous_text=self.parameters.condition_on_previous_text,
-                word_timestamps=self.parameters.word_timestamps,
-                vad_filter=self.parameters.vad_filter,
-                vad_parameters=vad_parameters,
+            # 添加进度回调
+            if progress_callback:
+                original_callback = transcribe_params.get("callback", None)
+
+                def combined_callback(segment_i, segment):
+                    # 根据转写进度更新UI
+                    if progress_callback and hasattr(segment, "progress"):
+                        progress_callback(segment.progress)
+                    # 调用原始回调
+                    if original_callback:
+                        original_callback(segment_i, segment)
+
+                transcribe_params["callback"] = combined_callback
+
+            # 执行转写
+            logger.info(f"开始转写音频: {audio_path}")
+            segments, info = self.model.transcribe(
+                str(audio_path), **transcribe_params
             )
 
-            # 收集segments并应用后处理
+            # 收集分段结果
             segments_list = []
-            all_text = ""
+            full_text = ""
 
-            for i, segment in enumerate(segments_generator):
-                # 创建Segment对象
-                seg = Segment(
-                    id=i + 1,
-                    start=segment.start,
-                    end=segment.end,
-                    text=segment.text.strip(),
-                    words=(
-                        [
+            for i, segment in enumerate(segments):
+                # 添加转写片段到结果列表
+                if progress_callback:
+                    progress_callback(
+                        min(0.95 + (i / 100), 0.99)
+                    )  # 0.95-0.99的进度
+
+                words_data = []
+                if self.parameters.word_timestamps and segment.words:
+                    for word in segment.words:
+                        words_data.append(
                             {
-                                "word": w.word,
-                                "start": w.start,
-                                "end": w.end,
-                                "probability": w.probability,
+                                "start": word.start,
+                                "end": word.end,
+                                "word": word.word,
+                                "probability": word.probability,
                             }
-                            for w in segment.words
-                        ]
-                        if segment.words
-                        else None
-                    ),
+                        )
+
+                # 添加此分段的文本到完整文本
+                full_text += segment.text + " "
+
+                # 转换为自定义分段对象
+                segments_list.append(
+                    {
+                        "id": i,
+                        "start": segment.start,
+                        "end": segment.end,
+                        "text": segment.text,
+                        "words": words_data,
+                    }
                 )
 
-                segments_list.append(seg)
-                all_text += seg.text + " "
-
-                # 更新进度
-                if progress_callback:
-                    # 估计还有10个片段未处理
-                    progress_callback(min(0.9, i / (i + 10)))
-
-            # 将结果写入SRT文件
-            srt_path = output_dir / f"{audio_path.stem}.srt"
-            self.write_srt(segments_list, srt_path)
-
-            # 完成进度
-            if progress_callback:
-                progress_callback(1.0)
-
-            # 创建返回结果
+            # 准备结果
             result = TranscriptionResult(
-                text=all_text.strip(),
-                segments=[
-                    {
-                        "id": s.id,
-                        "start": s.start,
-                        "end": s.end,
-                        "text": s.text,
-                        "words": s.words,
-                        "speaker": s.speaker,
-                    }
-                    for s in segments_list
-                ],
+                text=full_text.strip(),
+                segments=segments_list,
                 language=info.language,
-                subtitle_path=srt_path,
+                subtitle_path=None,
             )
 
-            logger.info(f"转写完成, 生成SRT文件: {srt_path}")
+            # 如果指定了输出格式，生成字幕文件
+            if self.parameters.output_format:
+                subtitle_path = (
+                    output_dir
+                    / f"{audio_path.stem}.{self.parameters.output_format}"
+                )
+                self.write_subtitle(result, subtitle_path)
+                result.subtitle_path = subtitle_path
+
+            # 完成转写
+            if progress_callback:
+                progress_callback(1.0)  # 100%完成
+
+            logger.info(f"音频转写完成: {audio_path}")
             return result
 
         except Exception as e:
@@ -426,100 +456,142 @@ class SpeechToText:
         keep_audio: bool = False,
         progress_callback: Optional[Callable[[float], None]] = None,
     ) -> TranscriptionResult:
-        """转写视频文件为字幕
+        """转写视频文件
 
         Args:
             video_path: 视频文件路径
             output_dir: 输出目录，如果为None则使用视频文件所在目录
             keep_audio: 是否保留提取的音频文件
-            progress_callback: 进度回调函数，参数为0-1之间的进度值
+            progress_callback: 进度回调函数
 
         Returns:
             TranscriptionResult: 转写结果
         """
         video_path = Path(video_path)
+        if not video_path.exists():
+            raise FileNotFoundError(f"视频文件不存在: {video_path}")
 
-        # 确定输出目录
+        # 设置输出目录
         if output_dir is None:
             output_dir = video_path.parent
         else:
             output_dir = Path(output_dir)
-            os.makedirs(output_dir, exist_ok=True)
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-        # 提取音频
-        logger.info(f"从视频提取音频: {video_path}")
-
-        # 如果要保留音频，将其保存到输出目录
-        audio_path = None
-        if keep_audio:
-            audio_path = output_dir / f"{video_path.stem}_audio.wav"
+        # 音频输出路径
+        audio_path = (
+            output_dir / f"{video_path.stem}.wav" if keep_audio else None
+        )
 
         try:
-            # 更新进度
-            if progress_callback:
-                progress_callback(0.1)
-
             # 提取音频
-            audio_path = self.extract_audio_from_video(video_path, audio_path)
-
-            # 更新进度
             if progress_callback:
-                progress_callback(0.2)
+                progress_callback(0.05)  # 5%进度
 
-            # 创建进度回调的适配器
             def audio_progress_callback(progress: float) -> None:
+                """音频转写的进度回调"""
                 if progress_callback:
-                    # 将音频转写的进度(0-1)映射到整体进度的0.2-0.9
-                    progress_callback(0.2 + progress * 0.7)
+                    # 将音频转写的进度映射到5%-95%的总进度范围
+                    adjusted_progress = 0.05 + (progress * 0.9)
+                    progress_callback(adjusted_progress)
 
-            # 转写音频
+            extracted_audio = self.extract_audio_from_video(
+                video_path, audio_path
+            )
+            if progress_callback:
+                progress_callback(0.1)  # 10%进度
+
+            # 转写提取的音频
             result = self.transcribe_audio(
-                audio_path,
+                extracted_audio,
                 output_dir,
                 progress_callback=audio_progress_callback,
             )
 
-            # 如果不保留音频文件，则删除
-            if not keep_audio and audio_path and audio_path.exists():
-                audio_path.unlink()
-                logger.info(f"已删除临时音频文件: {audio_path}")
+            # 如果不保留音频，删除临时音频文件
+            if not keep_audio and extracted_audio.exists():
+                extracted_audio.unlink()
 
-            # 完成进度
-            if progress_callback:
-                progress_callback(1.0)
+            # 使用视频文件名作为字幕文件名
+            if result.subtitle_path:
+                new_subtitle_path = (
+                    output_dir
+                    / f"{video_path.stem}.{result.subtitle_path.suffix.lstrip('.')}"
+                )
+                if result.subtitle_path != new_subtitle_path:
+                    result.subtitle_path.rename(new_subtitle_path)
+                    result.subtitle_path = new_subtitle_path
 
             return result
 
         except Exception as e:
-            # 清理临时文件
-            if not keep_audio and audio_path and audio_path.exists():
-                try:
-                    audio_path.unlink()
-                except Exception:
-                    logger.warning(f"无法删除临时音频文件: {audio_path}")
-
             logger.error(f"视频转写失败: {e}")
             raise
 
     def write_srt(
         self, segments: List[Segment], output_path: Union[str, Path]
     ) -> None:
-        """将转写结果写入SRT文件
+        """将分段转写结果写入SRT格式字幕文件
 
         Args:
-            segments: 转写片段列表
+            segments: 分段转写结果列表
             output_path: 输出文件路径
         """
         output_path = Path(output_path)
-        os.makedirs(output_path.parent, exist_ok=True)
+
+        # 确保输出目录存在
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(output_path, "w", encoding="utf-8") as f:
-            for segment in segments:
-                # SRT格式: 序号 + 时间戳 + 文本 + 空行
-                f.write(f"{segment.id}\n")
+            for i, segment in enumerate(segments, 1):
+                # 写入字幕序号
+                f.write(f"{i}\n")
+
+                # 写入时间戳
                 start_time = Segment.format_timestamp(segment.start)
                 end_time = Segment.format_timestamp(segment.end)
                 f.write(f"{start_time} --> {end_time}\n")
-                f.write(f"{segment.text}\n\n")
 
-        logger.info(f"已写入SRT文件: {output_path}")
+                # 写入文本内容
+                f.write(f"{segment.text.strip()}\n\n")
+
+        logger.info(f"字幕已保存到: {output_path}")
+
+    def write_subtitle(
+        self, result: TranscriptionResult, output_path: Union[str, Path]
+    ) -> Path:
+        """将转写结果写入字幕文件
+
+        Args:
+            result: 转写结果
+            output_path: 输出文件路径
+
+        Returns:
+            Path: 写入的字幕文件路径
+        """
+        output_path = Path(output_path)
+
+        # 从segments创建Segment对象列表
+        segments = []
+        for seg in result.segments:
+            segment = Segment(
+                id=seg["id"],
+                start=seg["start"],
+                end=seg["end"],
+                text=seg["text"],
+                words=seg.get("words", []),
+            )
+            segments.append(segment)
+
+        # 根据文件扩展名选择写入格式
+        suffix = output_path.suffix.lower()
+
+        if suffix == ".srt":
+            self.write_srt(segments, output_path)
+        else:
+            # 暂不支持其他格式，默认使用SRT
+            logger.warning(f"不支持的字幕格式: {suffix}，使用SRT格式")
+            output_path = output_path.with_suffix(".srt")
+            self.write_srt(segments, output_path)
+
+        return output_path
