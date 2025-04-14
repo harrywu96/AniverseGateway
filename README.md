@@ -161,6 +161,39 @@ SubTranslate支持多种AI服务提供商，您可以根据需要选择：
 - **SiliconFlow**：支持DeepSeek、Qwen等多种开源大模型
 - **自定义API**：支持自定义兼容OpenAI API格式的服务
 
-要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。 
+要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。
+
+## 环境设置
+
+本项目使用Python 3.10+和UV包管理器来管理依赖。
+
+### 自动设置（推荐）
+
+为了方便设置环境，我们提供了自动化脚本：
+
+#### Windows用户
+
+```bash
+# 设置基本环境
+setup_environment.bat
+
+# 设置开发环境（包含开发工具）
+setup_environment.bat --dev
+```
+
+#### Linux/macOS用户
+
+```bash
+# 设置基本环境
+chmod +x setup_environment.sh
+./setup_environment.sh
+
+# 设置开发环境（包含开发工具）
+./setup_environment.sh --dev
+```
+
+### 火山引擎机器学习平台SDK
+
+本项目中使用的火山引擎机器学习平台SDK需要特殊安装。详细说明请参考 [火山引擎机器学习平台SDK安装指南](docs/ml_platform_setup.md)。
 
 

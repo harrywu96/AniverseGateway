@@ -39,6 +39,12 @@ dependencies = [
     
     # AI service integrations
     "openai>=1.6.0",
+    "zhipuai>=2.0.0",  # 智谱AI集成
+    "volc-sdk-python>=1.0.180",  # 火山引擎核心SDK
+    "dashscope>=1.10.0",  # 通义千问集成
+    "baidu-aip>=4.16.3",  # 百度AI集成
+    "anthropic>=0.5.0",  # Anthropic Claude集成
+    "google-generativeai>=0.3.0",  # Google Gemini集成
     
     # Web application components
     "websockets>=12.0",
@@ -52,19 +58,56 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    # Testing
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.1",
+    "pytest-mock>=3.12.0",
+    "hypothesis>=6.82.0",  # 属性测试
+    
+    # Code quality
     "black>=23.11.0",
     "isort>=5.12.0",
     "mypy>=1.7.0",
     "ruff>=0.1.5",
-    "pytest-asyncio>=0.21.1",
+    "pylint>=3.0.2",
+    "flake8>=6.1.0",
+    
+    # Type checking
+    "pyright>=1.1.333",
+    "pydantic-extra-types>=2.1.0",  # 额外类型支持
+    "types-requests>=2.31.0",
+    "types-aiofiles>=23.1.0",
+    
+    # Documentation
+    "sphinx>=7.2.5",
+    "sphinx-rtd-theme>=1.3.0",
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.4.3",
+    
+    # Development tools
     "pre-commit>=3.5.0",
+    "bandit>=1.7.5",  # 安全检查
+    "safety>=2.3.5",  # 依赖安全检查
+]
+
+docs = [
+    "sphinx>=7.2.5",
+    "sphinx-rtd-theme>=1.3.0",
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.4.3",
+    "sphinx-autodoc-typehints>=1.24.0",
+]
+
+full = [
+    "subtranslate[dev,docs]",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/yourusername/subtranslate"
 "Bug Tracker" = "https://github.com/yourusername/subtranslate/issues"
+"Documentation" = "https://subtranslate.readthedocs.io/"
+"Source" = "https://github.com/yourusername/subtranslate"
 
 [project.scripts]
 subtranslate = "subtranslate.cli.main:app"
@@ -74,22 +117,43 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["subtranslate*"]
+exclude = ["tests*", "examples*"]
+
+[tool.setuptools.package-data]
+"subtranslate" = ["py.typed", "schemas/*.json", "static/**/*"]
 
 # UV specific configurations
 [tool.uv]
-python-version = "3.10"
-pip-compile-options = ["--generate-hashes"]
+pip-compile-options = ["--generate-hashes", "--allow-unsafe", "--quiet"]
 dependency-mode = "development"
+cache-dir = "./.uv"
+respect-active-env = true
 
+# Code style and quality tools
 [tool.black]
 line-length = 79
 target-version = ["py310", "py311"]
 include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 79
+py_version = "310"
+known_first_party = ["subtranslate"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+include_trailing_comma = true
+multi_line_output = 3
 
+# Type checking configuration
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
@@ -100,20 +164,53 @@ check_untyped_defs = true
 disallow_untyped_decorators = true
 no_implicit_optional = true
 strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+show_error_codes = true
+pretty = true
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# Linting configuration
 [tool.ruff]
 line-length = 79
 target-version = "py310"
-select = ["E", "F", "I"]
+select = ["E", "F", "B", "I", "N", "UP", "C90", "RUF"]
 ignore = []
 fixable = ["A", "B", "C", "D", "E", "F", "I"]
 unfixable = []
+extend-exclude = ["build", "dist", ".venv", "__pycache__", "*.pyi"]
 
 [tool.ruff.isort]
 known-first-party = ["subtranslate"]
 
+[tool.ruff.mccabe]
+max-complexity = 10
+
+# Test configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
-python_classes = "Test*" 
+python_classes = "Test*"
+addopts = "--cov=subtranslate --cov-report=term-missing --cov-report=xml"
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "schemas: marks tests related to schema validation",
+]
+
+# Security and dependency checking
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "examples"]
+tests = ["B201", "B301"]
+
+[tool.safety]
+ignore = [] 
