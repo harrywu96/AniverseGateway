@@ -1,0 +1,113 @@
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Videos from './pages/Videos';
+import Settings from './pages/Settings';
+import { ipcRenderer } from 'electron';
+
+const App: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [backendReady, setBackendReady] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 检查后端状态
+    const checkBackendStatus = async () => {
+      try {
+        const isRunning = await ipcRenderer.invoke('check-backend-status');
+        if (isRunning) {
+          setBackendReady(true);
+          setLoading(false);
+        } else {
+          // 等待后端启动消息
+          ipcRenderer.once('backend-started', () => {
+            setBackendReady(true);
+            setLoading(false);
+          });
+
+          // 如果30秒后仍未启动，显示错误
+          const timeout = setTimeout(() => {
+            if (!backendReady) {
+              setError('后端服务启动超时，请重启应用');
+              setLoading(false);
+            }
+          }, 30000);
+
+          return () => clearTimeout(timeout);
+        }
+      } catch (err) {
+        setError('检查后端状态时出错: ' + err.message);
+        setLoading(false);
+      }
+    };
+
+    checkBackendStatus();
+
+    // 监听后端停止事件
+    const handleBackendStopped = (_event: any, data: { code: number }) => {
+      setBackendReady(false);
+      setError(`后端服务已停止，退出码: ${data.code}。请重启应用。`);
+    };
+
+    ipcRenderer.on('backend-stopped', handleBackendStopped);
+
+    return () => {
+      ipcRenderer.removeListener('backend-stopped', handleBackendStopped);
+    };
+  }, [backendReady]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={60} />
+        <Box sx={{ mt: 2 }}>正在启动后端服务...</Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          gap: 2,
+          p: 3,
+          textAlign: 'center',
+        }}
+      >
+        <Box color="error.main" sx={{ typography: 'h6' }}>
+          出错了
+        </Box>
+        <Box>{error}</Box>
+      </Box>
+    );
+  }
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/videos" element={<Videos />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  );
+};
+
+export default App; 

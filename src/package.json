@@ -1,0 +1,28 @@
+{
+  "name": "subtranslate",
+  "version": "1.0.0",
+  "private": true,
+  "description": "智能视频字幕翻译系统",
+  "scripts": {
+    "dev": "pnpm --filter electron-app dev",
+    "build": "pnpm --filter electron-app build",
+    "test": "pnpm -r test"
+  },
+  "keywords": [
+    "subtitle",
+    "translation",
+    "ai",
+    "electron",
+    "react",
+    "vite"
+  ],
+  "author": "SubTranslate Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
+} 
