@@ -4,7 +4,6 @@
 """
 
 import logging
-import os
 import tempfile
 from datetime import timedelta
 from enum import Enum
@@ -43,14 +42,15 @@ class TranscriptionParameters(BaseModel):
     """语音转写参数配置"""
 
     # 模型配置
-    model_size: WhisperModelSize = Field(
-        default=WhisperModelSize.MEDIUM, description="模型大小"
+    model_size: Optional[WhisperModelSize] = Field(
+        default=WhisperModelSize.MEDIUM,
+        description="模型大小，对于本地模型可为None",
     )
     model_type: WhisperModelType = Field(
         default=WhisperModelType.FASTER_WHISPER, description="模型类型"
     )
     model_dir: Optional[str] = Field(
-        default=None, description="模型文件目录，默认使用~/.cache/whisper"
+        default=None, description="模型文件目录或本地模型路径"
     )
 
     # 计算设备配置
@@ -134,6 +134,16 @@ class TranscriptionParameters(BaseModel):
         default=True, description="是否在最后一个完整句子处结束"
     )
 
+    @property
+    def is_local_model(self) -> bool:
+        """判断是否使用本地模型
+
+        Returns:
+            bool: 如果使用本地模型路径返回True，否则返回False
+        """
+        # 当model_dir有效且model_size为None时，视为使用本地模型
+        return self.model_dir is not None and Path(self.model_dir).exists()
+
 
 class TranscriptionResult(BaseModel):
     """转写结果"""
@@ -177,7 +187,10 @@ class Segment:
 
     def __str__(self) -> str:
         """返回片段的字符串表示"""
-        return f"[{self.format_timestamp(self.start)} --> {self.format_timestamp(self.end)}] {self.text}"
+        return (
+            f"[{self.format_timestamp(self.start)} --> "
+            f"{self.format_timestamp(self.end)}] {self.text}"
+        )
 
     @staticmethod
     def format_timestamp(seconds: float) -> str:
@@ -244,21 +257,65 @@ class SpeechToText:
         try:
             from faster_whisper import WhisperModel
 
-            logger.info(
-                f"正在加载 faster-whisper 模型 ({self.parameters.model_size})..."
-            )
-            self.model = WhisperModel(
-                model_size_or_path=self.parameters.model_size,
-                device=self.parameters.device,
-                compute_type=self.parameters.compute_type,
-                download_root=self.parameters.model_dir,
-            )
-            logger.info(f"模型加载完成: {self.parameters.model_size}")
+            # 确定是否使用本地模型
+            if self.parameters.is_local_model:
+                model_path = self.parameters.model_dir
+
+                # 检查model_path目录下是否包含模型文件
+                model_files = [
+                    "model.bin",
+                    "model.onnx",
+                    "encoder.onnx",
+                    "decoder.onnx",
+                    "tokenizer.json",
+                    "vocabulary.txt",
+                ]
+
+                has_model_files = any(
+                    Path(model_path).joinpath(file).exists()
+                    for file in model_files
+                )
+
+                if not has_model_files:
+                    logger.warning(
+                        f"本地模型路径 {model_path} 可能无效，"
+                        f"未找到任何有效的模型文件: {', '.join(model_files)}"
+                    )
+
+                # 使用本地模型路径
+                logger.info(
+                    f"正在加载本地 faster-whisper 模型 ({model_path})..."
+                )
+                self.model = WhisperModel(
+                    model_size_or_path=model_path,
+                    device=self.parameters.device,
+                    compute_type=self.parameters.compute_type,
+                    download_root=None,  # 本地模型不需要指定下载目录
+                )
+                logger.info(f"本地模型加载完成: {model_path}")
+            else:
+                # 使用预定义模型大小
+                if not self.parameters.model_size:
+                    raise ValueError("未指定模型大小")
+
+                logger.info(
+                    f"正在加载 faster-whisper 模型 ({self.parameters.model_size})..."
+                )
+                self.model = WhisperModel(
+                    model_size_or_path=self.parameters.model_size,
+                    device=self.parameters.device,
+                    compute_type=self.parameters.compute_type,
+                    download_root=self.parameters.model_dir,
+                )
+                logger.info(f"模型加载完成: {self.parameters.model_size}")
 
         except ImportError:
             logger.error("未安装faster-whisper库，请使用以下命令安装:")
             logger.error("pip install faster-whisper")
             raise ImportError("未安装faster-whisper库")
+        except FileNotFoundError as e:
+            logger.error(f"找不到模型文件: {e}")
+            raise
         except Exception as e:
             logger.error(f"加载模型失败: {e}")
             raise
@@ -314,10 +371,14 @@ class SpeechToText:
             "best_of": self.parameters.best_of,
             "patience": self.parameters.patience,
             "temperature": self.parameters.temperature,
-            "compression_ratio_threshold": self.parameters.compression_ratio_threshold,
+            "compression_ratio_threshold": (
+                self.parameters.compression_ratio_threshold
+            ),
             "log_prob_threshold": -5.0,  # 默认值
             "no_speech_threshold": self.parameters.no_speech_threshold,
-            "condition_on_previous_text": self.parameters.condition_on_previous_text,
+            "condition_on_previous_text": (
+                self.parameters.condition_on_previous_text
+            ),
             "initial_prompt": self.parameters.initial_prompt,
             "prefix": None,  # 默认值
             "suppress_blank": self.parameters.suppress_blank,
@@ -515,8 +576,8 @@ class SpeechToText:
             # 使用视频文件名作为字幕文件名
             if result.subtitle_path:
                 new_subtitle_path = (
-                    output_dir
-                    / f"{video_path.stem}.{result.subtitle_path.suffix.lstrip('.')}"
+                    output_dir / f"{video_path.stem}."
+                    f"{result.subtitle_path.suffix.lstrip('.')}"
                 )
                 if result.subtitle_path != new_subtitle_path:
                     result.subtitle_path.rename(new_subtitle_path)

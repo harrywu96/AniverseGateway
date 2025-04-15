@@ -15,6 +15,7 @@ from subtranslate.core.faster_whisper_config_util import (
     get_output_format,
     save_transcription_parameters,
     apply_gui_config_to_parameters,
+    WhisperConfigManager,
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "get_output_format",
     "save_transcription_parameters",
     "apply_gui_config_to_parameters",
+    "WhisperConfigManager",
 ]

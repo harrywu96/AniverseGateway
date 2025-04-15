@@ -222,3 +222,62 @@ class SubtitleTask(BaseModel):
     def to_dict(self) -> dict:
         """转换为字典表示"""
         return self.model_dump()
+
+
+class TranslationTask(BaseModel):
+    """翻译任务模型，用于管理翻译任务的生命周期。"""
+
+    id: str = Field(
+        default_factory=lambda: str(uuid4()), description="任务唯一标识符"
+    )
+    status: TaskStatus = Field(
+        default=TaskStatus.PENDING, description="任务状态"
+    )
+    progress: float = Field(default=0.0, description="进度百分比")
+    created_at: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="创建时间",
+    )
+    updated_at: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="更新时间",
+    )
+    completed_at: Optional[str] = Field(None, description="完成时间")
+    message: Optional[str] = Field(None, description="状态消息")
+    result: Optional[Dict[str, Any]] = Field(None, description="任务结果")
+
+    def update_progress(self, progress: float) -> None:
+        """更新任务进度
+
+        Args:
+            progress: 新的进度值(0.0-100.0)
+        """
+        self.progress = max(0.0, min(100.0, progress))
+        self.updated_at = datetime.now().isoformat()
+
+    def mark_completed(self, result: Optional[Dict[str, Any]] = None) -> None:
+        """标记任务为已完成
+
+        Args:
+            result: 任务结果
+        """
+        self.status = TaskStatus.COMPLETED
+        self.progress = 100.0
+        self.result = result
+        self.completed_at = datetime.now().isoformat()
+        self.updated_at = self.completed_at
+
+    def mark_failed(self, message: str) -> None:
+        """标记任务为失败
+
+        Args:
+            message: 错误信息
+        """
+        self.status = TaskStatus.FAILED
+        self.message = message
+        self.completed_at = datetime.now().isoformat()
+        self.updated_at = self.completed_at
+
+    def to_dict(self) -> dict:
+        """转换为字典表示"""
+        return self.model_dump()

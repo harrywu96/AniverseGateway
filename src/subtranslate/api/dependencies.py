@@ -3,12 +3,11 @@
 本模块提供FastAPI依赖注入功能，用于访问系统配置和各种服务实例。
 """
 
-import os
 import logging
 from typing import Dict, Optional
 from functools import lru_cache
 
-from fastapi import Depends, HTTPException, Header, Security, status
+from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
 from ..schemas.config import SystemConfig

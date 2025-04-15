@@ -6,8 +6,9 @@
 
 import json
 import logging
+import os
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Dict, Any, List
 
 from subtranslate.schemas.faster_whisper_config import FasterWhisperGUIConfig
 from subtranslate.core.speech_to_text import TranscriptionParameters
@@ -97,14 +98,26 @@ def convert_to_transcription_parameters(
     # 处理模型配置
     model_param = gui_config.model_param
 
-    # 获取模型名称
-    model_size = MODEL_NAMES[model_param.modelName]
-    if (
-        model_param.use_v3_model
-        and model_size.startswith("large")
-        and not ("v3" in model_size)
-    ):
-        model_size = "large-v3"
+    # 确定模型路径或名称
+    model_size = None
+    model_dir = None
+
+    # 如果配置为使用本地模型且指定了路径，则使用本地模型
+    if model_param.localModel and model_param.model_path:
+        model_dir = model_param.model_path
+        logger.info(f"使用本地模型路径: {model_dir}")
+    else:
+        # 获取模型名称
+        model_size = MODEL_NAMES[model_param.modelName]
+        if (
+            model_param.use_v3_model
+            and model_size.startswith("large")
+            and not ("v3" in model_size)
+        ):
+            model_size = "large-v3"
+
+        # 设置下载根目录
+        model_dir = model_param.download_root
 
     # 获取设备类型
     device = DEVICE_TYPES[model_param.device]
@@ -133,11 +146,7 @@ def convert_to_transcription_parameters(
     return TranscriptionParameters(
         # 模型配置
         model_size=model_size,
-        model_dir=(
-            model_param.model_path
-            if model_param.model_path
-            else model_param.download_root
-        ),
+        model_dir=model_dir,
         device=device,
         compute_type=compute_type,
         # 转写设置
@@ -156,6 +165,7 @@ def convert_to_transcription_parameters(
         best_of=int(trans_param.best_of),
         patience=float(trans_param.patience),
         temperature=temperatures,
+        # 长行拆分
         compression_ratio_threshold=float(
             trans_param.compression_ratio_threshold
         ),
@@ -232,3 +242,136 @@ def apply_gui_config_to_parameters(
         save_transcription_parameters(params, output_path)
 
     return params
+
+
+class WhisperConfigManager:
+    """Whisper配置管理器
+
+    集中管理Whisper转写相关的配置，提供从GUI配置文件创建转写参数、
+    保存配置、验证模型路径等功能。
+    """
+
+    def __init__(self):
+        """初始化配置管理器"""
+        # 默认的本地模型目录
+        self.default_models_dir = os.path.expanduser("~/.cache/whisper")
+        # 创建本地模型目录（如果不存在）
+        os.makedirs(self.default_models_dir, exist_ok=True)
+
+    def get_available_models(self) -> List[Dict[str, Any]]:
+        """获取可用的模型列表
+
+        Returns:
+            List[Dict[str, Any]]: 可用模型列表，包含预定义模型和本地模型
+        """
+        # 预定义模型
+        predefined_models = [
+            {"name": name, "type": "predefined"} for name in MODEL_NAMES
+        ]
+
+        # 本地模型
+        local_models = []
+
+        # 在默认目录中查找本地模型
+        if os.path.exists(self.default_models_dir):
+            for item in os.listdir(self.default_models_dir):
+                model_path = os.path.join(self.default_models_dir, item)
+                if os.path.isdir(model_path):
+                    # 检查是否有效的模型目录
+                    model_files = ["model.bin", "tokenizer.json"]
+                    if any(
+                        os.path.exists(os.path.join(model_path, f))
+                        for f in model_files
+                    ):
+                        local_models.append(
+                            {"name": item, "path": model_path, "type": "local"}
+                        )
+
+        return predefined_models + local_models
+
+    def validate_model_path(self, model_path: str) -> bool:
+        """验证模型路径是否有效
+
+        Args:
+            model_path: 模型路径
+
+        Returns:
+            bool: 如果模型路径有效返回True，否则返回False
+        """
+        if not model_path or not os.path.exists(model_path):
+            return False
+
+        # 检查是否包含模型文件
+        model_files = [
+            "model.bin",
+            "model.onnx",
+            "encoder.onnx",
+            "decoder.onnx",
+            "tokenizer.json",
+            "vocabulary.txt",
+        ]
+
+        return any(
+            os.path.exists(os.path.join(model_path, file))
+            for file in model_files
+        )
+
+    def create_default_parameters(self) -> TranscriptionParameters:
+        """创建默认的转写参数
+
+        Returns:
+            TranscriptionParameters: 默认转写参数
+        """
+        return TranscriptionParameters()
+
+    def from_gui_config(
+        self, config_path: Union[str, Path]
+    ) -> TranscriptionParameters:
+        """从GUI配置文件创建转写参数
+
+        Args:
+            config_path: GUI配置文件路径
+
+        Returns:
+            TranscriptionParameters: 转写参数
+        """
+        return apply_gui_config_to_parameters(config_path)
+
+    def save_parameters(
+        self, params: TranscriptionParameters, output_path: Union[str, Path]
+    ) -> None:
+        """保存转写参数到文件
+
+        Args:
+            params: 转写参数
+            output_path: 输出文件路径
+        """
+        save_transcription_parameters(params, output_path)
+
+    def load_parameters(
+        self, config_path: Union[str, Path]
+    ) -> TranscriptionParameters:
+        """从JSON文件加载转写参数
+
+        Args:
+            config_path: 配置文件路径
+
+        Returns:
+            TranscriptionParameters: 转写参数
+        """
+        config_path = Path(config_path)
+        if not config_path.exists():
+            raise FileNotFoundError(f"配置文件不存在: {config_path}")
+
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+
+            return TranscriptionParameters.model_validate(config_data)
+
+        except json.JSONDecodeError:
+            logger.error(f"配置文件格式错误: {config_path}")
+            raise
+        except Exception as e:
+            logger.error(f"加载配置文件失败: {e}")
+            raise

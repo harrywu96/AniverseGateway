@@ -33,7 +33,7 @@ from .routers import (
     tasks,
     export,
     templates,
-    config,
+    config as config_router,
     providers,  # 添加新的providers路由
     speech_to_text,  # 添加speech_to_text路由
 )
@@ -122,7 +122,7 @@ def get_app() -> FastAPI:
         dependencies=[Depends(verify_api_key)],
     )
     app.include_router(
-        config.router,
+        config_router.router,
         prefix="/api/config",
         dependencies=[Depends(verify_api_key)],
     )
