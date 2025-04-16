@@ -96,13 +96,13 @@ function startPythonBackend() {
             scriptPath = join(resourcesPath, 'backend', 'run_api_server.py');
         }
         console.log('启动Python后端...');
-        console.log("Python\u8DEF\u5F84: ".concat(pythonPath));
-        console.log("\u811A\u672C\u8DEF\u5F84: ".concat(scriptPath));
+        console.log(`Python路径: ${pythonPath}`);
+        console.log(`脚本路径: ${scriptPath}`);
         // 启动Python进程
         pythonProcess = spawn(pythonPath, [scriptPath]);
         // 监听标准输出
         pythonProcess.stdout.on('data', function (data) {
-            console.log("Python\u540E\u7AEF\u8F93\u51FA: ".concat(data));
+            console.log(`Python后端输出: ${data}`);
             // 检测后端是否已经启动
             if (data.toString().includes('Application startup complete')) {
                 isBackendStarted = true;
@@ -111,11 +111,11 @@ function startPythonBackend() {
         });
         // 监听错误输出
         pythonProcess.stderr.on('data', function (data) {
-            console.error("Python\u540E\u7AEF\u9519\u8BEF: ".concat(data));
+            console.error(`Python后端错误: ${data}`);
         });
         // 进程退出时的处理
         pythonProcess.on('close', function (code) {
-            console.log("Python\u540E\u7AEF\u5DF2\u9000\u51FA\uFF0C\u9000\u51FA\u7801: ".concat(code));
+            console.log(`Python后端已退出，退出码: ${code}`);
             pythonProcess = null;
             isBackendStarted = false;
             if (mainWindow) {

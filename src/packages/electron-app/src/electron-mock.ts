@@ -1,46 +1,46 @@
 ﻿/**
- * 鎻愪緵妯℃嫙鐨凟lectron API瀹炵幇锛岀敤浜庡湪娴忚鍣ㄧ幆澧冧腑璋冭瘯
+ * 提供模拟的Electron API实现，用于在浏览器环境中调试
  */
 
-// 纭繚window.electronAPI濮嬬粓瀛樺湪
+// 确保window.electronAPI始终存在
 if (typeof window !== 'undefined') {
-  // 濡傛灉鐢靛瓙API涓嶅瓨鍦紝鍒涘缓涓€涓ā鎷熷疄鐜?
+  // 如果电子API不存在，创建一个模拟实现
   if (!window.electronAPI) {
-    console.log('鍒濆鍖栨ā鎷熺殑Electron API');
+    console.log('初始化模拟的Electron API');
     window.electronAPI = {
-      // 妫€鏌ュ悗绔姸鎬?
+      // 检查后端状态
       checkBackendStatus: async () => {
-        console.log('妯℃嫙: 妫€鏌ュ悗绔姸鎬?);
+        console.log('模拟: 检查后端状态');
         return true;
       },
       
-      // 閫夋嫨瑙嗛鏂囦欢
+      // 选择视频文件
       selectVideo: async () => {
-        console.log('妯℃嫙: 閫夋嫨瑙嗛鏂囦欢');
+        console.log('模拟: 选择视频文件');
         return null;
       },
       
-      // 涓婁紶鏈湴瑙嗛鏂囦欢
+      // 上传本地视频文件
       uploadVideo: async (filePath) => {
-        console.log('妯℃嫙: 涓婁紶瑙嗛鏂囦欢', filePath);
+        console.log('模拟: 上传视频文件', filePath);
         return { success: true };
       },
       
-      // 鐩戝惉鍚庣鍚姩浜嬩欢
+      // 监听后端启动事件
       onBackendStarted: (callback) => {
-        console.log('妯℃嫙: 娉ㄥ唽鍚庣鍚姩浜嬩欢鐩戝惉');
-        // 妯℃嫙3绉掑悗鍚姩
+        console.log('模拟: 注册后端启动事件监听');
+        // 模拟3秒后启动
         setTimeout(callback, 3000);
         return () => {
-          console.log('妯℃嫙: 绉婚櫎鍚庣鍚姩浜嬩欢鐩戝惉');
+          console.log('模拟: 移除后端启动事件监听');
         };
       },
       
-      // 鐩戝惉鍚庣鍋滄浜嬩欢
+      // 监听后端停止事件
       onBackendStopped: (callback) => {
-        console.log('妯℃嫙: 娉ㄥ唽鍚庣鍋滄浜嬩欢鐩戝惉');
+        console.log('模拟: 注册后端停止事件监听');
         return () => {
-          console.log('妯℃嫙: 绉婚櫎鍚庣鍋滄浜嬩欢鐩戝惉');
+          console.log('模拟: 移除后端停止事件监听');
         };
       }
     };

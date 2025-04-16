@@ -5,9 +5,10 @@
     "main":  "dist/main/index.js",
     "scripts":  {
                     "dev":  "vite",
-                    "build":  "tsc \u0026\u0026 vite build \u0026\u0026 electron-builder",
+                    "dev:win": "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '跳过TypeScript编译' -ForegroundColor Cyan; vite\"",
+                    "build":  "tsc && vite build && electron-builder",
                     "preview":  "vite preview",
-                    "predev":  "echo 璺宠繃TypeScript缂栬瘧"
+                    "predev":  "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '跳过TypeScript编译' -ForegroundColor Cyan\""
                 },
     "dependencies":  {
                          "@emotion/react":  "^11.11.1",

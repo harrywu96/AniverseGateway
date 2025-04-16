@@ -5,6 +5,7 @@
   "description": "智能视频字幕翻译系统",
   "scripts": {
     "dev": "pnpm --filter electron-app dev",
+    "dev:win": "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 | Out-Null; pnpm --filter electron-app dev:win\"",
     "build": "pnpm --filter electron-app build",
     "test": "pnpm -r test"
   },

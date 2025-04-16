@@ -1,6 +1,34 @@
 # setup-env.ps1
 # Script to setup the development environment for this project
 
+# 设置PowerShell编码为UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PYTHONIOENCODING = "utf-8"
+
+# 设置执行策略以允许脚本运行
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+
+Write-Host "已设置PowerShell环境:"
+Write-Host "- 编码: UTF-8"
+Write-Host "- 执行策略: RemoteSigned (进程级别)"
+
+# 如果虚拟环境存在，就激活它
+if (Test-Path ".\.venv\Scripts\Activate.ps1") {
+    Write-Host "激活Python虚拟环境..."
+    & ".\.venv\Scripts\Activate.ps1"
+    Write-Host "虚拟环境已激活"
+} else {
+    Write-Host "未找到Python虚拟环境，请先创建: uv venv .venv"
+}
+
+# 为Electron应用程序设置环境变量
+$env:ELECTRON_FORCE_IS_PACKAGED = $false
+$env:NODE_ENV = "development"
+
+Write-Host "`n环境设置完成!"
+Write-Host "现在可以运行: pnpm dev"
+
 # Display information about what this script does
 Write-Host "Setting up development environment..." -ForegroundColor Cyan
 Write-Host "This script will:" -ForegroundColor Cyan

@@ -12,7 +12,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 妫€鏌ュ悗绔姸鎬?
+    // 检查后端状态
     const checkBackendStatus = async () => {
       try {
         const isRunning = await window.electronAPI.checkBackendStatus();
@@ -20,16 +20,16 @@ const App: React.FC = () => {
           setBackendReady(true);
           setLoading(false);
         } else {
-          // 绛夊緟鍚庣鍚姩娑堟伅
+          // 等待后端启动消息
           const removeListener = window.electronAPI.onBackendStarted(() => {
             setBackendReady(true);
             setLoading(false);
           });
 
-          // 濡傛灉30绉掑悗浠嶆湭鍚姩锛屾樉绀洪敊璇?
+          // 如果30秒后仍未启动，显示错误
           const timeout = setTimeout(() => {
             if (!backendReady) {
-              setError('鍚庣鏈嶅姟鍚姩瓒呮椂锛岃閲嶅惎搴旂敤');
+              setError('后端服务启动超时，请重启应用');
               setLoading(false);
             }
           }, 30000);
@@ -40,18 +40,18 @@ const App: React.FC = () => {
           };
         }
       } catch (err) {
-        setError('妫€鏌ュ悗绔姸鎬佹椂鍑洪敊: ' + (err as Error).message);
+        setError('检查后端状态时出错: ' + (err as Error).message);
         setLoading(false);
       }
     };
 
     checkBackendStatus();
 
-        // 鐩戝惉鍚庣鍋滄浜嬩欢 - 娣诲姞瀹夊叏妫€鏌?
+    // 监听后端停止事件 - 添加安全检查
     const removeStoppedListener = window.electronAPI && window.electronAPI.onBackendStopped ? 
       window.electronAPI.onBackendStopped((data) => {
         setBackendReady(false);
-        setError(鍚庣鏈嶅姟宸插仠姝紝閫€鍑虹爜: \銆傝閲嶅惎搴旂敤銆俙);
+        setError(`后端服务已停止，退出码: ${data}。请重启应用。`);
       }) : () => {};
 
     return () => {
@@ -72,7 +72,7 @@ const App: React.FC = () => {
         }}
       >
         <CircularProgress size={60} />
-        <Box sx={{ mt: 2 }}>姝ｅ湪鍚姩鍚庣鏈嶅姟...</Box>
+        <Box sx={{ mt: 2 }}>正在启动后端服务...</Box>
       </Box>
     );
   }
@@ -92,7 +92,7 @@ const App: React.FC = () => {
         }}
       >
         <Box color="error.main" sx={{ typography: 'h6' }}>
-          鍑洪敊浜?
+          出错了
         </Box>
         <Box>{error}</Box>
       </Box>
