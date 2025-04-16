@@ -25,7 +25,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 uv venv
 source .venv/bin/activate  # Linux/macOS
 # 或
-.venv\Scripts\activate  # Windows
+.\.venv\Scripts\Activate.ps1   # Windows
 
 # 安装依赖
 uv pip sync requirements.txt

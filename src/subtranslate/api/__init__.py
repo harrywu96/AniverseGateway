@@ -10,11 +10,9 @@ import uvicorn
 import logging
 
 from typing import Optional
-from .app import app
 from .routers import (
     translate,
-    video,
-    settings,
+    videos,
     speech_to_text,
 )
 
@@ -100,7 +98,6 @@ def shutdown_api_server(pid: int) -> bool:
 # 确保在router_modules列表中包含speech_to_text模块
 router_modules = [
     translate,
-    video,
-    settings,
+    videos,
     speech_to_text,
 ]

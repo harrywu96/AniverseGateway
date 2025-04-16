@@ -46,7 +46,7 @@ dependencies = [
     # AI service integrations
     "openai>=1.6.0",
     "zhipuai>=2.0.0",  # 智谱AI集成
-    "volc-sdk-python>=1.0.180",  # 火山引擎核心SDK
+    "volcengine>=1.0.180",  # 火山引擎核心SDK
     "dashscope>=1.10.0",  # 通义千问集成
     "baidu-aip>=4.16.10",  # 百度AI集成
     "anthropic>=0.5.0",  # Anthropic Claude集成
@@ -121,9 +121,7 @@ exclude = ["tests*", "examples*"]
 # UV specific configurations
 [tool.uv]
 index-url = "https://pypi.org/simple/"
-dependency-mode = "development"
 cache-dir = "./.uv"
-respect-active-env = true
 
 # Code style and quality tools
 [tool.black]

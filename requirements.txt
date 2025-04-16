@@ -4,6 +4,7 @@ pydantic-settings>=2.1.0
 python-dotenv>=1.0.0
 fastapi>=0.104.1
 uvicorn>=0.24.0
+starlette>=0.31.1  # FastAPI的重要依赖，明确列出
 httpx>=0.25.1
 aiofiles>=23.1.0
 requests>=2.31.0
@@ -22,7 +23,7 @@ faster-whisper>=0.10.0
 # AI service integrations
 openai>=1.6.0
 zhipuai>=2.0.0          # 智谱AI
-volcengine>=1.0.180  # 火山引擎核心SDK (正确的包名)
+volcengine>=1.0.180     # 火山引擎核心SDK
 dashscope>=1.10.0       # 通义千问
 baidu-aip>=4.16.10      # 百度AI集成
 anthropic>=0.5.0        # Anthropic Claude集成
