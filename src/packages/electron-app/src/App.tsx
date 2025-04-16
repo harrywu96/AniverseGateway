@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Videos from './pages/Videos';
 import Settings from './pages/Settings';
-import { ipcRenderer } from 'electron';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -13,48 +12,50 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 检查后端状态
+    // 妫€鏌ュ悗绔姸鎬?
     const checkBackendStatus = async () => {
       try {
-        const isRunning = await ipcRenderer.invoke('check-backend-status');
+        const isRunning = await window.electronAPI.checkBackendStatus();
         if (isRunning) {
           setBackendReady(true);
           setLoading(false);
         } else {
-          // 等待后端启动消息
-          ipcRenderer.once('backend-started', () => {
+          // 绛夊緟鍚庣鍚姩娑堟伅
+          const removeListener = window.electronAPI.onBackendStarted(() => {
             setBackendReady(true);
             setLoading(false);
           });
 
-          // 如果30秒后仍未启动，显示错误
+          // 濡傛灉30绉掑悗浠嶆湭鍚姩锛屾樉绀洪敊璇?
           const timeout = setTimeout(() => {
             if (!backendReady) {
-              setError('后端服务启动超时，请重启应用');
+              setError('鍚庣鏈嶅姟鍚姩瓒呮椂锛岃閲嶅惎搴旂敤');
               setLoading(false);
             }
           }, 30000);
 
-          return () => clearTimeout(timeout);
+          return () => {
+            clearTimeout(timeout);
+            removeListener();
+          };
         }
       } catch (err) {
-        setError('检查后端状态时出错: ' + err.message);
+        setError('妫€鏌ュ悗绔姸鎬佹椂鍑洪敊: ' + (err as Error).message);
         setLoading(false);
       }
     };
 
     checkBackendStatus();
 
-    // 监听后端停止事件
-    const handleBackendStopped = (_event: any, data: { code: number }) => {
-      setBackendReady(false);
-      setError(`后端服务已停止，退出码: ${data.code}。请重启应用。`);
-    };
-
-    ipcRenderer.on('backend-stopped', handleBackendStopped);
+        // 鐩戝惉鍚庣鍋滄浜嬩欢 - 娣诲姞瀹夊叏妫€鏌?
+    const removeStoppedListener = window.electronAPI && window.electronAPI.onBackendStopped ? 
+      window.electronAPI.onBackendStopped((data) => {
+        setBackendReady(false);
+        setError(鍚庣鏈嶅姟宸插仠姝紝閫€鍑虹爜: \銆傝閲嶅惎搴旂敤銆俙);
+      }) : () => {};
 
     return () => {
-      ipcRenderer.removeListener('backend-stopped', handleBackendStopped);
+      removeStoppedListener();
     };
   }, [backendReady]);
 
@@ -71,7 +72,7 @@ const App: React.FC = () => {
         }}
       >
         <CircularProgress size={60} />
-        <Box sx={{ mt: 2 }}>正在启动后端服务...</Box>
+        <Box sx={{ mt: 2 }}>姝ｅ湪鍚姩鍚庣鏈嶅姟...</Box>
       </Box>
     );
   }
@@ -91,7 +92,7 @@ const App: React.FC = () => {
         }}
       >
         <Box color="error.main" sx={{ typography: 'h6' }}>
-          出错了
+          鍑洪敊浜?
         </Box>
         <Box>{error}</Box>
       </Box>

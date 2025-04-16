@@ -59,7 +59,7 @@ class SubtitlePreviewResponse(APIResponse):
     """字幕预览响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "获取预览成功",
@@ -88,7 +88,7 @@ class SubtitleFullContentResponse(APIResponse):
     """字幕完整内容响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "获取字幕完整内容成功",

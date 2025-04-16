@@ -42,7 +42,7 @@ class TaskResponse(APIResponse):
     """任务响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "获取任务成功",
@@ -64,7 +64,7 @@ class TaskListResponse(APIResponse):
     """任务列表响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "获取任务列表成功",
@@ -156,7 +156,7 @@ async def create_task(
     try:
         # 日志记录请求参数，帮助调试
         logger.info(f"收到创建任务请求: {request.model_dump()}")
-        
+
         # 返回未实现功能，但返回501状态码而不是抛出验证错误
         return JSONResponse(
             content=ErrorResponse(
@@ -166,7 +166,7 @@ async def create_task(
             ).model_dump(),
             status_code=501,
         )
-        
+
     except Exception as e:
         logger.error(f"创建任务失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):

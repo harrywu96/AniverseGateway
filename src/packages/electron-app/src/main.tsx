@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+// 在导入App之前导入电子API模拟实现
+import './electron-mock';
 import App from './App';
 import './styles/index.css';
 

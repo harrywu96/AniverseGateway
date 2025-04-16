@@ -90,7 +90,7 @@ class TranslateResponse(APIResponse):
     """翻译响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "翻译成功",
@@ -111,7 +111,7 @@ class FileTranslateResponse(APIResponse):
     """文件翻译响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "文件翻译任务已提交",

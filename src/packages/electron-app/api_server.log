@@ -5,3 +5,83 @@
 2025-04-16 11:51:37,024 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
 2025-04-16 11:52:10,470 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
 2025-04-16 11:52:54,013 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 11:58:12,978 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 11:58:15,393 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:15,394 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:15,420 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:15,422 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:27,538 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 11:58:29,658 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:29,684 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:29,719 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 11:58:29,722 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:03:37,166 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:03:39,269 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:03:39,278 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:03:39,340 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:03:39,345 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:04:19,208 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:04:21,410 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:04:21,412 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:04:21,442 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:04:21,443 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:05:06,066 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:05:08,223 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:05:08,275 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:05:08,296 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:05:08,313 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:07:46,213 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:07:48,458 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:07:48,470 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:07:48,498 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:07:48,501 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:08:49,451 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:08:51,737 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:08:51,738 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:08:51,776 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:08:51,778 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:09:59,927 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:10:02,050 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:10:02,138 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:10:02,148 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:10:02,150 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:11:56,011 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:11:58,137 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:11:58,198 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:11:58,222 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:11:58,227 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:34,118 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:12:36,237 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:36,305 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:36,309 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:36,310 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:48,346 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 12:12:50,476 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:50,500 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:50,524 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 12:12:50,530 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:11:04,921 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 15:11:07,593 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:11:07,595 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:11:07,603 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:11:07,609 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:12:07,906 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 15:12:10,155 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:12:10,168 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:12:10,184 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:12:10,200 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:15:51,228 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 15:15:53,449 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:15:53,501 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:15:53,503 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:15:53,510 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:05,352 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 15:16:07,507 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:07,552 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:07,576 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:07,579 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:57,354 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-16 15:16:59,578 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:59,591 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:59,603 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-16 15:16:59,608 - subtranslate.api - INFO - SubTranslate API服务启动

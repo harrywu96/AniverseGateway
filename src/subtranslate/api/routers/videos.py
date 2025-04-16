@@ -66,7 +66,7 @@ class VideoSubtitlesResponse(APIResponse):
     """视频字幕响应模型"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "success": True,
                 "message": "获取字幕轨道成功",

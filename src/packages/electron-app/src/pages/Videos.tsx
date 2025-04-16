@@ -12,7 +12,6 @@ import {
   CardActions,
 } from '@mui/material';
 import { Upload as UploadIcon } from '@mui/icons-material';
-import { ipcRenderer } from 'electron';
 import { VideoInfo } from '@subtranslate/shared';
 
 const Videos: React.FC = () => {
@@ -24,7 +23,7 @@ const Videos: React.FC = () => {
       setLoading(true);
       
       // 调用Electron方法选择视频文件
-      const filePath = await ipcRenderer.invoke('select-video');
+      const filePath = await window.electronAPI.selectVideo();
       
       if (!filePath) {
         setLoading(false);
@@ -32,7 +31,7 @@ const Videos: React.FC = () => {
       }
 
       // 上传视频到后端
-      const result = await ipcRenderer.invoke('upload-video', filePath);
+      const result = await window.electronAPI.uploadVideo(filePath);
       
       if (result.success && result.data) {
         // 添加视频到列表
