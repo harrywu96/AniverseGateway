@@ -67,7 +67,9 @@ class SubtitleTrack:
         return f"轨道 #{self.index}: {lang}{title}{default}{forced}"
 
     @classmethod
-    def from_stream_info(cls, stream_info: Dict, index: int) -> "SubtitleTrack":
+    def from_stream_info(
+        cls, stream_info: Dict, index: int
+    ) -> "SubtitleTrack":
         """从流信息创建字幕轨道对象
 
         Args:
@@ -116,7 +118,9 @@ class SubtitleExtractor:
         """
         self.ffmpeg = ffmpeg_tool or FFmpegTool()
 
-    def detect_subtitle_files(self, video_path: Union[str, Path]) -> List[Path]:
+    def detect_subtitle_files(
+        self, video_path: Union[str, Path]
+    ) -> List[Path]:
         """检测与视频关联的外挂字幕文件
 
         Args:
@@ -135,7 +139,15 @@ class SubtitleExtractor:
         directory = video_path.parent
 
         # 常见字幕扩展名
-        subtitle_extensions = [".srt", ".ass", ".ssa", ".vtt", ".sub", ".idx", ".smi"]
+        subtitle_extensions = [
+            ".srt",
+            ".ass",
+            ".ssa",
+            ".vtt",
+            ".sub",
+            ".idx",
+            ".smi",
+        ]
 
         # 查找同名字幕文件
         subtitle_files = []
@@ -151,7 +163,9 @@ class SubtitleExtractor:
 
         return subtitle_files
 
-    def get_subtitle_format(self, subtitle_path: Union[str, Path]) -> SubtitleFormat:
+    def get_subtitle_format(
+        self, subtitle_path: Union[str, Path]
+    ) -> SubtitleFormat:
         """确定字幕文件的格式
 
         Args:
@@ -171,9 +185,13 @@ class SubtitleExtractor:
                 with open(path, "r", encoding="utf-8") as f:
                     first_lines = "".join([f.readline() for _ in range(10)])
 
-                if re.search(r"\d+:\d+:\d+[,.]\d+ --> \d+:\d+:\d+[,.]\d+", first_lines):
+                if re.search(
+                    r"\d+:\d+:\d+[,.]\d+ --> \d+:\d+:\d+[,.]\d+", first_lines
+                ):
                     return SubtitleFormat.SRT
-                elif "[Script Info]" in first_lines and "Format:" in first_lines:
+                elif (
+                    "[Script Info]" in first_lines and "Format:" in first_lines
+                ):
                     return SubtitleFormat.ASS
                 elif "WEBVTT" in first_lines:
                     return SubtitleFormat.VTT
@@ -219,7 +237,8 @@ class SubtitleExtractor:
 
         # 确定输出文件路径
         output_file = (
-            output_dir / f"{video_path.stem}.track{track_index}.{target_format}"
+            output_dir
+            / f"{video_path.stem}.track{track_index}.{target_format}"
         )
 
         try:
@@ -285,7 +304,9 @@ class SubtitleExtractor:
                 # 验证SRT格式是否有效
                 with open(subtitle_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                    if re.search(r"\d+\s+\d+:\d+:\d+,\d+ --> \d+:\d+:\d+,\d+", content):
+                    if re.search(
+                        r"\d+\s+\d+:\d+:\d+,\d+ --> \d+:\d+:\d+,\d+", content
+                    ):
                         return subtitle_path
             except (UnicodeDecodeError, IOError):
                 # 如果文件无法读取或不是有效的SRT，继续尝试转换
@@ -323,7 +344,9 @@ class SubtitleExtractor:
             logger.error(f"转换字幕失败: {str(e)}")
             return None
 
-    def get_subtitle_tracks(self, video_path: Union[str, Path]) -> List[SubtitleTrack]:
+    def get_subtitle_tracks(
+        self, video_path: Union[str, Path]
+    ) -> List[SubtitleTrack]:
         """获取视频中的字幕轨道列表
 
         Args:
@@ -451,12 +474,17 @@ class SubtitleExtractor:
 
             if tracks:
                 # 选择最佳轨道
-                best_track_index = self.select_best_track(tracks, preferred_language)
+                best_track_index = self.select_best_track(
+                    tracks, preferred_language
+                )
 
                 if best_track_index is not None:
                     # 提取最佳轨道
                     extracted_path = self.extract_embedded_subtitle(
-                        video_info, best_track_index, output_dir, SubtitleFormat.SRT
+                        video_info,
+                        best_track_index,
+                        output_dir,
+                        SubtitleFormat.SRT,
                     )
 
                     if extracted_path:
@@ -465,7 +493,8 @@ class SubtitleExtractor:
                         # 如果还没有最佳字幕或者这个轨道语言匹配首选语言，将其设为最佳字幕
                         if best_subtitle is None or (
                             preferred_language
-                            and tracks[best_track_index].language == preferred_language
+                            and tracks[best_track_index].language
+                            == preferred_language
                         ):
                             best_subtitle = extracted_path
 
@@ -473,7 +502,10 @@ class SubtitleExtractor:
                 for track in tracks:
                     if track.index != best_track_index:
                         extracted_path = self.extract_embedded_subtitle(
-                            video_info, track.index, output_dir, SubtitleFormat.SRT
+                            video_info,
+                            track.index,
+                            output_dir,
+                            SubtitleFormat.SRT,
                         )
 
                         if extracted_path:
@@ -484,3 +516,131 @@ class SubtitleExtractor:
             best_subtitle = all_subtitles[0]
 
         return all_subtitles, best_subtitle
+
+    async def analyze_video(self, video_info: VideoInfo) -> VideoInfo:
+        """分析视频信息，填充视频的元数据
+
+        Args:
+            video_info: 视频信息对象
+
+        Returns:
+            VideoInfo: 更新后的视频信息对象
+        """
+        try:
+            # 检测格式并更新
+            try:
+                format_value = self.ffmpeg.detect_video_format(video_info.path)
+                video_info.format = format_value
+            except Exception as e:
+                logger.warning(f"检测视频格式失败: {str(e)}")
+                # 保持默认格式
+
+            # 获取持续时间
+            try:
+                video_info.duration = self.ffmpeg.get_video_duration(
+                    video_info.path
+                )
+            except Exception as e:
+                logger.warning(f"获取视频时长失败: {str(e)}")
+                # duration将保持为None
+
+            # 检测是否包含内嵌字幕
+            try:
+                video_info.has_embedded_subtitle = (
+                    self.ffmpeg.has_embedded_subtitles(video_info.path)
+                )
+            except Exception as e:
+                logger.warning(f"检测内嵌字幕失败: {str(e)}")
+                video_info.has_embedded_subtitle = False
+
+            logger.info(
+                f"视频分析完成: {video_info.filename}, 格式: {video_info.format}, "
+                f"时长: {video_info.duration}, "
+                f"包含字幕: {video_info.has_embedded_subtitle}"
+            )
+            return video_info
+        except Exception as e:
+            logger.error(f"视频分析失败: {str(e)}")
+            # 返回原始视频信息
+            return video_info
+
+    async def list_subtitle_tracks(
+        self, video_info: VideoInfo
+    ) -> List[SubtitleTrack]:
+        """列出视频中的字幕轨道
+
+        Args:
+            video_info: 视频信息对象
+
+        Returns:
+            List[SubtitleTrack]: 字幕轨道列表
+        """
+        try:
+            # 获取视频中的字幕流
+            streams = self.ffmpeg.get_subtitle_streams(video_info.path)
+
+            tracks = []
+            for i, stream in enumerate(streams):
+                # 创建字幕轨道对象
+                track = SubtitleTrack.from_stream_info(stream, i)
+                tracks.append(track)
+
+                logger.info(f"发现字幕轨道: {track}")
+
+            return tracks
+        except Exception as e:
+            logger.error(f"获取字幕轨道失败: {str(e)}")
+            return []
+
+    async def find_external_subtitles(
+        self, video_info: VideoInfo
+    ) -> List[Dict]:
+        """查找与视频关联的外挂字幕文件
+
+        Args:
+            video_info: 视频信息对象
+
+        Returns:
+            List[Dict]: 外挂字幕信息列表，每个字典包含路径、语言和格式信息
+        """
+        try:
+            # 获取视频路径
+            video_path = Path(video_info.path)
+
+            # 查找外挂字幕文件
+            subtitle_files = self.detect_subtitle_files(video_path)
+
+            # 构建结果
+            external_subtitles = []
+            for sub_path in subtitle_files:
+                # 尝试从文件名中推断语言代码
+                language = None
+                filename = sub_path.stem
+
+                # 常见的语言代码模式: filename.en.srt, filename_zh.srt
+                language_match = re.search(
+                    r"[._-]([a-z]{2,3})[._-]?$", filename
+                )
+                if language_match:
+                    language = language_match.group(1)
+
+                # 获取字幕格式
+                subtitle_format = self.get_subtitle_format(sub_path)
+
+                external_subtitles.append(
+                    {
+                        "path": str(sub_path),
+                        "language": language,
+                        "format": subtitle_format.value,
+                    }
+                )
+
+                logger.info(
+                    f"发现外挂字幕: {sub_path}, 语言: {language}, "
+                    f"格式: {subtitle_format}"
+                )
+
+            return external_subtitles
+        except Exception as e:
+            logger.error(f"查找外挂字幕失败: {str(e)}")
+            return []

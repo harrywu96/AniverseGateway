@@ -58,7 +58,7 @@ async function checkApiHealth(): Promise<boolean> {
     const port = process.env.API_PORT || '8000';
     const response = await fetch(`http://127.0.0.1:${port}/api/health`, {
       method: 'GET',
-      timeout: 1000, // 1秒超时
+      signal: AbortSignal.timeout(1000), // 使用AbortSignal替代直接使用timeout
     });
     
     if (response.ok) {
@@ -86,15 +86,29 @@ function startPythonBackend() {
       // 尝试使用虚拟环境中的Python
       const isWindows = process.platform === 'win32';
       
+      // 获取项目根目录（根据实际项目结构可能需要调整）
+      const projectRoot = join(process.cwd(), '..', '..', '..');
+      
       if (isWindows) {
         // 首先尝试查找.venv环境
-        const venvPythonPath = join(process.cwd(), '..', '..', '.venv', 'Scripts', 'python.exe');
+        const venvPythonPath = join(projectRoot, '.venv', 'Scripts', 'python.exe');
+        
+        console.log(`尝试查找虚拟环境路径: ${venvPythonPath}`);
         if (fs.existsSync(venvPythonPath)) {
           console.log(`使用虚拟环境Python: ${venvPythonPath}`);
           pythonPath = venvPythonPath;
         } else {
-          console.log('未找到虚拟环境，使用系统Python');
-          pythonPath = 'python';
+          // 尝试查找相对于当前目录的虚拟环境
+          const altVenvPath = join(process.cwd(), '.venv', 'Scripts', 'python.exe');
+          console.log(`尝试备选虚拟环境路径: ${altVenvPath}`);
+          
+          if (fs.existsSync(altVenvPath)) {
+            console.log(`使用备选虚拟环境Python: ${altVenvPath}`);
+            pythonPath = altVenvPath;
+          } else {
+            console.log('未找到虚拟环境，使用系统Python');
+            pythonPath = 'python';
+          }
         }
       } else {
         pythonPath = 'python';
@@ -104,7 +118,11 @@ function startPythonBackend() {
       const possiblePaths = [
         join(process.cwd(), '..', '..', 'run_api_server.py'),
         join(__dirname, '../../../../run_api_server.py'),
-        join(process.cwd(), 'run_api_server.py')
+        join(process.cwd(), 'run_api_server.py'),
+        // 添加更多可能的路径
+        join(projectRoot, 'run_api_server.py'),
+        join(projectRoot, 'src', 'run_api_server.py'),
+        join(projectRoot, 'src', 'api', 'run_api_server.py')
       ];
       
       console.log('搜索API服务器脚本路径...');
@@ -294,8 +312,10 @@ function registerIpcHandlers() {
       
       // 构建请求体
       const jsonBody = JSON.stringify({ 
-        file_path: filePath, 
-        auto_extract_subtitles: true 
+        request: {
+          file_path: filePath, 
+          auto_extract_subtitles: true 
+        }
       });
       
       // 打印请求体以便调试

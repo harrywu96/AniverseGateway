@@ -211,3 +211,283 @@
 2025-04-17 11:47:07,635 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 11:47:07,708 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 11:47:07,710 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:22,338 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:48:22,338 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:48:22,338 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:48:22,338 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:48:24,958 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:24,995 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:24,996 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:55,788 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:48:55,788 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:48:55,788 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:48:55,788 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:48:58,125 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:58,162 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:58,248 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:48:58,249 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:17,177 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:56:17,177 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:56:17,177 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:56:17,177 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:56:19,623 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:19,645 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:19,735 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:19,736 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:35,470 - subtranslate.api.videos - ERROR - 加载视频失败: from_extension
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 133, in load_video
+    file_extension = file_path.suffix.lower().lstrip(".")
+  File "E:\ai_study\ai_project\src\subtranslate\services\video_storage.py", line 56, in save_video
+    format=VideoFormat.from_extension(Path(filename).suffix),
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\enum.py", line 437, in __getattr__
+    raise AttributeError(name) from None
+AttributeError: from_extension
+2025-04-17 11:56:50,038 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:56:50,039 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:56:50,039 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:56:50,039 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:56:52,496 - subtranslate.api.videos - ERROR - 加载视频失败: from_extension
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 133, in load_video
+    file_extension = file_path.suffix.lower().lstrip(".")
+  File "E:\ai_study\ai_project\src\subtranslate\services\video_storage.py", line 56, in save_video
+    format=VideoFormat.from_extension(Path(filename).suffix),
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\enum.py", line 437, in __getattr__
+    raise AttributeError(name) from None
+AttributeError: from_extension
+2025-04-17 11:56:52,639 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:52,654 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:52,656 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:56:52,658 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:57:22,257 - subtranslate.api.videos - ERROR - 加载视频失败: from_extension
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 133, in load_video
+    file_extension = file_path.suffix.lower().lstrip(".")
+  File "E:\ai_study\ai_project\src\subtranslate\services\video_storage.py", line 56, in save_video
+    format=VideoFormat.from_extension(Path(filename).suffix),
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\enum.py", line 437, in __getattr__
+    raise AttributeError(name) from None
+AttributeError: from_extension
+2025-04-17 11:59:59,051 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:59:59,051 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:59:59,051 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:59:59,051 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 12:00:01,705 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:00:01,714 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:00:01,742 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:00:01,742 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:00:04,890 - subtranslate.api.videos - ERROR - 加载视频失败: from_extension
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 133, in load_video
+    file_extension = file_path.suffix.lower().lstrip(".")
+  File "E:\ai_study\ai_project\src\subtranslate\services\video_storage.py", line 56, in save_video
+    format=VideoFormat.from_extension(Path(filename).suffix),
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\enum.py", line 437, in __getattr__
+    raise AttributeError(name) from None
+AttributeError: from_extension
+2025-04-17 12:02:48,275 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 12:02:48,275 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 12:02:48,275 - api_server - INFO - 区域设置: cp936
+2025-04-17 12:02:48,275 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 12:02:50,839 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:02:50,849 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:02:50,863 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:02:50,865 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:02:54,540 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 12:02:55,041 - subtranslate.api.videos - ERROR - 加载视频失败: 'SubtitleExtractor' object has no attribute 'analyze_video'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 146, in load_video
+    video_info = await extractor.analyze_video(video_info)
+AttributeError: 'SubtitleExtractor' object has no attribute 'analyze_video'
+2025-04-17 12:02:55,042 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: 'SubtitleExtractor' object has no attribute 'analyze_video'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 146, in load_video
+    video_info = await extractor.analyze_video(video_info)
+AttributeError: 'SubtitleExtractor' object has no attribute 'analyze_video'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: 'SubtitleExtractor' object has no attribute 'analyze_video'
+2025-04-17 12:07:13,495 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 12:07:13,496 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 12:07:13,496 - api_server - INFO - 区域设置: cp936
+2025-04-17 12:07:13,496 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 12:07:16,048 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:16,069 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:16,073 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:19,187 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 12:07:20,020 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 12:07:20,124 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 12:07:20,125 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 12:07:20,125 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 12:07:20,125 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 12:07:20,125 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 12:07:20,126 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 12:07:51,527 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 12:07:51,527 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 12:07:51,527 - api_server - INFO - 区域设置: cp936
+2025-04-17 12:07:51,527 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 12:07:53,897 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:53,903 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:53,935 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:53,938 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 12:07:54,909 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 12:07:55,734 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 12:07:55,846 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 12:07:55,847 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 12:07:55,847 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 12:07:55,848 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:32:30,808 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:32:30,808 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:32:30,809 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:32:30,809 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:32:33,955 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:32:33,956 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:32:33,957 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:32:33,959 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:32:42,775 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:32:43,523 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:32:43,627 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:32:43,627 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:32:43,628 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:33:03,753 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:33:03,754 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:33:03,754 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:33:03,754 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:33:05,933 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:33:05,949 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:33:05,965 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:33:05,969 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:39,662 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:38:39,662 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:38:39,663 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:38:39,663 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:38:41,967 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:41,983 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:41,997 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:42,004 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:47,917 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:38:47,918 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:38:47,918 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:38:47,918 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:38:50,179 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:50,279 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:50,302 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:38:50,315 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:26,212 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:39:26,212 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:39:26,212 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:39:26,212 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:39:28,466 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:28,525 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:28,570 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:28,572 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:56,141 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:39:56,141 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:39:56,141 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:39:56,141 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:39:58,410 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:58,511 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:58,537 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:39:58,541 - subtranslate.api - INFO - SubTranslate API服务启动

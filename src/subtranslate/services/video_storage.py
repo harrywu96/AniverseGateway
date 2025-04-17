@@ -53,7 +53,7 @@ class VideoStorageService:
             id=video_id,
             filename=filename,
             path=str(target_path),
-            format=VideoFormat.from_extension(Path(filename).suffix),
+            format=self._get_video_format_from_filename(filename),
         )
 
         # 存储到内存
@@ -110,3 +110,18 @@ class VideoStorageService:
         """清空所有视频"""
         for video_id in list(self.videos.keys()):
             self.delete_video(video_id)
+
+    def _get_video_format_from_filename(self, filename: str) -> VideoFormat:
+        """从文件名获取视频格式
+
+        Args:
+            filename: 视频文件名
+
+        Returns:
+            VideoFormat: 视频格式
+        """
+        suffix = Path(filename).suffix.lower().lstrip(".")
+        try:
+            return VideoFormat(suffix)
+        except ValueError:
+            return VideoFormat.OTHER
