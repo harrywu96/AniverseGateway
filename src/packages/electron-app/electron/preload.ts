@@ -22,5 +22,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const wrappedCallback = (_event: any, data: { code: number }) => callback(data);
     ipcRenderer.on('backend-stopped', wrappedCallback);
     return () => ipcRenderer.removeListener('backend-stopped', wrappedCallback);
-  }
+  },
+  
+  // 重启后端服务
+  restartBackend: () => ipcRenderer.invoke('restart-backend')
 }); 

@@ -2,11 +2,14 @@
 import { join } from 'path';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
+import fetch from 'node-fetch';
 
 // 定义全局变量
 let mainWindow: BrowserWindow | null = null;
 let pythonProcess: ChildProcessWithoutNullStreams | null = null;
 let isBackendStarted = false;
+let apiCheckInterval: NodeJS.Timeout | null = null;
+let startupTimeout: NodeJS.Timeout | null = null;
 
 // 是否是开发环境
 const isDev = process.env.NODE_ENV === 'development';
@@ -45,6 +48,28 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+/**
+ * 检查API服务是否可用
+ */
+async function checkApiHealth(): Promise<boolean> {
+  try {
+    const port = process.env.API_PORT || '8000';
+    const response = await fetch(`http://127.0.0.1:${port}/api/health`, {
+      method: 'GET',
+      timeout: 1000, // 1秒超时
+    });
+    
+    if (response.ok) {
+      console.log('API健康检查成功');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.log('API健康检查失败:', error.message);
+    return false;
+  }
 }
 
 /**
@@ -124,7 +149,16 @@ function startPythonBackend() {
       windowsHide: false // 确保在Windows上显示控制台窗口以便调试
     });
 
-    let startupTimeout = setTimeout(() => {
+    // 清除之前的超时和间隔
+    if (startupTimeout) {
+      clearTimeout(startupTimeout);
+    }
+    if (apiCheckInterval) {
+      clearInterval(apiCheckInterval);
+    }
+
+    // 设置新的超时
+    startupTimeout = setTimeout(() => {
       if (!isBackendStarted) {
         console.error('后端启动超时');
         if (mainWindow) {
@@ -135,14 +169,39 @@ function startPythonBackend() {
       }
     }, 30000); // 30秒超时
 
+    // 启动定期检查API是否可访问
+    apiCheckInterval = setInterval(async () => {
+      if (isBackendStarted) {
+        clearInterval(apiCheckInterval);
+        return;
+      }
+      
+      const isHealthy = await checkApiHealth();
+      if (isHealthy) {
+        isBackendStarted = true;
+        if (startupTimeout) {
+          clearTimeout(startupTimeout);
+        }
+        console.log('API服务已启动并可访问');
+        mainWindow?.webContents.send('backend-started');
+        clearInterval(apiCheckInterval);
+      }
+    }, 1000); // 每秒检查一次
+
     // 监听标准输出
     pythonProcess.stdout.on('data', (data) => {
-      console.log(`Python后端输出: ${data}`);
+      const output = data.toString();
+      console.log(`Python后端输出: ${output}`);
       
-      // 检测后端是否已经启动
-      if (data.toString().includes('Application startup complete')) {
+      // 检测后端是否已经启动 - 保留原有检测，但增加了其他启动信息的检测
+      if (output.includes('Application startup complete') || 
+          output.includes('Uvicorn running on') || 
+          output.includes('Started server process')) {
+        console.log('检测到API服务启动关键信息');
         isBackendStarted = true;
-        clearTimeout(startupTimeout);
+        if (startupTimeout) {
+          clearTimeout(startupTimeout);
+        }
         mainWindow?.webContents.send('backend-started');
       }
     });
@@ -166,7 +225,12 @@ function startPythonBackend() {
     // 进程退出时的处理
     pythonProcess.on('close', (code) => {
       console.log(`Python后端已退出，退出码: ${code}`);
-      clearTimeout(startupTimeout);
+      if (startupTimeout) {
+        clearTimeout(startupTimeout);
+      }
+      if (apiCheckInterval) {
+        clearInterval(apiCheckInterval);
+      }
       pythonProcess = null;
       isBackendStarted = false;
       
@@ -178,7 +242,12 @@ function startPythonBackend() {
     // 处理错误
     pythonProcess.on('error', (err) => {
       console.error(`启动Python进程时出错: ${err.message}`);
-      clearTimeout(startupTimeout);
+      if (startupTimeout) {
+        clearTimeout(startupTimeout);
+      }
+      if (apiCheckInterval) {
+        clearInterval(apiCheckInterval);
+      }
       if (mainWindow) {
         mainWindow.webContents.send('backend-error', { 
           message: `启动Python进程失败: ${err.message}` 
@@ -271,23 +340,24 @@ app.whenReady().then(() => {
   });
 });
 
-// 所有窗口关闭时退出应用，macOS除外
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    // 关闭Python后端
-    if (pythonProcess) {
-      pythonProcess.kill();
-      pythonProcess = null;
-    }
-
-    app.quit();
-  }
-});
-
 // 应用退出前清理资源
 app.on('before-quit', () => {
+  if (startupTimeout) {
+    clearTimeout(startupTimeout);
+  }
+  if (apiCheckInterval) {
+    clearInterval(apiCheckInterval);
+  }
   if (pythonProcess) {
     pythonProcess.kill();
     pythonProcess = null;
+  }
+});
+
+// 所有窗口关闭时退出应用 (Windows & Linux)
+app.on('window-all-closed', () => {
+  // macOS的应用程序不会自动退出
+  if (process.platform !== 'darwin') {
+    app.quit();
   }
 }); 

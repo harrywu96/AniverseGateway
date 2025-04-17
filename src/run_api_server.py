@@ -37,6 +37,11 @@ logging.basicConfig(
 
 logger = logging.getLogger("api_server")
 
+# 获取默认的Uvicorn日志配置
+log_config = uvicorn.config.LOGGING_CONFIG
+# 确保不修改日志消息格式，特别是启动完成的消息
+log_config["formatters"]["default"]["fmt"] = "%(levelprefix)s %(message)s"
+
 
 def run_server():
     """启动API服务器"""
@@ -63,15 +68,25 @@ def run_server():
     )
     logger.info(msg)
 
-    # 启动服务器
+    # 直接打印启动信息和完成消息 - 确保Electron能捕获到这个信息
+    print("INFO:     Starting API server...")
+
+    # 启动服务器 - 使用log_config确保保留原始的日志格式
     uvicorn.run(
         "subtranslate.api.app:app",
         host=host,
         port=port,
         reload=reload,
         workers=workers,
+        log_config=log_config,
     )
 
 
 if __name__ == "__main__":
-    run_server()
+    try:
+        run_server()
+    except Exception as e:
+        logger.error(f"启动服务器时出错: {e}", exc_info=True)
+        # 直接打印错误，确保Electron能捕获
+        print(f"ERROR:    启动服务器失败: {e}")
+        sys.exit(1)

@@ -5,6 +5,7 @@
 
 import logging
 import os
+import sys
 from functools import lru_cache
 
 from fastapi import (
@@ -199,11 +200,12 @@ async def startup_event():
     """应用启动时执行"""
     logger.info("SubTranslate API服务启动")
 
+    # 直接输出特定的启动完成消息，以便Electron能够捕获
+    print("INFO:     Application startup complete.", flush=True)
+    sys.stdout.flush()  # 确保输出被立即刷新
+
     # 获取配置
     config = get_system_config()
-
-    # 不再在这里配置CORS
-    # configure_cors(app, config)
 
     # 创建必要的目录
     os.makedirs(config.temp_dir, exist_ok=True)
