@@ -48,6 +48,16 @@ class VideoLoadRequest(BaseModel):
         default=True, description="是否自动提取字幕"
     )
 
+    class Config:
+        """模型配置"""
+
+        json_schema_extra = {
+            "example": {
+                "file_path": "/path/to/video.mp4",
+                "auto_extract_subtitles": True,
+            }
+        }
+
 
 # 视频子标题轨道信息
 class SubtitleTrackInfo(BaseModel):
@@ -366,4 +376,19 @@ async def upload_local_video(
     Returns:
         VideoDetailResponse: 视频详情响应
     """
-    return await load_video(request, config, extractor, video_storage)
+    try:
+        logger.info(f"接收到本地视频加载请求: {request}")
+
+        # 检查文件路径
+        if not request.file_path:
+            logger.error("请求中缺少必要的file_path字段")
+            raise HTTPException(status_code=400, detail="缺少必要的文件路径")
+
+        return await load_video(request, config, extractor, video_storage)
+    except Exception as e:
+        logger.error(f"本地视频加载失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"本地视频加载失败: {str(e)}"
+        )

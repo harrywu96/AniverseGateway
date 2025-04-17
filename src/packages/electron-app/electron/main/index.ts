@@ -290,13 +290,39 @@ function registerIpcHandlers() {
   ipcMain.handle('upload-video', async (_event, filePath) => {
     try {
       const port = process.env.API_PORT || '8000';
-      const response = await fetch(`http://127.0.0.1:${port}/api/videos/upload-local`, {
+      const url = `http://127.0.0.1:${port}/api/videos/upload-local`;
+      
+      // 构建请求体
+      const jsonBody = JSON.stringify({ 
+        file_path: filePath, 
+        auto_extract_subtitles: true 
+      });
+      
+      // 打印请求体以便调试
+      console.log('正在发送视频上传请求:', {
+        url,
+        body: jsonBody,
+        filePath
+      });
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ file_path: filePath, auto_extract_subtitles: true }),
+        body: jsonBody
       });
+      
+      // 检查响应状态
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error('上传视频请求失败:', response.status, responseText);
+        return { 
+          success: false, 
+          error: `请求失败: ${response.status} ${response.statusText}`,
+          details: responseText
+        };
+      }
       
       return await response.json();
     } catch (error) {

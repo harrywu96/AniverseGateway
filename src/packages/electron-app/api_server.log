@@ -171,3 +171,43 @@
 2025-04-17 10:56:21,664 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 10:56:21,724 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 10:56:21,729 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:15:32,802 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:15:32,802 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:15:32,802 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:15:32,802 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:15:35,480 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:15:35,534 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:15:35,553 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:15:35,555 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:16:49,587 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:16:49,587 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:16:49,587 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:16:49,587 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:16:51,844 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:16:51,846 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:16:51,879 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:16:51,884 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:42,219 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:44:42,219 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:44:42,219 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:44:42,219 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:44:44,726 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:44,757 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:44,783 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:44,787 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:55,315 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:44:55,315 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:44:55,315 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:44:55,315 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:44:57,624 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:57,627 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:57,708 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:44:57,712 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:47:05,184 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 11:47:05,185 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 11:47:05,185 - api_server - INFO - 区域设置: cp936
+2025-04-17 11:47:05,185 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 11:47:07,606 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:47:07,635 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:47:07,708 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 11:47:07,710 - subtranslate.api - INFO - SubTranslate API服务启动

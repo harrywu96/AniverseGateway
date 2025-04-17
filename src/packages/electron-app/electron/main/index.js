@@ -184,27 +184,46 @@ function registerIpcHandlers() {
     }); });
     // 上传本地视频文件
     ipcMain.handle('upload-video', function (_event, filePath) { return __awaiter(_this, void 0, void 0, function () {
-        var response, error_1;
+        var response, responseText, jsonBody, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _a.trys.push([0, 4, , 5]);
+                    jsonBody = JSON.stringify({ 
+                        file_path: filePath,  
+                        auto_extract_subtitles: true 
+                    });
+                    // 打印请求体以便调试
+                    console.log('正在发送视频上传请求:', {
+                        url: 'http://127.0.0.1:8000/api/videos/upload-local',
+                        body: jsonBody,
+                        filePath: filePath
+                    });
                     return [4 /*yield*/, fetch('http://127.0.0.1:8000/api/videos/upload-local', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ file_path: filePath, auto_extract_subtitles: true }),
+                            body: jsonBody,
                         })];
                 case 1:
                     response = _a.sent();
-                    return [4 /*yield*/, response.json()];
-                case 2: return [2 /*return*/, _a.sent()];
-                case 3:
+                    if (!!response.ok) return [3 /*break*/, 3];
+                    return [4 /*yield*/, response.text()];
+                case 2:
+                    responseText = _a.sent();
+                    console.error('上传视频请求失败:', response.status, responseText);
+                    return [2 /*return*/, { 
+                        success: false, 
+                        error: "请求失败: " + response.status + " " + response.statusText,
+                        details: responseText
+                    }];
+                case 3: return [2 /*return*/, response.json()];
+                case 4:
                     error_1 = _a.sent();
                     console.error('上传视频时出错:', error_1);
                     return [2 /*return*/, { success: false, error: error_1.message }];
-                case 4: return [2 /*return*/];
+                case 5: return [2 /*return*/];
             }
         });
     }); });
