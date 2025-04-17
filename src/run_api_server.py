@@ -54,7 +54,7 @@ def run_server():
         "1",
         "yes",
     )
-    workers = int(os.environ.get("API_WORKERS", "4"))
+    workers = int(os.environ.get("API_WORKERS", "1"))
 
     # 记录启动信息
     msg = (

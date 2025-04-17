@@ -1,0 +1,35 @@
+2025-04-17 10:38:41,411 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 10:38:41,411 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 10:38:41,411 - api_server - INFO - 区域设置: cp936
+2025-04-17 10:38:41,411 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 10:38:43,605 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:38:43,608 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:38:43,608 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:38:43,610 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:39:05,309 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:39:05,309 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:39:05,309 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:39:59,830 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 10:39:59,830 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 10:39:59,830 - api_server - INFO - 区域设置: cp936
+2025-04-17 10:39:59,830 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 10:40:01,990 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:40:02,049 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:40:02,081 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:40:02,085 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:43:29,068 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:43:29,115 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:43:29,115 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:43:29,115 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:55:43,077 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 10:55:43,077 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 10:55:43,077 - api_server - INFO - 区域设置: cp936
+2025-04-17 10:55:43,077 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 10:55:45,283 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:55:45,297 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:55:45,312 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:55:45,316 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 10:55:51,000 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:55:51,000 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:55:51,032 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-17 10:55:56,812 - subtranslate.api - INFO - SubTranslate API服务关闭

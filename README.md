@@ -197,3 +197,8 @@ chmod +x setup_environment.sh
 本项目中使用的火山引擎机器学习平台SDK需要特殊安装。详细说明请参考 [火山引擎机器学习平台SDK安装指南](docs/ml_platform_setup.md)。
 
 
+# 启动时通过环境变量设置
+API_WORKERS=1 python src/run_api_server.py
+
+# python全进程kill
+taskkill /f /im python.exe

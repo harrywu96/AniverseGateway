@@ -152,4 +152,153 @@ Write-Host "✅ 已修改 App 组件添加安全检查" -ForegroundColor Green
 cd ../..
 
 Write-Host "所有修复已完成！请重新运行 pnpm dev 命令" -ForegroundColor Green
-Write-Host "如果仍有问题，请重启整个开发环境" -ForegroundColor Yellow 
+Write-Host "如果仍有问题，请重启整个开发环境" -ForegroundColor Yellow
+
+# 添加检查端口占用的功能
+function Check-PortAvailable {
+    param (
+        [int]$Port = 8000
+    )
+    
+    try {
+        $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Loopback, $Port)
+        $listener.Start()
+        $listener.Stop()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Kill-ProcessOnPort {
+    param (
+        [int]$Port = 8000
+    )
+    
+    Write-Host "尝试释放端口 $Port..." -ForegroundColor Yellow
+    
+    $connections = netstat -ano | findstr ":$Port" | findstr "LISTENING"
+    if ($connections) {
+        $connections -split '\n' | ForEach-Object {
+            $parts = $_ -split '\s+', 6
+            if ($parts.Count -ge 5) {
+                $pid = $parts[4]
+                Write-Host "发现进程: $pid 占用端口 $Port，正在尝试终止..." -ForegroundColor Yellow
+                try {
+                    Stop-Process -Id $pid -Force -ErrorAction Stop
+                    Write-Host "已成功终止进程 $pid" -ForegroundColor Green
+                } catch {
+                    Write-Host "无法终止进程 $pid: $_" -ForegroundColor Red
+                    Write-Host "请尝试手动关闭该进程，或以管理员身份运行此脚本" -ForegroundColor Yellow
+                }
+            }
+        }
+    } else {
+        Write-Host "未发现任何进程占用端口 $Port" -ForegroundColor Green
+    }
+    
+    # 重新检查端口是否可用
+    if (Check-PortAvailable -Port $Port) {
+        Write-Host "端口 $Port 现在可用" -ForegroundColor Green
+        return $true
+    } else {
+        Write-Host "端口 $Port 仍然被占用" -ForegroundColor Red
+        return $false
+    }
+}
+
+# 修复Electron应用程序启动问题
+function Fix-ElectronIssues {
+    # 确保使用UTF-8编码
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.Encoding]::UTF8
+    $env:PYTHONIOENCODING = "utf-8"
+    
+    Write-Host "=====================================================" -ForegroundColor Cyan
+    Write-Host "        Electron + Python应用诊断与修复工具" -ForegroundColor Cyan
+    Write-Host "=====================================================" -ForegroundColor Cyan
+    Write-Host ""
+    
+    # 检查Python是否可用
+    Write-Host "检查Python环境..." -ForegroundColor Cyan
+    try {
+        $pythonVersion = python --version
+        Write-Host "Python可用: $pythonVersion" -ForegroundColor Green
+    } catch {
+        Write-Host "错误: 无法运行Python，请确保Python已正确安装" -ForegroundColor Red
+        return
+    }
+    
+    # 检查端口占用
+    Write-Host "检查API服务器端口..." -ForegroundColor Cyan
+    $apiPort = 8000
+    
+    if (-not (Check-PortAvailable -Port $apiPort)) {
+        Write-Host "警告: 端口 $apiPort 已被占用" -ForegroundColor Yellow
+        $result = Kill-ProcessOnPort -Port $apiPort
+        if (-not $result) {
+            $response = Read-Host "是否尝试使用另一个端口? (Y/N)"
+            if ($response -eq "Y" -or $response -eq "y") {
+                $newPort = Read-Host "请输入新端口号"
+                $apiPort = [int]$newPort
+                $env:API_PORT = $apiPort
+                Write-Host "将使用端口 $apiPort 启动API服务器" -ForegroundColor Green
+            } else {
+                Write-Host "请手动关闭占用端口 $apiPort 的应用程序后再试" -ForegroundColor Yellow
+            }
+        }
+    } else {
+        Write-Host "端口 $apiPort 可用" -ForegroundColor Green
+    }
+    
+    # 检查是否有Python子进程仍在运行
+    Write-Host "检查是否有遗留的Python进程..." -ForegroundColor Cyan
+    $pythonProcesses = Get-Process -Name python -ErrorAction SilentlyContinue
+    if ($pythonProcesses) {
+        Write-Host "发现正在运行的Python进程:" -ForegroundColor Yellow
+        $pythonProcesses | ForEach-Object {
+            Write-Host "PID: $($_.Id), 命令行: $($_.Path)" -ForegroundColor Yellow
+        }
+        
+        $response = Read-Host "是否终止这些Python进程? (Y/N)"
+        if ($response -eq "Y" -or $response -eq "y") {
+            $pythonProcesses | ForEach-Object {
+                try {
+                    Stop-Process -Id $_.Id -Force -ErrorAction Stop
+                    Write-Host "已终止进程 $($_.Id)" -ForegroundColor Green
+                } catch {
+                    Write-Host "无法终止进程 $($_.Id): $_" -ForegroundColor Red
+                }
+            }
+        }
+    } else {
+        Write-Host "未发现正在运行的Python进程" -ForegroundColor Green
+    }
+    
+    # 检查node_modules
+    Write-Host "检查node_modules..." -ForegroundColor Cyan
+    if (-not (Test-Path "node_modules")) {
+        Write-Host "警告: 未找到node_modules目录，可能需要安装依赖" -ForegroundColor Yellow
+        $response = Read-Host "是否运行 'pnpm install'? (Y/N)"
+        if ($response -eq "Y" -or $response -eq "y") {
+            Write-Host "运行 pnpm install..." -ForegroundColor Cyan
+            pnpm install
+        }
+    } else {
+        Write-Host "node_modules目录存在" -ForegroundColor Green
+    }
+    
+    # 询问是否启动应用
+    Write-Host ""
+    Write-Host "诊断和修复完成" -ForegroundColor Green
+    $response = Read-Host "是否启动应用程序? (Y/N)"
+    if ($response -eq "Y" -or $response -eq "y") {
+        Write-Host "启动应用程序..." -ForegroundColor Cyan
+        pnpm dev:win
+    } else {
+        Write-Host "已取消启动应用程序" -ForegroundColor Yellow
+    }
+}
+
+# 运行修复函数
+Fix-ElectronIssues 
