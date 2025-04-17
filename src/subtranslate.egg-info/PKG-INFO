@@ -26,6 +26,8 @@ License: MIT License
         SOFTWARE. 
 Project-URL: Homepage, https://github.com/yourusername/subtranslate
 Project-URL: Bug Tracker, https://github.com/yourusername/subtranslate/issues
+Project-URL: Documentation, https://subtranslate.readthedocs.io/
+Project-URL: Source, https://github.com/yourusername/subtranslate
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: End Users/Desktop
 Classifier: Topic :: Multimedia :: Video
@@ -44,24 +46,51 @@ Requires-Dist: uvicorn>=0.24.0
 Requires-Dist: httpx>=0.25.1
 Requires-Dist: aiofiles>=23.1.0
 Requires-Dist: requests>=2.31.0
-Requires-Dist: ffmpeg-python>=0.2.0
-Requires-Dist: pysrt>=1.1.2
-Requires-Dist: chardet>=5.2.0
-Requires-Dist: openai>=1.6.0
-Requires-Dist: websockets>=12.0
-Requires-Dist: python-multipart>=0.0.6
 Requires-Dist: typer>=0.9.0
 Requires-Dist: rich>=13.6.0
 Requires-Dist: asyncio>=3.4.3
+Requires-Dist: websockets>=12.0
+Requires-Dist: python-multipart>=0.0.6
+Requires-Dist: ffmpeg-python>=0.2.0
+Requires-Dist: pysrt>=1.1.2
+Requires-Dist: chardet>=5.2.0
+Requires-Dist: faster-whisper>=0.10.0
+Requires-Dist: openai>=1.6.0
+Requires-Dist: zhipuai>=2.0.0
+Requires-Dist: volcengine>=1.0.180
+Requires-Dist: dashscope>=1.10.0
+Requires-Dist: baidu-aip>=4.16.10
+Requires-Dist: anthropic>=0.5.0
+Requires-Dist: google-generativeai>=0.3.0
+Requires-Dist: tiktoken>=0.5.1
+Requires-Dist: torch>=2.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.1; extra == "dev"
+Requires-Dist: pytest-mock>=3.12.0; extra == "dev"
+Requires-Dist: hypothesis>=6.82.0; extra == "dev"
 Requires-Dist: black>=23.11.0; extra == "dev"
 Requires-Dist: isort>=5.12.0; extra == "dev"
 Requires-Dist: mypy>=1.7.0; extra == "dev"
 Requires-Dist: ruff>=0.1.5; extra == "dev"
-Requires-Dist: pytest-asyncio>=0.21.1; extra == "dev"
+Requires-Dist: pylint>=3.0.2; extra == "dev"
+Requires-Dist: flake8>=6.1.0; extra == "dev"
+Requires-Dist: pyright>=1.1.333; extra == "dev"
+Requires-Dist: pydantic-extra-types>=2.1.0; extra == "dev"
+Requires-Dist: types-requests>=2.31.0; extra == "dev"
+Requires-Dist: types-aiofiles>=23.1.0; extra == "dev"
 Requires-Dist: pre-commit>=3.5.0; extra == "dev"
+Requires-Dist: bandit>=1.7.5; extra == "dev"
+Requires-Dist: safety>=2.3.5; extra == "dev"
+Provides-Extra: docs
+Requires-Dist: sphinx>=7.2.5; extra == "docs"
+Requires-Dist: sphinx-rtd-theme>=1.3.0; extra == "docs"
+Requires-Dist: mkdocs>=1.5.3; extra == "docs"
+Requires-Dist: mkdocs-material>=9.4.3; extra == "docs"
+Requires-Dist: sphinx-autodoc-typehints>=1.24.0; extra == "docs"
+Provides-Extra: full
+Requires-Dist: subtranslate[dev,docs]; extra == "full"
 Dynamic: license-file
 
 # SubTranslate - 智能视频字幕翻译系统
@@ -85,11 +114,13 @@ SubTranslate是一个自动化视频字幕提取、翻译和整合系统，能�
 # 安装UV（如果尚未安装）
 curl -sSf https://install.python-poetry.org | python3 -
 
+# 设置powershell执行策略
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 # 创建并激活虚拟环境
 uv venv
 source .venv/bin/activate  # Linux/macOS
 # 或
-.venv\Scripts\activate  # Windows
+.\.venv\Scripts\Activate.ps1   # Windows
 
 # 安装依赖
 uv pip sync requirements.txt
@@ -225,4 +256,39 @@ SubTranslate支持多种AI服务提供商，您可以根据需要选择：
 - **SiliconFlow**：支持DeepSeek、Qwen等多种开源大模型
 - **自定义API**：支持自定义兼容OpenAI API格式的服务
 
-要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。 
+要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。
+
+## 环境设置
+
+本项目使用Python 3.10+和UV包管理器来管理依赖。
+
+### 自动设置（推荐）
+
+为了方便设置环境，我们提供了自动化脚本：
+
+#### Windows用户
+
+```bash
+# 设置基本环境
+setup_environment.bat
+
+# 设置开发环境（包含开发工具）
+setup_environment.bat --dev
+```
+
+#### Linux/macOS用户
+
+```bash
+# 设置基本环境
+chmod +x setup_environment.sh
+./setup_environment.sh
+
+# 设置开发环境（包含开发工具）
+./setup_environment.sh --dev
+```
+
+### 火山引擎机器学习平台SDK
+
+本项目中使用的火山引擎机器学习平台SDK需要特殊安装。详细说明请参考 [火山引擎机器学习平台SDK安装指南](docs/ml_platform_setup.md)。
+
+

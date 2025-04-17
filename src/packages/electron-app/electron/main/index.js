@@ -82,8 +82,8 @@ function createWindow() {
 function startPythonBackend() {
     try {
         // 计算Python后端路径
-        var pythonPath = void 0;
-        var scriptPath = void 0;
+        let pythonPath;
+        let scriptPath;
         if (isDev) {
             // 开发环境路径
             pythonPath = 'python';
@@ -91,40 +91,67 @@ function startPythonBackend() {
         }
         else {
             // 生产环境路径
-            var resourcesPath = process.resourcesPath;
+            const resourcesPath = process.resourcesPath;
             pythonPath = join(resourcesPath, 'backend', 'python.exe');
             scriptPath = join(resourcesPath, 'backend', 'run_api_server.py');
         }
         console.log('启动Python后端...');
         console.log(`Python路径: ${pythonPath}`);
         console.log(`脚本路径: ${scriptPath}`);
+
         // 启动Python进程
         pythonProcess = spawn(pythonPath, [scriptPath]);
+
         // 监听标准输出
         pythonProcess.stdout.on('data', function (data) {
             console.log(`Python后端输出: ${data}`);
             // 检测后端是否已经启动
             if (data.toString().includes('Application startup complete')) {
                 isBackendStarted = true;
-                mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('backend-started');
+                mainWindow?.webContents.send('backend-started');
             }
         });
+
         // 监听错误输出
         pythonProcess.stderr.on('data', function (data) {
             console.error(`Python后端错误: ${data}`);
+            
+            // 检查是否是依赖错误，并发送到前端
+            if (data.toString().includes('ImportError') || data.toString().includes('ModuleNotFoundError')) {
+                const errorMsg = data.toString();
+                if (mainWindow) {
+                    mainWindow.webContents.send('backend-error', {
+                        type: 'dependency-error',
+                        message: errorMsg
+                    });
+                }
+            }
         });
+
         // 进程退出时的处理
         pythonProcess.on('close', function (code) {
             console.log(`Python后端已退出，退出码: ${code}`);
             pythonProcess = null;
             isBackendStarted = false;
-            if (mainWindow) {
-                mainWindow.webContents.send('backend-stopped', { code: code });
+            
+            // 如果是非正常退出，通知前端
+            if (code !== 0 && mainWindow) {
+                mainWindow.webContents.send('backend-stopped', { 
+                    code: code,
+                    error: true,
+                    message: '后端服务异常退出，请检查依赖是否正确安装'
+                });
             }
         });
     }
     catch (error) {
         console.error('启动Python后端时出错:', error);
+        if (mainWindow) {
+            mainWindow.webContents.send('backend-error', {
+                type: 'startup-error',
+                message: error.toString()
+            });
+        }
     }
 }
 /**
