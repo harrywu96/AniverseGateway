@@ -8,8 +8,9 @@ import os
 import shutil
 import uuid
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 
+import torch
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -56,6 +57,23 @@ class TranscriptionRequest(BaseModel):
     model_size: WhisperModelSize = Field(
         default=WhisperModelSize.MEDIUM, description="模型大小"
     )
+    language: Optional[str] = Field(default=None, description="语言代码")
+    task: str = Field(default="transcribe", description="任务类型")
+    initial_prompt: Optional[str] = Field(default=None, description="初始提示")
+    vad_filter: bool = Field(default=True, description="是否使用VAD过滤")
+    word_timestamps: bool = Field(
+        default=True, description="是否生成单词时间戳"
+    )
+    keep_audio: bool = Field(default=False, description="是否保留音频文件")
+    device: Optional[str] = Field(default=None, description="计算设备")
+    compute_type: Optional[str] = Field(default=None, description="计算精度")
+
+
+# 使用本地模型的转写请求
+class TranscriptionRequestWithLocalModel(BaseModel):
+    """使用本地模型的转写请求"""
+
+    model_path: str = Field(..., description="本地模型路径")
     language: Optional[str] = Field(default=None, description="语言代码")
     task: str = Field(default="transcribe", description="任务类型")
     initial_prompt: Optional[str] = Field(default=None, description="初始提示")
@@ -746,8 +764,8 @@ async def process_transcription_with_gui_config(
         # 创建SpeechToText实例
         speech_to_text = SpeechToText.from_gui_config(config_path)
 
-        # 执行转写
-        result = await speech_to_text.transcribe_video(
+        # 执行转写 - 视频文件路径已确定，直接使用转写视频功能
+        result = speech_to_text.transcribe_video(
             video_path=video_path,
             output_dir=output_dir,
             progress_callback=progress_callback,
@@ -822,3 +840,461 @@ async def process_transcription_with_gui_config(
             message=f"转写失败: {str(e)}",
         )
         await manager.send_message(task_id, update.model_dump())
+
+
+# 获取可用模型列表响应
+class AvailableModelsResponse(APIResponse):
+    """可用模型列表响应"""
+
+    models: List[Dict[str, Any]] = Field(
+        default_factory=list, description="可用模型列表"
+    )
+
+
+@router.get("/available-models", response_model=AvailableModelsResponse)
+async def get_available_models():
+    """获取可用的模型列表
+
+    Returns:
+        AvailableModelsResponse: 包含可用模型的响应
+    """
+    try:
+        # 获取可用模型
+        models = config_manager.get_available_models()
+
+        return AvailableModelsResponse(
+            success=True, message="获取可用模型成功", models=models
+        )
+    except Exception as e:
+        logger.error(f"获取可用模型失败: {str(e)}", exc_info=True)
+        return AvailableModelsResponse(
+            success=False, message=f"获取可用模型失败: {str(e)}"
+        )
+
+
+# 模型管理请求
+class ManageModelRequest(BaseModel):
+    """模型管理请求"""
+
+    action: str = Field(..., description="操作类型: check, info")
+    model_path: str = Field(..., description="模型路径")
+
+
+# 模型管理响应
+class ManageModelResponse(APIResponse):
+    """模型管理响应"""
+
+    model_info: Optional[Dict[str, Any]] = Field(
+        default=None, description="模型信息"
+    )
+    valid: bool = Field(default=False, description="模型是否有效")
+
+
+@router.post("/manage-model", response_model=ManageModelResponse)
+async def manage_model(
+    request: ManageModelRequest,
+):
+    """管理模型
+
+    Args:
+        request: 请求内容，包含操作类型和模型路径
+
+    Returns:
+        ManageModelResponse: 操作结果
+    """
+    try:
+        model_path = request.model_path
+        action = request.action.lower()
+
+        if action == "check":
+            # 检查模型路径是否有效
+            is_valid = config_manager.validate_model_path(model_path)
+
+            return ManageModelResponse(
+                success=True,
+                message="模型验证完成",
+                valid=is_valid,
+                model_info=(
+                    {
+                        "path": model_path,
+                        "name": os.path.basename(model_path),
+                        "type": "local",
+                    }
+                    if is_valid
+                    else None
+                ),
+            )
+
+        elif action == "info":
+            # 获取模型详细信息
+            is_valid = config_manager.validate_model_path(model_path)
+
+            if not is_valid:
+                return ManageModelResponse(
+                    success=False, message="无效的模型路径", valid=False
+                )
+
+            # 获取更多模型信息（如可用）
+            model_info = {
+                "path": model_path,
+                "name": os.path.basename(model_path),
+                "type": "local",
+                "files": [],
+            }
+
+            # 检查模型文件
+            model_files = [
+                "model.bin",
+                "model.onnx",
+                "encoder.onnx",
+                "decoder.onnx",
+                "tokenizer.json",
+                "vocabulary.txt",
+            ]
+
+            for file in model_files:
+                file_path = os.path.join(model_path, file)
+                if os.path.exists(file_path):
+                    file_size = os.path.getsize(file_path)
+                    model_info["files"].append(
+                        {
+                            "name": file,
+                            "size": file_size,
+                            "size_readable": (
+                                f"{file_size / (1024*1024):.2f} MB"
+                            ),
+                        }
+                    )
+
+            return ManageModelResponse(
+                success=True,
+                message="获取模型信息成功",
+                valid=True,
+                model_info=model_info,
+            )
+
+        else:
+            return ManageModelResponse(
+                success=False, message=f"不支持的操作: {action}"
+            )
+
+    except Exception as e:
+        logger.error(f"模型管理操作失败: {str(e)}", exc_info=True)
+        return ManageModelResponse(
+            success=False, message=f"模型管理操作失败: {str(e)}"
+        )
+
+
+# 扫描目录请求
+class ScanDirectoryRequest(BaseModel):
+    """扫描目录请求"""
+
+    directory: str = Field(..., description="要扫描的目录路径")
+    recursive: bool = Field(default=False, description="是否递归扫描子目录")
+
+
+# 扫描目录响应
+class ScanDirectoryResponse(APIResponse):
+    """扫描目录响应"""
+
+    models: List[Dict[str, Any]] = Field(
+        default_factory=list, description="找到的模型列表"
+    )
+
+
+@router.post("/scan-directory", response_model=ScanDirectoryResponse)
+async def scan_directory(
+    request: ScanDirectoryRequest,
+):
+    """扫描目录寻找可用的模型
+
+    Args:
+        request: 请求内容，包含要扫描的目录路径和是否递归扫描
+
+    Returns:
+        ScanDirectoryResponse: 扫描结果
+    """
+    try:
+        directory = request.directory
+        recursive = request.recursive
+
+        if not os.path.exists(directory) or not os.path.isdir(directory):
+            return ScanDirectoryResponse(
+                success=False,
+                message=f"无效的目录路径: {directory}",
+                models=[],
+            )
+
+        # 扫描模型文件
+        found_models = []
+
+        # 模型文件指示器
+        model_indicators = ["model.bin", "tokenizer.json", "model.onnx"]
+
+        def scan_dir(dir_path):
+            nonlocal found_models
+
+            # 检查当前目录是否包含模型文件
+            has_model_files = any(
+                os.path.exists(os.path.join(dir_path, indicator))
+                for indicator in model_indicators
+            )
+
+            if has_model_files:
+                # 检查模型是否有效
+                is_valid = config_manager.validate_model_path(dir_path)
+                if is_valid:
+                    found_models.append(
+                        {
+                            "path": dir_path,
+                            "name": os.path.basename(dir_path),
+                            "type": "local",
+                        }
+                    )
+
+            # 如果需要递归扫描子目录
+            if recursive:
+                for item in os.listdir(dir_path):
+                    item_path = os.path.join(dir_path, item)
+                    if os.path.isdir(item_path):
+                        scan_dir(item_path)
+
+        # 开始扫描
+        scan_dir(directory)
+
+        return ScanDirectoryResponse(
+            success=True,
+            message=f"扫描完成，找到 {len(found_models)} 个可用模型",
+            models=found_models,
+        )
+
+    except Exception as e:
+        logger.error(f"扫描目录失败: {str(e)}", exc_info=True)
+        return ScanDirectoryResponse(
+            success=False, message=f"扫描目录失败: {str(e)}", models=[]
+        )
+
+
+@router.post(
+    "/transcribe-with-local-model", response_model=TranscriptionResponse
+)
+async def transcribe_with_local_model(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    data: str = Form(...),  # JSON序列化的请求数据
+    config: SystemConfig = Depends(get_system_config),
+):
+    """使用本地模型转写音频或视频文件
+
+    接收上传的音频或视频文件，并使用指定的本地faster-whisper模型进行转写。
+    转写结果作为SRT字幕文件返回。
+
+    Args:
+        background_tasks: 后台任务
+        file: 上传的音频或视频文件
+        data: JSON序列化的请求数据
+        config: 系统配置
+
+    Returns:
+        TranscriptionResponse: 包含转写结果信息的响应
+    """
+    try:
+        # 解析请求数据
+        import json
+        from pydantic import ValidationError
+
+        try:
+            request_data = TranscriptionRequestWithLocalModel.model_validate(
+                json.loads(data)
+            )
+        except (json.JSONDecodeError, ValidationError) as e:
+            raise HTTPException(
+                status_code=400, detail=f"请求数据格式错误: {str(e)}"
+            )
+
+        # 检查本地模型路径是否有效
+        model_path = request_data.model_path
+        if not config_manager.validate_model_path(model_path):
+            raise HTTPException(
+                status_code=400, detail=f"无效的模型路径: {model_path}"
+            )
+
+        # 检查文件类型
+        filename = file.filename or ""
+        file_ext = Path(filename).suffix.lower()
+
+        # 支持的文件类型
+        audio_extensions = [".wav", ".mp3", ".m4a", ".flac", ".ogg", ".aac"]
+        video_extensions = [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".webm"]
+
+        is_audio = file_ext in audio_extensions
+        is_video = file_ext in video_extensions
+
+        if not (is_audio or is_video):
+            raise HTTPException(
+                status_code=400,
+                detail="不支持的文件类型，请上传音频或视频文件",
+            )
+
+        # 保存上传的文件
+        temp_dir = config.temp_dir
+        os.makedirs(temp_dir, exist_ok=True)
+
+        task_id = str(uuid.uuid4())
+        task_dir = os.path.join(temp_dir, f"transcribe_{task_id}")
+        os.makedirs(task_dir, exist_ok=True)
+
+        temp_file_path = os.path.join(task_dir, filename)
+
+        # 读取并保存文件内容
+        content = await file.read()
+        with open(temp_file_path, "wb") as f:
+            f.write(content)
+
+        logger.info(f"文件已保存: {temp_file_path}")
+
+        # 创建转写参数
+        from subtranslate.core.speech_to_text import TranscriptionParameters
+
+        params = TranscriptionParameters(
+            model_size=None,  # 使用本地模型时，model_size为None
+            model_dir=model_path,
+            language=request_data.language,
+            task=request_data.task,
+            initial_prompt=request_data.initial_prompt,
+            vad_filter=request_data.vad_filter,
+            word_timestamps=request_data.word_timestamps,
+            device=request_data.device
+            or ("cuda" if torch.cuda.is_available() else "cpu"),
+            compute_type=request_data.compute_type
+            or ("float16" if torch.cuda.is_available() else "float32"),
+        )
+
+        # 创建SpeechToText实例
+        from subtranslate.core.speech_to_text import SpeechToText
+
+        speech_to_text = SpeechToText(parameters=params)
+
+        # 在后台执行转写任务
+        background_tasks.add_task(
+            process_transcription_with_model,
+            task_id=task_id,
+            file_path=temp_file_path,
+            speech_to_text=speech_to_text,
+            is_video=is_video,
+            keep_audio=request_data.keep_audio,
+            task_dir=task_dir,
+            config=config,
+        )
+
+        # 返回任务ID
+        return TranscriptionResponse(
+            success=True,
+            message="转写任务已提交",
+            data={
+                "task_id": task_id,
+                "filename": filename,
+                "status": "processing",
+            },
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"提交本地模型转写任务失败: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"提交本地模型转写任务失败: {str(e)}"
+        )
+
+
+async def process_transcription_with_model(
+    task_id: str,
+    file_path: str,
+    speech_to_text: "SpeechToText",
+    is_video: bool,
+    keep_audio: bool,
+    task_dir: str,
+    config: SystemConfig,
+):
+    """使用指定的SpeechToText实例处理转写任务
+
+    Args:
+        task_id: 任务ID
+        file_path: 文件路径
+        speech_to_text: SpeechToText实例
+        is_video: 是否为视频文件
+        keep_audio: 是否保留音频文件
+        task_dir: 任务目录
+        config: 系统配置
+    """
+    import json
+
+    try:
+        # 进度更新回调
+        async def progress_callback(progress: float):
+            event = ProgressUpdateEvent(
+                task_id=task_id,
+                progress=progress,
+                status="processing",
+            )
+            await manager.broadcast_to_group(task_id, event.model_dump())
+
+        # 执行转写
+        result = None
+        if is_video:
+            result = speech_to_text.transcribe_video(
+                video_path=file_path,
+                output_dir=task_dir,
+                keep_audio=keep_audio,
+                progress_callback=progress_callback,
+            )
+        else:
+            result = speech_to_text.transcribe_audio(
+                audio_path=file_path,
+                output_dir=task_dir,
+                progress_callback=progress_callback,
+            )
+
+        # 保存结果到JSON文件
+        result_dict = result.model_dump()
+
+        # 保存SRT文件路径信息
+        if result.subtitle_path:
+            result_dict["subtitle_file"] = os.path.basename(
+                result.subtitle_path
+            )
+
+        with open(
+            os.path.join(task_dir, "result.json"), "w", encoding="utf-8"
+        ) as f:
+            json.dump(result_dict, f, ensure_ascii=False, indent=2)
+
+        # 完成通知
+        completion_event = ProgressUpdateEvent(
+            task_id=task_id,
+            progress=1.0,
+            status="completed",
+        )
+        await manager.broadcast_to_group(
+            task_id, completion_event.model_dump()
+        )
+
+        logger.info(f"任务 {task_id} 转写完成")
+
+    except Exception as e:
+        logger.error(f"转写任务 {task_id} 失败: {str(e)}", exc_info=True)
+
+        # 保存错误信息
+        with open(
+            os.path.join(task_dir, "error.txt"), "w", encoding="utf-8"
+        ) as f:
+            f.write(str(e))
+
+        # 发送错误通知
+        error_event = ProgressUpdateEvent(
+            task_id=task_id,
+            progress=0,
+            status="failed",
+            message=str(e),
+        )
+        await manager.broadcast_to_group(task_id, error_event.model_dump())

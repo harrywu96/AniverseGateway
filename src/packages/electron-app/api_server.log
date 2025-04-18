@@ -754,3 +754,19 @@ pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unk
 2025-04-18 10:09:52,992 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-18 10:09:53,034 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-18 10:09:53,036 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:17,578 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 10:47:17,578 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 10:47:17,579 - api_server - INFO - 区域设置: cp936
+2025-04-18 10:47:17,579 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 10:47:19,954 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:19,958 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:20,003 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:20,003 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:50,302 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 10:47:50,302 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 10:47:50,302 - api_server - INFO - 区域设置: cp936
+2025-04-18 10:47:50,302 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 10:47:52,462 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:52,465 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:52,495 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:47:52,501 - subtranslate.api - INFO - SubTranslate API服务启动
