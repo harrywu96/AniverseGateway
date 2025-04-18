@@ -370,6 +370,119 @@ function registerIpcHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  // ==== 设置相关处理程序 ====
+  // 获取设置
+  ipcMain.handle('get-settings', async () => {
+    try {
+      const settings = loadSettings();
+      return settings;
+    } catch (error) {
+      console.error('获取设置时出错:', error);
+      throw error;
+    }
+  });
+
+  // 保存设置
+  ipcMain.handle('save-settings', async (event, settings) => {
+    try {
+      saveSettings(settings);
+      return { success: true };
+    } catch (error) {
+      console.error('保存设置时出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 打开目录选择对话框
+  ipcMain.handle('open-directory-dialog', async (event, options) => {
+    return await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'],
+      ...options
+    });
+  });
+
+  // 打开文件选择对话框
+  ipcMain.handle('open-file-dialog', async (event, options) => {
+    return await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      ...options
+    });
+  });
+
+  // 验证模型
+  ipcMain.handle('validate-model', async (event, modelPath) => {
+    try {
+      const port = process.env.API_PORT || '8000';
+      const response = await fetch(`http://localhost:${port}/api/speech-to-text/validate-model`, {
+        method: 'POST',
+        body: JSON.stringify({ model_path: modelPath }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('验证模型出错:', error);
+      return {
+        valid: false,
+        message: `请求失败: ${error.message}`
+      };
+    }
+  });
+}
+
+/**
+ * 设置存储路径
+ */
+const userDataPath = app.getPath('userData');
+const settingsPath = join(userDataPath, 'settings.json');
+
+/**
+ * 加载设置
+ */
+function loadSettings() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      const settings = JSON.parse(data);
+      console.log('已加载设置:', settings);
+      return settings;
+    }
+    return {};
+  } catch (error) {
+    console.error('加载设置出错:', error);
+    return {};
+  }
+}
+
+/**
+ * 保存设置
+ */
+function saveSettings(newSettings) {
+  try {
+    // 合并现有设置
+    const existingSettings = loadSettings();
+    const settings = { ...existingSettings, ...newSettings };
+    
+    // 确保目录存在
+    const dir = join(userDataPath, '..');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    
+    // 保存设置
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    console.log('设置已保存:', settings);
+  } catch (error) {
+    console.error('保存设置出错:', error);
+    throw error;
+  }
 }
 
 // 应用启动完成时

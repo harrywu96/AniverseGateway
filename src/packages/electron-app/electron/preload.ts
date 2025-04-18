@@ -25,5 +25,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   
   // 重启后端服务
-  restartBackend: () => ipcRenderer.invoke('restart-backend')
+  restartBackend: () => ipcRenderer.invoke('restart-backend'),
+  
+  // ==== 设置相关接口 ====
+  // 获取设置
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  
+  // 保存设置
+  saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
+  
+  // 打开文件夹选择对话框
+  openDirectoryDialog: (options: any) => ipcRenderer.invoke('open-directory-dialog', options),
+  
+  // 打开文件选择对话框
+  openFileDialog: (options: any) => ipcRenderer.invoke('open-file-dialog', options),
+  
+  // 验证模型
+  validateModel: (modelPath: string) => ipcRenderer.invoke('validate-model', modelPath)
 }); 
