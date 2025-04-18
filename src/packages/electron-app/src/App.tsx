@@ -325,15 +325,14 @@ const App: React.FC = () => {
             出错了
           </Typography>
           
-          <Typography textAlign="center" sx={{ mb: 3 }}>
+          <Typography textAlign="center" sx={{ mb: 1 }}>
             {error}
           </Typography>
           
           <Alert severity="info" sx={{ mb: 3, width: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <InfoIcon sx={{ mr: 1 }} />
               <Typography variant="body2">
-                如果您已经手动启动了后端服务，可以尝试刷新页面重新检测。
+                如果您已经启动了后端服务，可以尝试刷新页面重新检测。
               </Typography>
             </Box>
           </Alert>

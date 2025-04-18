@@ -491,3 +491,251 @@ fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object ha
 2025-04-17 15:39:58,511 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 15:39:58,537 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-17 15:39:58,541 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:40:17,046 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:40:17,047 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:40:17,047 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:40:17,047 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:40:19,389 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:40:19,405 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:40:19,432 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:40:19,433 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:40:29,765 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:40:30,541 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:40:30,644 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:40:30,644 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:40:30,645 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:46:32,244 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:46:32,244 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:46:32,245 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:46:32,245 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:46:34,461 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:46:34,489 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:46:34,505 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:46:34,515 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:46:36,523 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:46:37,286 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:46:37,391 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:46:37,391 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:46:37,392 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:46:39,481 - subtranslate.api.videos - INFO - 接收到本地视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:46:40,237 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:46:40,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:46:40,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:46:40,340 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:46:40,340 - subtranslate.api.videos - ERROR - 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:46:40,341 - subtranslate.api.videos - ERROR - 本地视频加载失败: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 152, in load_video
+    video_info.subtitle_tracks = subtitle_tracks
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1000, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 1047, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "VideoInfo" object has no field "subtitle_tracks"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 387, in upload_local_video
+    return await load_video(request, config, extractor, video_storage)
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 171, in load_video
+    raise HTTPException(status_code=500, detail=f"加载视频失败: {str(e)}")
+fastapi.exceptions.HTTPException: 500: 加载视频失败: "VideoInfo" object has no field "subtitle_tracks"
+2025-04-17 15:53:03,938 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:53:03,938 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:53:03,938 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:53:03,938 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:53:06,204 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:53:06,253 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:53:06,283 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:53:06,288 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:54:30,040 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:54:30,040 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:54:30,040 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:54:30,040 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:54:32,371 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:54:32,403 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:54:32,459 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:54:32,461 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:54:37,737 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-17 15:54:37,737 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:54:38,591 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:54:38,701 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:54:38,705 - subtranslate.api - ERROR - 未处理的异常: Unable to serialize unknown type: <class 'subtranslate.core.subtitle_extractor.SubtitleTrack'>
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\routing.py", line 714, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\routing.py", line 734, in app
+    await route.handle(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\fastapi\routing.py", line 327, in app
+    content = await serialize_response(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\fastapi\routing.py", line 181, in serialize_response
+    return field.serialize(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\fastapi\_compat.py", line 151, in serialize
+    return self._type_adapter.dump_python(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\type_adapter.py", line 572, in dump_python
+    return self.serializer.to_python(
+pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'subtranslate.core.subtitle_extractor.SubtitleTrack'>
+2025-04-17 15:58:46,016 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:58:46,017 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:58:46,017 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:58:46,017 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:58:48,343 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:58:48,349 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:58:48,385 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:58:48,392 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:58:51,677 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-17 15:58:51,677 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:58:52,468 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:58:52,577 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:59:44,320 - api_server - INFO - 系统默认编码: utf-8
+2025-04-17 15:59:44,320 - api_server - INFO - 文件系统编码: utf-8
+2025-04-17 15:59:44,320 - api_server - INFO - 区域设置: cp936
+2025-04-17 15:59:44,320 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-17 15:59:46,592 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:59:46,603 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:59:46,634 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:59:46,636 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-17 15:59:49,469 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-17 15:59:49,469 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 15:59:50,231 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 15:59:50,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 15:59:50,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 15:59:50,339 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-17 15:59:52,627 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[ANi] BanG Dream! Ave Mujica - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4', 'auto_extract_subtitles': True}
+2025-04-17 15:59:52,627 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[ANi] BanG Dream! Ave Mujica - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4' auto_extract_subtitles=True
+2025-04-17 15:59:52,916 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [ANi] BanG Dream! Ave Mujica - 03 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4, 格式: mp4, 时长: 1420.064622, 包含字幕: False
+2025-04-17 16:00:13,332 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-17 16:00:13,332 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-17 16:00:14,121 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian

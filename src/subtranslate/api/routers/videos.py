@@ -20,7 +20,6 @@ from fastapi import (
 from pydantic import BaseModel, Field
 
 from ...schemas.api import APIResponse, VideoDetailResponse
-from ...schemas.video import VideoFormat
 from ...schemas.config import SystemConfig
 from ...core.subtitle_extractor import SubtitleExtractor
 from ...services.video_storage import VideoStorageService
@@ -55,6 +54,25 @@ class VideoLoadRequest(BaseModel):
             "example": {
                 "file_path": "/path/to/video.mp4",
                 "auto_extract_subtitles": True,
+            }
+        }
+
+
+# Electron应用使用的嵌套请求模型
+class ElectronVideoLoadRequest(BaseModel):
+    """Electron应用使用的视频加载请求包装模型"""
+
+    request: VideoLoadRequest = Field(..., description="视频加载请求")
+
+    class Config:
+        """模型配置"""
+
+        json_schema_extra = {
+            "example": {
+                "request": {
+                    "file_path": "/path/to/video.mp4",
+                    "auto_extract_subtitles": True,
+                }
             }
         }
 
@@ -358,7 +376,7 @@ async def upload_video(
     "/upload-local", response_model=VideoDetailResponse, tags=["视频管理"]
 )
 async def upload_local_video(
-    request: VideoLoadRequest,
+    request: dict,
     config: SystemConfig = Depends(get_system_config),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
     video_storage: VideoStorageService = Depends(get_video_storage),
@@ -366,9 +384,12 @@ async def upload_local_video(
     """从本地路径加载视频文件（Electron应用专用）
 
     接收本地视频文件路径，直接加载视频，用于与Electron前端集成。
+    支持两种请求格式:
+    1. 直接格式: {"file_path": "...", "auto_extract_subtitles": true}
+    2. 嵌套格式: {"request": {"file_path": "...", "auto_extract_subtitles": true}}
 
     Args:
-        request: 视频加载请求
+        request: 视频加载请求(支持直接和嵌套格式)
         config: 系统配置
         extractor: 字幕提取器
         video_storage: 视频存储服务
@@ -377,14 +398,28 @@ async def upload_local_video(
         VideoDetailResponse: 视频详情响应
     """
     try:
-        logger.info(f"接收到本地视频加载请求: {request}")
+        # 处理请求格式，支持直接和嵌套格式
+        logger.info(f"接收到本地视频加载请求原始数据: {request}")
+
+        if "request" in request:
+            # 嵌套格式
+            video_request_data = request["request"]
+        else:
+            # 直接格式
+            video_request_data = request
+
+        # 转换为VideoLoadRequest对象
+        video_request = VideoLoadRequest(**video_request_data)
+        logger.info(f"处理后的视频加载请求: {video_request}")
 
         # 检查文件路径
-        if not request.file_path:
+        if not video_request.file_path:
             logger.error("请求中缺少必要的file_path字段")
             raise HTTPException(status_code=400, detail="缺少必要的文件路径")
 
-        return await load_video(request, config, extractor, video_storage)
+        return await load_video(
+            video_request, config, extractor, video_storage
+        )
     except Exception as e:
         logger.error(f"本地视频加载失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):

@@ -9,6 +9,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from subtranslate.core.ffmpeg import FFmpegError, FFmpegTool
 from subtranslate.schemas.video import VideoInfo, ProcessingStatus
+from subtranslate.schemas.subtitle import (
+    SubtitleTrack as PydanticSubtitleTrack,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -566,14 +569,14 @@ class SubtitleExtractor:
 
     async def list_subtitle_tracks(
         self, video_info: VideoInfo
-    ) -> List[SubtitleTrack]:
+    ) -> List[PydanticSubtitleTrack]:
         """列出视频中的字幕轨道
 
         Args:
             video_info: 视频信息对象
 
         Returns:
-            List[SubtitleTrack]: 字幕轨道列表
+            List[PydanticSubtitleTrack]: 字幕轨道列表（Pydantic模型）
         """
         try:
             # 获取视频中的字幕流
@@ -583,7 +586,11 @@ class SubtitleExtractor:
             for i, stream in enumerate(streams):
                 # 创建字幕轨道对象
                 track = SubtitleTrack.from_stream_info(stream, i)
-                tracks.append(track)
+                # 转换为Pydantic模型
+                pydantic_track = PydanticSubtitleTrack.from_extractor_track(
+                    track
+                )
+                tracks.append(pydantic_track)
 
                 logger.info(f"发现字幕轨道: {track}")
 
@@ -594,14 +601,14 @@ class SubtitleExtractor:
 
     async def find_external_subtitles(
         self, video_info: VideoInfo
-    ) -> List[Dict]:
+    ) -> List[Dict[str, str]]:
         """查找与视频关联的外挂字幕文件
 
         Args:
             video_info: 视频信息对象
 
         Returns:
-            List[Dict]: 外挂字幕信息列表，每个字典包含路径、语言和格式信息
+            List[Dict[str, str]]: 外挂字幕信息列表，每个字典包含路径、语言和格式信息
         """
         try:
             # 获取视频路径
@@ -614,7 +621,7 @@ class SubtitleExtractor:
             external_subtitles = []
             for sub_path in subtitle_files:
                 # 尝试从文件名中推断语言代码
-                language = None
+                language = ""  # 默认空字符串而不是None
                 filename = sub_path.stem
 
                 # 常见的语言代码模式: filename.en.srt, filename_zh.srt
@@ -630,13 +637,13 @@ class SubtitleExtractor:
                 external_subtitles.append(
                     {
                         "path": str(sub_path),
-                        "language": language,
+                        "language": language,  # 现在总是字符串
                         "format": subtitle_format.value,
                     }
                 )
 
                 logger.info(
-                    f"发现外挂字幕: {sub_path}, 语言: {language}, "
+                    f"发现外挂字幕: {sub_path}, 语言: {language or '未知'}, "
                     f"格式: {subtitle_format}"
                 )
 

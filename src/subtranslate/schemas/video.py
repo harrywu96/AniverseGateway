@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -32,7 +32,9 @@ class VideoFormat(str, Enum):
 class VideoInfo(BaseModel):
     """视频信息模型，存储视频相关的元数据和处理状态。"""
 
-    id: str = Field(default_factory=lambda: str(uuid4()), description="视频唯一标识符")
+    id: str = Field(
+        default_factory=lambda: str(uuid4()), description="视频唯一标识符"
+    )
     filename: str = Field(..., description="视频文件名")
     path: str = Field(..., description="视频文件路径")
     duration: Optional[float] = Field(None, description="视频时长（秒）")
@@ -41,7 +43,15 @@ class VideoInfo(BaseModel):
     status: ProcessingStatus = Field(
         default=ProcessingStatus.PENDING, description="处理状态"
     )
-    created_at: datetime = Field(default_factory=datetime.now, description="创建时间")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="创建时间"
+    )
+    subtitle_tracks: List[Any] = Field(
+        default_factory=list, description="字幕轨道列表"
+    )
+    external_subtitles: List[Dict[str, Any]] = Field(
+        default_factory=list, description="外挂字幕列表"
+    )
 
     class Config:
         """模型配置"""
@@ -56,6 +66,8 @@ class VideoInfo(BaseModel):
                 "format": "mp4",
                 "status": "pending",
                 "created_at": "2023-05-20T14:30:00Z",
+                "subtitle_tracks": [],
+                "external_subtitles": [],
             }
         }
 
@@ -97,4 +109,6 @@ class VideoInfo(BaseModel):
         else:
             format_value = format_override
 
-        return cls(filename=filename, path=str(path.absolute()), format=format_value)
+        return cls(
+            filename=filename, path=str(path.absolute()), format=format_value
+        )
