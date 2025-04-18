@@ -435,6 +435,97 @@ function registerIpcHandlers() {
       };
     }
   });
+
+  // 加载Faster Whisper GUI配置文件
+  ipcMain.handle('load-faster-whisper-config', async (event, configPath) => {
+    try {
+      const port = process.env.API_PORT || '8000';
+      const response = await fetch(`http://localhost:${port}/api/speech-to-text/load-gui-config`, {
+        method: 'POST',
+        body: JSON.stringify({ config_path: configPath }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      // 保存配置文件路径到设置
+      if (result.success) {
+        await saveSettings({ fasterWhisperConfigPath: configPath });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('加载Faster Whisper配置文件出错:', error);
+      return {
+        success: false,
+        message: `请求失败: ${error.message}`
+      };
+    }
+  });
+
+  // 应用Faster Whisper配置进行语音转写
+  ipcMain.handle('transcribe-with-gui-config', async (event, { videoPath, configPath, outputDir }) => {
+    try {
+      const port = process.env.API_PORT || '8000';
+      const response = await fetch(`http://localhost:${port}/api/speech-to-text/transcribe-with-gui-config`, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          video_path: videoPath,
+          config_path: configPath,
+          output_dir: outputDir || null
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('使用GUI配置进行转写出错:', error);
+      return {
+        success: false,
+        message: `请求失败: ${error.message}`,
+        task_id: null
+      };
+    }
+  });
+
+  // 获取Faster Whisper配置参数
+  ipcMain.handle('get-faster-whisper-params', async (event, configPath) => {
+    try {
+      const port = process.env.API_PORT || '8000';
+      const response = await fetch(`http://localhost:${port}/api/speech-to-text/get-config-params`, {
+        method: 'POST',
+        body: JSON.stringify({ config_path: configPath }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('获取配置参数出错:', error);
+      return {
+        success: false,
+        message: `请求失败: ${error.message}`,
+        parameters: null
+      };
+    }
+  });
 }
 
 /**

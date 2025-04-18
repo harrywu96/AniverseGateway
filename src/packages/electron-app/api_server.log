@@ -739,3 +739,18 @@ pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unk
 2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
 2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
 2025-04-17 16:00:14,228 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-18 10:09:18,546 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 10:09:18,546 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 10:09:18,546 - api_server - INFO - 区域设置: cp936
+2025-04-18 10:09:18,546 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 10:09:21,562 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:21,572 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:21,572 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:50,867 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 10:09:50,867 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 10:09:50,867 - api_server - INFO - 区域设置: cp936
+2025-04-18 10:09:50,867 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 10:09:52,961 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:52,992 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:53,034 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 10:09:53,036 - subtranslate.api - INFO - SubTranslate API服务启动

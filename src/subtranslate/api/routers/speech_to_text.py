@@ -30,6 +30,12 @@ from ...core.speech_to_text import (
 )
 from ...schemas.api import APIResponse, ProgressUpdateEvent
 from ...schemas.config import SystemConfig, SpeechToTextConfig
+from ...core.faster_whisper_config_util import (
+    load_faster_whisper_gui_config,
+    convert_to_transcription_parameters,
+    get_output_format,
+    WhisperConfigManager,
+)
 from ..dependencies import get_system_config
 from ..websocket import manager
 
@@ -38,6 +44,9 @@ logger = logging.getLogger(__name__)
 
 # 创建路由
 router = APIRouter(prefix="/speech-to-text", tags=["语音转写"])
+
+# 创建配置管理器
+config_manager = WhisperConfigManager()
 
 
 # 转写请求模型
@@ -452,3 +461,364 @@ async def process_transcription_task(
             message=str(e),
         )
         await manager.broadcast_to_group(task_id, error_event.model_dump())
+
+
+# 验证模型请求
+class ValidateModelRequest(BaseModel):
+    """验证模型请求"""
+
+    model_path: str = Field(..., description="模型路径")
+
+
+# 验证模型响应
+class ValidateModelResponse(APIResponse):
+    """验证模型响应"""
+
+    valid: bool = Field(default=False, description="模型是否有效")
+    modelInfo: Optional[Dict[str, Any]] = Field(
+        default=None, description="模型信息"
+    )
+
+
+@router.post("/validate-model", response_model=ValidateModelResponse)
+async def validate_model(
+    request: ValidateModelRequest,
+):
+    """验证Whisper模型路径是否有效
+
+    Args:
+        request: 请求内容，包含模型路径
+
+    Returns:
+        ValidationModelResponse: 验证结果
+    """
+    try:
+        model_path = request.model_path
+        is_valid = config_manager.validate_model_path(model_path)
+
+        model_info = None
+        if is_valid:
+            # 获取基本模型信息
+            model_name = os.path.basename(model_path)
+            model_info = {"name": model_name, "path": model_path}
+
+        return ValidateModelResponse(
+            success=True,
+            valid=is_valid,
+            message="模型验证完成",
+            modelInfo=model_info,
+        )
+    except Exception as e:
+        logger.error(f"验证模型出错: {str(e)}", exc_info=True)
+        return ValidateModelResponse(
+            success=False, valid=False, message=f"验证过程中发生错误: {str(e)}"
+        )
+
+
+# GUI配置文件请求
+class ConfigFileRequest(BaseModel):
+    """配置文件请求"""
+
+    config_path: str = Field(..., description="配置文件路径")
+
+
+# GUI配置文件响应
+class ConfigFileResponse(APIResponse):
+    """配置文件响应"""
+
+    config: Optional[Dict[str, Any]] = Field(
+        default=None, description="配置内容"
+    )
+
+
+@router.post("/load-gui-config", response_model=ConfigFileResponse)
+async def load_gui_config(
+    request: ConfigFileRequest,
+):
+    """加载Faster Whisper GUI配置文件
+
+    Args:
+        request: 请求内容，包含配置文件路径
+
+    Returns:
+        ConfigFileResponse: 加载结果
+    """
+    try:
+        config_path = request.config_path
+        config = load_faster_whisper_gui_config(config_path)
+
+        # 转换为字典以便序列化
+        config_dict = config.model_dump()
+
+        return ConfigFileResponse(
+            success=True, message="配置文件加载成功", config=config_dict
+        )
+    except FileNotFoundError as e:
+        logger.error(f"配置文件不存在: {str(e)}")
+        return ConfigFileResponse(
+            success=False, message=f"配置文件不存在: {str(e)}"
+        )
+    except Exception as e:
+        logger.error(f"加载配置文件出错: {str(e)}", exc_info=True)
+        return ConfigFileResponse(
+            success=False, message=f"加载配置文件出错: {str(e)}"
+        )
+
+
+@router.post("/get-config-params", response_model=APIResponse)
+async def get_config_params(
+    request: ConfigFileRequest,
+):
+    """获取配置文件对应的转写参数
+
+    Args:
+        request: 请求内容，包含配置文件路径
+
+    Returns:
+        APIResponse: 转写参数
+    """
+    try:
+        config_path = request.config_path
+
+        # 从GUI配置转换为转写参数
+        params = config_manager.from_gui_config(config_path)
+
+        # 转换为字典以便序列化
+        params_dict = params.model_dump()
+
+        return APIResponse(
+            success=True,
+            message="参数提取成功",
+            data={"parameters": params_dict},
+        )
+    except Exception as e:
+        logger.error(f"提取参数出错: {str(e)}", exc_info=True)
+        return APIResponse(success=False, message=f"提取参数出错: {str(e)}")
+
+
+# 使用GUI配置转写请求
+class TranscribeWithConfigRequest(BaseModel):
+    """使用GUI配置转写请求"""
+
+    video_path: str = Field(..., description="视频路径")
+    config_path: str = Field(..., description="配置文件路径")
+    output_dir: Optional[str] = Field(default=None, description="输出目录")
+
+
+@router.post(
+    "/transcribe-with-gui-config", response_model=TranscriptionResponse
+)
+async def transcribe_with_gui_config(
+    request: TranscribeWithConfigRequest,
+    background_tasks: BackgroundTasks,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """使用Faster Whisper GUI配置文件转写视频
+
+    Args:
+        request: 请求内容
+        background_tasks: 后台任务
+        config: 系统配置
+
+    Returns:
+        TranscriptionResponse: 转写响应
+    """
+    try:
+        # 检查视频文件是否存在
+        video_path = Path(request.video_path)
+        if not video_path.exists():
+            raise HTTPException(
+                status_code=404, detail=f"视频文件不存在: {request.video_path}"
+            )
+
+        # 检查配置文件是否存在
+        config_path = Path(request.config_path)
+        if not config_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail=f"配置文件不存在: {request.config_path}",
+            )
+
+        # 创建任务ID和任务目录
+        task_id = str(uuid.uuid4())
+        task_dir = os.path.join(config.temp_dir, f"transcribe_{task_id}")
+        os.makedirs(task_dir, exist_ok=True)
+
+        # 设置输出目录
+        output_dir = request.output_dir
+        if not output_dir:
+            output_dir = task_dir
+        else:
+            os.makedirs(output_dir, exist_ok=True)
+
+        # 在后台执行转写任务
+        background_tasks.add_task(
+            process_transcription_with_gui_config,
+            task_id=task_id,
+            video_path=str(video_path),
+            config_path=str(config_path),
+            task_dir=task_dir,
+            output_dir=output_dir,
+            config=config,
+        )
+
+        # 返回任务ID
+        return TranscriptionResponse(
+            success=True,
+            message="转写任务已提交",
+            data={
+                "task_id": task_id,
+                "filename": video_path.name,
+                "status": "processing",
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"提交GUI配置转写任务失败: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"提交GUI配置转写任务失败: {str(e)}"
+        )
+
+
+async def process_transcription_with_gui_config(
+    task_id: str,
+    video_path: str,
+    config_path: str,
+    task_dir: str,
+    output_dir: str,
+    config: SystemConfig,
+):
+    """使用GUI配置处理转写任务
+
+    Args:
+        task_id: 任务ID
+        video_path: 视频路径
+        config_path: 配置文件路径
+        task_dir: 任务临时目录
+        output_dir: 输出目录
+        config: 系统配置
+    """
+    status_file = os.path.join(task_dir, "status.json")
+    output_file = os.path.join(task_dir, "output.json")
+    subtitle_file = None
+
+    try:
+        # 更新状态
+        with open(status_file, "w", encoding="utf-8") as f:
+            import json
+
+            json.dump(
+                {
+                    "status": "processing",
+                    "progress": 0,
+                    "message": "开始处理转写任务...",
+                },
+                f,
+                ensure_ascii=False,
+            )
+
+        # 定义进度回调函数
+        async def progress_callback(progress: float):
+            # 更新状态文件
+            with open(status_file, "w", encoding="utf-8") as f:
+                import json
+
+                json.dump(
+                    {
+                        "status": "processing",
+                        "progress": progress,
+                        "message": f"正在处理... {progress:.0%}",
+                    },
+                    f,
+                    ensure_ascii=False,
+                )
+
+            # 通过WebSocket发送进度更新
+            update = ProgressUpdateEvent(
+                task_id=task_id,
+                progress=progress,
+                status="processing",
+                message=f"正在处理... {progress:.0%}",
+            )
+            await manager.send_message(task_id, update.model_dump())
+
+        # 创建SpeechToText实例
+        speech_to_text = SpeechToText.from_gui_config(config_path)
+
+        # 执行转写
+        result = await speech_to_text.transcribe_video(
+            video_path=video_path,
+            output_dir=output_dir,
+            progress_callback=progress_callback,
+        )
+
+        # 保存转写结果
+        with open(output_file, "w", encoding="utf-8") as f:
+            import json
+
+            json.dump(
+                {
+                    "text": result.text,
+                    "segments": result.segments,
+                    "language": result.language,
+                },
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        # 保存字幕文件路径
+        subtitle_file = result.subtitle_path
+
+        # 更新最终状态
+        with open(status_file, "w", encoding="utf-8") as f:
+            import json
+
+            json.dump(
+                {
+                    "status": "completed",
+                    "progress": 1.0,
+                    "message": "转写任务已完成",
+                    "subtitle_file": (
+                        str(subtitle_file) if subtitle_file else None
+                    ),
+                },
+                f,
+                ensure_ascii=False,
+            )
+
+        # 通过WebSocket发送完成通知
+        update = ProgressUpdateEvent(
+            task_id=task_id,
+            progress=1.0,
+            status="completed",
+            message="转写任务已完成",
+        )
+        await manager.send_message(task_id, update.model_dump())
+
+    except Exception as e:
+        logger.error(f"转写任务处理失败: {str(e)}", exc_info=True)
+
+        # 更新错误状态
+        with open(status_file, "w", encoding="utf-8") as f:
+            import json
+
+            json.dump(
+                {
+                    "status": "failed",
+                    "progress": 0,
+                    "message": f"转写失败: {str(e)}",
+                },
+                f,
+                ensure_ascii=False,
+            )
+
+        # 通过WebSocket发送错误通知
+        update = ProgressUpdateEvent(
+            task_id=task_id,
+            progress=0,
+            status="failed",
+            message=f"转写失败: {str(e)}",
+        )
+        await manager.send_message(task_id, update.model_dump())

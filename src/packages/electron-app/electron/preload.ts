@@ -41,5 +41,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFileDialog: (options: any) => ipcRenderer.invoke('open-file-dialog', options),
   
   // 验证模型
-  validateModel: (modelPath: string) => ipcRenderer.invoke('validate-model', modelPath)
+  validateModel: (modelPath: string) => ipcRenderer.invoke('validate-model', modelPath),
+  
+  // ==== Faster Whisper 相关接口 ====
+  // 加载Faster Whisper GUI配置文件
+  loadFasterWhisperConfig: (configPath: string) => ipcRenderer.invoke('load-faster-whisper-config', configPath),
+  
+  // 应用Faster Whisper配置进行语音转写
+  transcribeWithGUIConfig: (params: { videoPath: string, configPath: string, outputDir?: string }) => 
+    ipcRenderer.invoke('transcribe-with-gui-config', params),
+  
+  // 获取Faster Whisper配置参数
+  getFasterWhisperParams: (configPath: string) => ipcRenderer.invoke('get-faster-whisper-params', configPath)
 }); 
