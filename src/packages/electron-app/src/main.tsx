@@ -6,6 +6,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import './electron-mock';
 import App from './App';
 import './styles/index.css';
+import { AppProvider } from './context/AppContext';
 
 // 创建主题
 const theme = createTheme({
@@ -40,8 +41,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <HashRouter>
-        <App />
+        <AppProvider>
+          <App />
+        </AppProvider>
       </HashRouter>
     </ThemeProvider>
   </React.StrictMode>
-); 
+);

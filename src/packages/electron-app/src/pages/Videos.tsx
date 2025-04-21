@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 import {
   Box,
   Typography,
@@ -28,14 +30,14 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { 
+import {
   Upload as UploadIcon,
   PlayArrow as PlayIcon,
   Subtitles as SubtitlesIcon,
   Settings as SettingsIcon,
   Refresh as RefreshIcon,
   Download as DownloadIcon,
-  Close as CloseIcon, 
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { VideoInfo } from '@subtranslate/shared';
 
@@ -68,17 +70,20 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Videos: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [videos, setVideos] = useState<VideoInfo[]>([]);
   const [error, setError] = useState<{message: string; details?: string} | null>(null);
-  
+
+  // 使用全局状态
+  const { state, addVideo, selectVideo } = useAppContext();
+  const { videos, selectedVideo } = state;
+
   // Faster Whisper 相关状态
   const [whisperSettings, setWhisperSettings] = useState<{
     configPath: string;
     modelPath: string;
   }>({ configPath: '', modelPath: '' });
   const [openWhisperDialog, setOpenWhisperDialog] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState<VideoInfo | null>(null);
   const [whisperProgress, setWhisperProgress] = useState(0);
   const [whisperStatus, setWhisperStatus] = useState('');
   const [transcribeTaskId, setTranscribeTaskId] = useState('');
@@ -112,7 +117,7 @@ const Videos: React.FC = () => {
         }
       }
     };
-    
+
     loadSettings();
   }, []);
 
@@ -135,19 +140,67 @@ const Videos: React.FC = () => {
         throw new Error('Electron API不可用');
       }
 
+      // 设置加载状态
+      setLoading(true);
+
+      // 选择视频文件
       const filePath = await window.electronAPI.selectVideo();
       if (filePath) {
-        // 创建视频对象
+        // 创建临时视频对象
         const fileName = filePath.split(/[\\/]/).pop() || 'Unknown';
-        const vid: VideoInfo = {
+        const tempVid: VideoInfo = {
           id: Date.now().toString(),
-          name: fileName,
+          fileName: fileName,
           filePath: filePath,
-          status: 'ready',
-          uploadedAt: new Date().toISOString()
+          format: '',
+          duration: 0,
+          hasEmbeddedSubtitles: false,
+          hasExternalSubtitles: false
         };
-        setSelectedVideo(vid);
-        setVideos(prevVideos => [...prevVideos, vid]);
+
+        // 调用后端上传视频并解析视频信息
+        console.log('正在将视频发送到后端进行解析:', filePath);
+        const response = await window.electronAPI.uploadVideo(filePath);
+
+        if (response.success && response.data) {
+          console.log('视频解析成功:', response.data);
+
+          // 使用后端返回的数据更新视频信息
+          const videoData = response.data;
+
+          // 将后端数据转换为前端需要的格式
+          const vid: VideoInfo = {
+            id: videoData.id || tempVid.id,
+            fileName: videoData.filename || tempVid.fileName,
+            filePath: videoData.path || tempVid.filePath,
+            format: videoData.format || '',
+            duration: videoData.duration || 0,
+            hasEmbeddedSubtitles: videoData.has_embedded_subtitle || false,
+            hasExternalSubtitles: videoData.external_subtitles?.length > 0 || false,
+            subtitleTracks: videoData.subtitle_tracks?.map(track => ({
+              id: track.index.toString(),
+              language: track.language || 'unknown',
+              title: track.title || '',
+              format: track.codec || 'unknown',
+              isExternal: false,
+            })) || []
+          };
+
+          // 使用全局状态的方法
+          selectVideo(vid);
+          addVideo(vid);
+        } else {
+          // 如果解析失败，使用临时对象
+          console.warn('视频解析失败，使用基本信息:', response.error || response.message);
+          selectVideo(tempVid);
+          addVideo(tempVid);
+
+          // 显示警告但不阻止继续
+          setError({
+            message: '视频解析部分失败，只显示基本信息',
+            details: response.error || response.message || '未知错误'
+          });
+        }
       }
     } catch (error) {
       console.error('选择视频错误:', error);
@@ -155,6 +208,8 @@ const Videos: React.FC = () => {
         message: '选择视频失败',
         details: error instanceof Error ? error.message : String(error)
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,7 +218,7 @@ const Videos: React.FC = () => {
       setError({ message: '请先选择视频文件' });
       return;
     }
-    
+
     // 重置状态
     setWhisperStatus('');
     setWhisperProgress(0);
@@ -189,7 +244,7 @@ const Videos: React.FC = () => {
         throw new Error('Electron API不可用');
       }
 
-      const filePath = await window.electronAPI.openFileDialog({
+      const result = await window.electronAPI.openFileDialog({
         title: '选择Faster Whisper配置文件',
         defaultPath: whisperSettings.configPath || undefined,
         filters: [
@@ -198,7 +253,8 @@ const Videos: React.FC = () => {
         ]
       });
 
-      if (filePath) {
+      if (!result.canceled && result.filePaths.length > 0) {
+        const filePath = result.filePaths[0];
         setWhisperSettings({
           ...whisperSettings,
           configPath: filePath
@@ -206,13 +262,11 @@ const Videos: React.FC = () => {
 
         // 加载配置文件获取参数信息
         try {
-          const configParams = await window.electronAPI.getFasterWhisperParams({
-            configPath: filePath
-          });
+          const configParams = await window.electronAPI.getFasterWhisperParams(filePath);
 
           if (configParams.success) {
             // 显示配置文件信息
-            setWhisperStatus(`已加载配置: ${filePath}\n模型: ${configParams.data?.model_path || '未指定'}`);
+            setWhisperStatus(`已加载配置: ${filePath}\n模型: ${configParams.parameters?.model_path || '未指定'}`);
           } else {
             setError({
               message: '加载配置参数失败',
@@ -242,13 +296,13 @@ const Videos: React.FC = () => {
         throw new Error('Electron API不可用');
       }
 
-      const dirPath = await window.electronAPI.openDirectoryDialog({
+      const result = await window.electronAPI.openDirectoryDialog({
         title: '选择输出目录',
         defaultPath: outputPath || undefined
       });
 
-      if (dirPath) {
-        setOutputPath(dirPath);
+      if (!result.canceled && result.filePaths.length > 0) {
+        setOutputPath(result.filePaths[0]);
       }
     } catch (error) {
       console.error('选择输出目录错误:', error);
@@ -271,41 +325,41 @@ const Videos: React.FC = () => {
       setWhisperStatus('准备中...');
       setTranscribeTaskId('');
       setPreviewContent([]);
-      
+
       // 使用faster-whisper配置进行转写
       if (!window.electronAPI) {
         throw new Error('Electron API不可用');
       }
-      
+
       const response = await window.electronAPI.transcribeWithGUIConfig({
         videoPath: selectedVideo.filePath,
         configPath: whisperSettings.configPath || undefined,
         outputDir: outputPath || undefined
       });
-      
+
       if (response.success && response.data && response.data.task_id) {
         setTranscribeTaskId(response.data.task_id);
         setWhisperStatus('处理中...');
-        
+
         // 建立WebSocket连接监听进度
         const apiPort = '8000'; // 如果API端口不是固定的，需要从配置获取
         const ws = new WebSocket(`ws://localhost:${apiPort}/api/speech-to-text/ws/${response.data.task_id}`);
-        
+
         ws.onopen = () => {
           console.log('WebSocket 连接已建立');
         };
-        
+
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          
+
           if (data.progress !== undefined) {
             setWhisperProgress(data.progress * 100);
           }
-          
+
           if (data.message) {
             setWhisperStatus(data.message);
           }
-          
+
           if (data.status === 'completed') {
             setWhisperProgress(100);
             setWhisperStatus('转写完成');
@@ -315,30 +369,30 @@ const Videos: React.FC = () => {
             setError({ message: '转写失败', details: data.message });
           }
         };
-        
+
         ws.onerror = (event) => {
           console.error('WebSocket 错误:', event);
           setError({ message: 'WebSocket 连接错误' });
         };
-        
+
         ws.onclose = () => {
           console.log('WebSocket 连接已关闭');
         };
-        
+
         setWsConnection(ws);
       } else {
         setWhisperStatus('转写失败');
-        setError({ 
-          message: '提交转写任务失败', 
-          details: response.message || '未知错误' 
+        setError({
+          message: '提交转写任务失败',
+          details: response.message || '未知错误'
         });
       }
     } catch (error) {
       console.error('转写错误:', error);
       setWhisperStatus('转写错误');
-      setError({ 
-        message: '转写过程中出错', 
-        details: error instanceof Error ? error.message : String(error) 
+      setError({
+        message: '转写过程中出错',
+        details: error instanceof Error ? error.message : String(error)
       });
     } finally {
       setProcessingWhisper(false);
@@ -350,13 +404,13 @@ const Videos: React.FC = () => {
       // 使用任务ID获取转写结果
       const apiPort = '8000';
       const response = await fetch(`http://localhost:${apiPort}/api/speech-to-text/task/${taskId}`);
-      
+
       if (!response.ok) {
         throw new Error(`获取结果失败: ${response.status} ${response.statusText}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data && result.data.result) {
         // 解析SRT文件内容进行预览
         const segments = result.data.result.segments || [];
@@ -365,7 +419,7 @@ const Videos: React.FC = () => {
           const endTime = formatTimestamp(segment.end);
           return `${index + 1}\n${startTime} --> ${endTime}\n${segment.text}\n`;
         });
-        
+
         setPreviewContent(previewLines);
         setSelectedTab(1); // 切换到结果标签
       } else {
@@ -373,9 +427,9 @@ const Videos: React.FC = () => {
       }
     } catch (error) {
       console.error('获取转写结果错误:', error);
-      setError({ 
-        message: '获取转写结果失败', 
-        details: error instanceof Error ? error.message : String(error) 
+      setError({
+        message: '获取转写结果失败',
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   };
@@ -384,14 +438,14 @@ const Videos: React.FC = () => {
   const formatTimestamp = (seconds: number): string => {
     const date = new Date(0);
     date.setSeconds(seconds);
-    
+
     const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
     const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
     const secs = String(Math.floor(seconds % 60)).padStart(2, '0');
-    
+
     // 获取毫秒部分
     const ms = String(Math.floor((seconds % 1) * 1000)).padStart(3, '0');
-    
+
     return `${hours}:${minutes}:${secs},${ms}`;
   };
 
@@ -447,7 +501,7 @@ const Videos: React.FC = () => {
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" component="h2" noWrap>
-                    {video.name}
+                    {video.fileName}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     格式: {video.format}
@@ -457,12 +511,17 @@ const Videos: React.FC = () => {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small">查看详情</Button>
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/videos/${video.id}`)}
+                  >
+                    查看详情
+                  </Button>
                   <Button size="small" color="primary">
                     开始翻译
                   </Button>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     startIcon={<SubtitlesIcon />}
                     onClick={() => handleOpenWhisperDialog()}
                     color="secondary"
@@ -486,20 +545,20 @@ const Videos: React.FC = () => {
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6">
-              视频转写 - {selectedVideo?.name}
+              视频转写 - {selectedVideo?.fileName}
             </Typography>
             <IconButton onClick={handleCloseWhisperDialog}>
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
-        
+
         <DialogContent dividers>
           <Tabs value={selectedTab} onChange={handleTabChange} sx={{ mb: 2 }}>
             <Tab label="配置" />
             <Tab label="结果" disabled={previewContent.length === 0} />
           </Tabs>
-          
+
           <TabPanel value={selectedTab} index={0}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
@@ -513,8 +572,8 @@ const Videos: React.FC = () => {
                     placeholder="选择配置文件"
                     sx={{ mr: 1 }}
                   />
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     onClick={handleSelectConfigFile}
                     sx={{ minWidth: '100px' }}
                   >
@@ -537,8 +596,8 @@ const Videos: React.FC = () => {
                     placeholder="选择输出目录"
                     sx={{ mr: 1 }}
                   />
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     onClick={handleSelectOutputDir}
                     sx={{ minWidth: '100px' }}
                   >
@@ -549,15 +608,15 @@ const Videos: React.FC = () => {
                   不指定则使用临时目录
                 </Typography>
               </Grid>
-              
+
               {whisperProgress > 0 && (
                 <Grid item xs={12}>
                   <Typography variant="body2" gutterBottom>
                     {whisperStatus || '处理中...'}
                   </Typography>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={whisperProgress} 
+                  <LinearProgress
+                    variant="determinate"
+                    value={whisperProgress}
                     sx={{ height: 10, borderRadius: 5 }}
                   />
                   <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'right' }}>
@@ -567,18 +626,18 @@ const Videos: React.FC = () => {
               )}
             </Grid>
           </TabPanel>
-          
+
           <TabPanel value={selectedTab} index={1}>
             {previewContent.length > 0 ? (
               <Box>
                 <Typography variant="subtitle1" gutterBottom>
                   转写结果预览
                 </Typography>
-                <Paper 
-                  variant="outlined" 
-                  sx={{ 
-                    p: 2, 
-                    maxHeight: 400, 
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    maxHeight: 400,
                     overflow: 'auto',
                     fontFamily: 'monospace',
                     whiteSpace: 'pre-wrap'
@@ -603,15 +662,15 @@ const Videos: React.FC = () => {
             )}
           </TabPanel>
         </DialogContent>
-        
+
         <DialogActions>
-          <Button 
+          <Button
             variant="outlined"
             onClick={handleCloseWhisperDialog}
           >
             关闭
           </Button>
-          
+
           {transcribeTaskId && whisperProgress === 100 && (
             <Button
               color="secondary"
@@ -624,7 +683,7 @@ const Videos: React.FC = () => {
               下载字幕
             </Button>
           )}
-          
+
           <Button
             variant="contained"
             color="primary"
@@ -638,9 +697,9 @@ const Videos: React.FC = () => {
       </Dialog>
 
       {/* 错误提示 */}
-      <Snackbar 
-        open={error !== null} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={error !== null}
+        autoHideDuration={6000}
         onClose={handleCloseError}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
@@ -658,4 +717,4 @@ const Videos: React.FC = () => {
   );
 };
 
-export default Videos; 
+export default Videos;

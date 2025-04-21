@@ -770,3 +770,160 @@ pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unk
 2025-04-18 10:47:52,465 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-18 10:47:52,495 - subtranslate.api - INFO - SubTranslate API服务启动
 2025-04-18 10:47:52,501 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:20,289 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 11:33:20,290 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 11:33:20,290 - api_server - INFO - 区域设置: cp936
+2025-04-18 11:33:20,290 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 11:33:22,733 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:22,743 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:22,806 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:22,807 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:53,236 - api_server - INFO - 系统默认编码: utf-8
+2025-04-18 11:33:53,236 - api_server - INFO - 文件系统编码: utf-8
+2025-04-18 11:33:53,236 - api_server - INFO - 区域设置: cp936
+2025-04-18 11:33:53,236 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-18 11:33:55,382 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:55,407 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:55,447 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-18 11:33:55,451 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:13:24,210 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 10:13:24,210 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 10:13:24,210 - api_server - INFO - 区域设置: cp936
+2025-04-21 10:13:24,210 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-21 10:13:27,357 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:13:27,358 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:13:27,359 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:13:27,362 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:26:41,547 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 10:26:41,547 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 10:26:41,547 - api_server - INFO - 区域设置: cp936
+2025-04-21 10:26:41,547 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-21 10:26:43,867 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:26:43,950 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:26:43,968 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:26:43,972 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:28:04,410 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 10:28:04,410 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 10:28:04,410 - api_server - INFO - 区域设置: cp936
+2025-04-21 10:28:04,410 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-21 10:28:06,611 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:28:06,641 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:28:06,663 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:28:06,671 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:57:11,650 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 10:57:11,650 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 10:57:11,650 - api_server - INFO - 区域设置: cp936
+2025-04-21 10:57:11,650 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-21 10:57:14,675 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:57:14,675 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:57:14,676 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 10:57:14,676 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:01:09,771 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:01:09,771 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:01:09,771 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:01:09,771 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:01:11,676 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:01:11,678 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-21 11:01:14,698 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:01:14,699 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:01:14,699 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:01:14,699 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:01:16,583 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:01:16,585 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-21 11:01:47,887 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:01:47,887 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:01:47,888 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:01:47,888 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:01:49,744 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:01:49,745 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-21 11:02:51,405 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:02:51,405 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:02:51,405 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:02:51,406 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:02:53,285 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:03:55,493 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:03:55,493 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:03:55,493 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:03:55,493 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:03:57,395 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:03:59,154 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:03:59,154 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:03:59,154 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:03:59,154 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:04:01,000 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:04:01,001 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-21 11:04:27,853 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:04:27,853 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:04:27,853 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:04:27,853 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:04:29,797 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:08:05,909 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:08:05,909 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:08:05,910 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:08:05,910 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:08:07,805 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:08:18,507 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:08:18,508 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:08:18,508 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:08:18,508 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:08:20,381 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:08:20,382 - subtranslate.api - INFO - SubTranslate API服务关闭
+2025-04-21 11:13:08,454 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:13:08,455 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:13:08,455 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:13:08,455 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:13:10,420 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:13:24,153 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:13:24,153 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:13:24,153 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:13:24,153 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:13:26,080 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:13:43,723 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:13:43,723 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:13:43,723 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:13:43,723 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:13:45,670 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:15:01,990 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:15:01,990 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:15:01,990 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:15:01,990 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:15:03,933 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:26:43,074 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:26:43,074 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:26:43,074 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:26:43,074 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:26:44,988 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:50:50,925 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 11:50:50,925 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 11:50:50,926 - api_server - INFO - 区域设置: cp936
+2025-04-21 11:50:50,926 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 11:50:52,838 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 11:50:58,399 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 11:50:58,399 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 11:50:59,189 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 11:50:59,294 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:18:54,482 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:18:54,482 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:18:54,482 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:18:54,483 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:18:56,468 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:19:00,383 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:19:00,383 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:19:01,166 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:19:01,271 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:19:01,271 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian

@@ -52,22 +52,30 @@ function createWindow() {
 
 /**
  * 检查API服务是否可用
+ * 增加了重试机制和更长的超时时间
  */
-async function checkApiHealth(): Promise<boolean> {
+async function checkApiHealth(retries: number = 3): Promise<boolean> {
   try {
     const port = process.env.API_PORT || '8000';
     const response = await fetch(`http://127.0.0.1:${port}/api/health`, {
       method: 'GET',
-      signal: AbortSignal.timeout(1000), // 使用AbortSignal替代直接使用timeout
+      signal: AbortSignal.timeout(3000), // 增加超时时间到3秒
     });
-    
+
     if (response.ok) {
       console.log('API健康检查成功');
       return true;
     }
     return false;
   } catch (error) {
-    console.log('API健康检查失败:', error.message);
+    console.log(`API健康检查失败 (剩余重试次数: ${retries}):`, error.message);
+
+    // 如果还有重试次数，则等待一秒后重试
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return checkApiHealth(retries - 1);
+    }
+
     return false;
   }
 }
@@ -85,14 +93,14 @@ function startPythonBackend() {
       // 开发环境路径
       // 尝试使用虚拟环境中的Python
       const isWindows = process.platform === 'win32';
-      
+
       // 获取项目根目录（根据实际项目结构可能需要调整）
       const projectRoot = join(process.cwd(), '..', '..', '..');
-      
+
       if (isWindows) {
         // 首先尝试查找.venv环境
         const venvPythonPath = join(projectRoot, '.venv', 'Scripts', 'python.exe');
-        
+
         console.log(`尝试查找虚拟环境路径: ${venvPythonPath}`);
         if (fs.existsSync(venvPythonPath)) {
           console.log(`使用虚拟环境Python: ${venvPythonPath}`);
@@ -101,7 +109,7 @@ function startPythonBackend() {
           // 尝试查找相对于当前目录的虚拟环境
           const altVenvPath = join(process.cwd(), '.venv', 'Scripts', 'python.exe');
           console.log(`尝试备选虚拟环境路径: ${altVenvPath}`);
-          
+
           if (fs.existsSync(altVenvPath)) {
             console.log(`使用备选虚拟环境Python: ${altVenvPath}`);
             pythonPath = altVenvPath;
@@ -113,7 +121,7 @@ function startPythonBackend() {
       } else {
         pythonPath = 'python';
       }
-      
+
       // 确保脚本路径是绝对路径
       const possiblePaths = [
         join(process.cwd(), '..', '..', 'run_api_server.py'),
@@ -124,10 +132,10 @@ function startPythonBackend() {
         join(projectRoot, 'src', 'run_api_server.py'),
         join(projectRoot, 'src', 'api', 'run_api_server.py')
       ];
-      
+
       console.log('搜索API服务器脚本路径...');
       console.log(`当前工作目录: ${process.cwd()}`);
-      
+
       scriptPath = '';
       for (const path of possiblePaths) {
         console.log(`检查路径: ${path}`);
@@ -137,7 +145,7 @@ function startPythonBackend() {
           break;
         }
       }
-      
+
       if (!scriptPath) {
         console.error('错误: 无法找到API服务器脚本');
         scriptPath = join(__dirname, '../../../../run_api_server.py');
@@ -156,13 +164,13 @@ function startPythonBackend() {
 
     // 设置环境变量确保UTF-8编码
     const env: NodeJS.ProcessEnv = { ...process.env, PYTHONIOENCODING: 'utf-8' };
-    
+
     // 启动Python进程 - 使用低级端口以避免权限问题
     const port = process.env.API_PORT || '8000';
     env.API_PORT = port;
-    
+
     // 启动Python进程
-    pythonProcess = spawn(pythonPath, [scriptPath], { 
+    pythonProcess = spawn(pythonPath, [scriptPath], {
       env,
       windowsHide: false // 确保在Windows上显示控制台窗口以便调试
     });
@@ -180,7 +188,7 @@ function startPythonBackend() {
       if (!isBackendStarted) {
         console.error('后端启动超时');
         if (mainWindow) {
-          mainWindow.webContents.send('backend-error', { 
+          mainWindow.webContents.send('backend-error', {
             message: '后端启动超时，请检查日志以获取详细信息'
           });
         }
@@ -193,8 +201,9 @@ function startPythonBackend() {
         clearInterval(apiCheckInterval);
         return;
       }
-      
-      const isHealthy = await checkApiHealth();
+
+      // 使用改进的checkApiHealth函数，带重试机制
+      const isHealthy = await checkApiHealth(2); // 每次检查最多重试2次
       if (isHealthy) {
         isBackendStarted = true;
         if (startupTimeout) {
@@ -204,16 +213,16 @@ function startPythonBackend() {
         mainWindow?.webContents.send('backend-started');
         clearInterval(apiCheckInterval);
       }
-    }, 1000); // 每秒检查一次
+    }, 2000); // 每2秒检查一次，减少检查频率
 
     // 监听标准输出
     pythonProcess.stdout.on('data', (data) => {
       const output = data.toString();
       console.log(`Python后端输出: ${output}`);
-      
+
       // 检测后端是否已经启动 - 保留原有检测，但增加了其他启动信息的检测
-      if (output.includes('Application startup complete') || 
-          output.includes('Uvicorn running on') || 
+      if (output.includes('Application startup complete') ||
+          output.includes('Uvicorn running on') ||
           output.includes('Started server process')) {
         console.log('检测到API服务启动关键信息');
         isBackendStarted = true;
@@ -227,9 +236,9 @@ function startPythonBackend() {
     // 监听错误输出
     pythonProcess.stderr.on('data', (data) => {
       console.error(`Python后端错误: ${data}`);
-      
+
       // 如果检测到端口已被占用
-      if (data.toString().includes('address already in use') || 
+      if (data.toString().includes('address already in use') ||
           data.toString().includes('Address already in use')) {
         console.error(`错误: 端口${port}已被占用，请确保没有其他API服务器实例正在运行`);
         if (mainWindow) {
@@ -251,12 +260,12 @@ function startPythonBackend() {
       }
       pythonProcess = null;
       isBackendStarted = false;
-      
+
       if (mainWindow) {
         mainWindow.webContents.send('backend-stopped', { code });
       }
     });
-    
+
     // 处理错误
     pythonProcess.on('error', (err) => {
       console.error(`启动Python进程时出错: ${err.message}`);
@@ -267,16 +276,16 @@ function startPythonBackend() {
         clearInterval(apiCheckInterval);
       }
       if (mainWindow) {
-        mainWindow.webContents.send('backend-error', { 
-          message: `启动Python进程失败: ${err.message}` 
+        mainWindow.webContents.send('backend-error', {
+          message: `启动Python进程失败: ${err.message}`
         });
       }
     });
   } catch (error) {
     console.error('启动Python后端时出错', error);
     if (mainWindow) {
-      mainWindow.webContents.send('backend-error', { 
-        message: `启动Python后端出错: ${error.message}` 
+      mainWindow.webContents.send('backend-error', {
+        message: `启动Python后端出错: ${error.message}`
       });
     }
   }
@@ -289,18 +298,18 @@ function registerIpcHandlers() {
   // 选择视频文件
   ipcMain.handle('select-video', async () => {
     if (!mainWindow) return null;
-    
+
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: [
         { name: '视频文件', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv'] }
       ]
     });
-    
+
     if (result.canceled || result.filePaths.length === 0) {
       return null;
     }
-    
+
     return result.filePaths[0];
   });
 
@@ -309,22 +318,22 @@ function registerIpcHandlers() {
     try {
       const port = process.env.API_PORT || '8000';
       const url = `http://127.0.0.1:${port}/api/videos/upload-local`;
-      
+
       // 构建请求体
-      const jsonBody = JSON.stringify({ 
+      const jsonBody = JSON.stringify({
         request: {
-          file_path: filePath, 
-          auto_extract_subtitles: true 
+          file_path: filePath,
+          auto_extract_subtitles: true
         }
       });
-      
+
       // 打印请求体以便调试
       console.log('正在发送视频上传请求:', {
         url,
         body: jsonBody,
         filePath
       });
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -332,18 +341,18 @@ function registerIpcHandlers() {
         },
         body: jsonBody
       });
-      
+
       // 检查响应状态
       if (!response.ok) {
         const responseText = await response.text();
         console.error('上传视频请求失败:', response.status, responseText);
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: `请求失败: ${response.status} ${response.statusText}`,
           details: responseText
         };
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('上传视频时出错', error);
@@ -352,10 +361,23 @@ function registerIpcHandlers() {
   });
 
   // 检查后端状态
-  ipcMain.handle('check-backend-status', () => {
-    return isBackendStarted;
+  ipcMain.handle('check-backend-status', async () => {
+    // 如果已知后端已启动，直接返回
+    if (isBackendStarted) {
+      return true;
+    }
+
+    // 否则主动检查健康状态
+    const isHealthy = await checkApiHealth(3); // 使用改进的检查函数，最多重试3次
+    if (isHealthy) {
+      isBackendStarted = true;
+      console.log('手动检查: API服务已启动并可访问');
+      mainWindow?.webContents.send('backend-started');
+    }
+
+    return isHealthy;
   });
-  
+
   // 尝试重启后端
   ipcMain.handle('restart-backend', () => {
     try {
@@ -421,11 +443,11 @@ function registerIpcHandlers() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('验证模型出错:', error);
@@ -447,18 +469,18 @@ function registerIpcHandlers() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
       }
-      
+
       const result = await response.json();
-      
+
       // 保存配置文件路径到设置
       if (result.success) {
         await saveSettings({ fasterWhisperConfigPath: configPath });
       }
-      
+
       return result;
     } catch (error) {
       console.error('加载Faster Whisper配置文件出错:', error);
@@ -475,7 +497,7 @@ function registerIpcHandlers() {
       const port = process.env.API_PORT || '8000';
       const response = await fetch(`http://localhost:${port}/api/speech-to-text/transcribe-with-gui-config`, {
         method: 'POST',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           video_path: videoPath,
           config_path: configPath,
           output_dir: outputDir || null
@@ -484,11 +506,11 @@ function registerIpcHandlers() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('使用GUI配置进行转写出错:', error);
@@ -511,11 +533,11 @@ function registerIpcHandlers() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('获取配置参数出错:', error);
@@ -560,13 +582,13 @@ function saveSettings(newSettings) {
     // 合并现有设置
     const existingSettings = loadSettings();
     const settings = { ...existingSettings, ...newSettings };
-    
+
     // 确保目录存在
     const dir = join(userDataPath, '..');
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
+
     // 保存设置
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
     console.log('设置已保存:', settings);
@@ -610,4 +632,4 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-}); 
+});

@@ -1,20 +1,20 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { 
-  Box, 
-  CircularProgress, 
-  Typography, 
-  Paper, 
-  Button, 
-  Alert, 
-  LinearProgress, 
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Paper,
+  Button,
+  Alert,
+  LinearProgress,
   Divider,
   List,
   ListItem,
   ListItemIcon,
-  ListItemText 
+  ListItemText
 } from '@mui/material';
-import { 
+import {
   CheckCircle as CheckIcon,
   Error as ErrorIcon,
   Refresh as RefreshIcon,
@@ -24,6 +24,7 @@ import {
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Videos from './pages/Videos';
+import VideoDetail from './pages/VideoDetail';
 import Settings from './pages/Settings';
 
 // 启动步骤组件
@@ -59,9 +60,9 @@ const StartupStep: React.FC<StartupStepProps> = ({ label, status, message }) => 
   return (
     <ListItem>
       <ListItemIcon>{statusIcon}</ListItemIcon>
-      <ListItemText 
-        primary={<Typography color={statusColor}>{label}</Typography>} 
-        secondary={message} 
+      <ListItemText
+        primary={<Typography color={statusColor}>{label}</Typography>}
+        secondary={message}
       />
     </ListItem>
   );
@@ -74,7 +75,7 @@ const App: React.FC = () => {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [retryCount, setRetryCount] = useState<number>(0);
-  
+
   // 启动步骤状态
   const [startupSteps, setStartupSteps] = useState<{
     python: 'pending' | 'loading' | 'success' | 'error';
@@ -104,12 +105,12 @@ const App: React.FC = () => {
       try {
         // 设置Python进程启动状态
         setStartupSteps(prev => ({ ...prev, python: 'loading' }));
-        
+
         const isRunning = await window.electronAPI.checkBackendStatus();
         if (isRunning) {
           // 后端已启动
-          setStartupSteps(prev => ({ 
-            ...prev, 
+          setStartupSteps(prev => ({
+            ...prev,
             python: 'success',
             api: 'success',
             healthCheck: 'success'
@@ -119,8 +120,8 @@ const App: React.FC = () => {
         } else {
           // 等待后端启动消息 - Python进程启动成功
           const removeListener = window.electronAPI.onBackendStarted(() => {
-            setStartupSteps(prev => ({ 
-              ...prev, 
+            setStartupSteps(prev => ({
+              ...prev,
               python: 'success',
               api: 'success',
               healthCheck: 'success'
@@ -132,8 +133,8 @@ const App: React.FC = () => {
           // 如果20秒后API服务仍未启动，设置API启动中
           const apiTimeout = setTimeout(() => {
             if (!backendReady) {
-              setStartupSteps(prev => ({ 
-                ...prev, 
+              setStartupSteps(prev => ({
+                ...prev,
                 python: 'success',
                 api: 'loading'
               }));
@@ -143,8 +144,8 @@ const App: React.FC = () => {
           // 如果30秒后仍未启动，显示错误，但继续等待
           const healthCheckTimeout = setTimeout(() => {
             if (!backendReady) {
-              setStartupSteps(prev => ({ 
-                ...prev, 
+              setStartupSteps(prev => ({
+                ...prev,
                 api: 'success',
                 healthCheck: 'loading'
               }));
@@ -154,12 +155,28 @@ const App: React.FC = () => {
           // 最终超时
           const finalTimeout = setTimeout(() => {
             if (!backendReady) {
-              setStartupSteps(prev => ({ 
-                ...prev, 
+              setStartupSteps(prev => ({
+                ...prev,
                 healthCheck: 'error'
               }));
-              setError('后端服务启动超时，请重试或重启应用');
+              setError('后端服务启动超时。如果您确认后端服务已启动，请点击"检查连接"按钮');
               setLoading(false);
+
+              // 继续在后台尝试连接
+              const backgroundCheckInterval = setInterval(async () => {
+                try {
+                  if (window.electronAPI) {
+                    const isRunning = await window.electronAPI.checkBackendStatus();
+                    if (isRunning) {
+                      clearInterval(backgroundCheckInterval);
+                      setBackendReady(true);
+                      setError(null);
+                    }
+                  }
+                } catch (err) {
+                  console.error('后台检查出错:', err);
+                }
+              }, 5000); // 每5秒检查一次
             }
           }, 30000);
 
@@ -171,8 +188,8 @@ const App: React.FC = () => {
           };
         }
       } catch (err) {
-        setStartupSteps(prev => ({ 
-          ...prev, 
+        setStartupSteps(prev => ({
+          ...prev,
           python: 'error'
         }));
         setError('检查后端状态时出错: ' + (err as Error).message);
@@ -183,7 +200,7 @@ const App: React.FC = () => {
     checkBackendStatus();
 
     // 监听后端停止事件 - 添加安全检查
-    const removeStoppedListener = window.electronAPI && window.electronAPI.onBackendStopped ? 
+    const removeStoppedListener = window.electronAPI && window.electronAPI.onBackendStopped ?
       window.electronAPI.onBackendStopped((data) => {
         setBackendReady(false);
         setError(`后端服务已停止，退出码: ${data.code}。请重启应用。`);
@@ -201,7 +218,7 @@ const App: React.FC = () => {
     setStartTime(Date.now());
     setElapsedTime(0);
     setRetryCount(prev => prev + 1);
-    
+
     // 重置启动步骤
     setStartupSteps({
       python: 'loading',
@@ -211,7 +228,7 @@ const App: React.FC = () => {
 
     try {
       // 尝试重启后端服务
-      if (window.electronAPI.restartBackend) {
+      if (window.electronAPI && window.electronAPI.restartBackend) {
         await window.electronAPI.restartBackend();
       } else {
         // 如果不支持重启，则简单刷新页面
@@ -235,11 +252,11 @@ const App: React.FC = () => {
           p: 3,
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            width: '100%', 
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            width: '100%',
             maxWidth: 500,
             borderRadius: 2,
             display: 'flex',
@@ -250,39 +267,39 @@ const App: React.FC = () => {
           <Typography variant="h5" gutterBottom>
             正在启动服务
           </Typography>
-          
+
           <Box sx={{ width: '100%', mt: 1, mb: 3 }}>
-            <LinearProgress 
-              variant="determinate" 
-              value={Math.min((elapsedTime / 30) * 100, 100)} 
+            <LinearProgress
+              variant="determinate"
+              value={Math.min((elapsedTime / 30) * 100, 100)}
               sx={{ height: 8, borderRadius: 4 }}
             />
           </Box>
-          
+
           <Typography color="text.secondary" sx={{ mb: 2 }}>
             已耗时: {elapsedTime} 秒
           </Typography>
-          
+
           <Divider sx={{ width: '100%', my: 2 }} />
-          
+
           <List sx={{ width: '100%' }}>
-            <StartupStep 
-              label="启动Python进程" 
-              status={startupSteps.python} 
+            <StartupStep
+              label="启动Python进程"
+              status={startupSteps.python}
               message={startupSteps.python === 'loading' ? '正在启动...' : undefined}
             />
-            <StartupStep 
-              label="初始化API服务" 
+            <StartupStep
+              label="初始化API服务"
               status={startupSteps.api}
               message={startupSteps.api === 'loading' ? '正在初始化...' : undefined}
             />
-            <StartupStep 
-              label="健康检查" 
+            <StartupStep
+              label="健康检查"
               status={startupSteps.healthCheck}
               message={startupSteps.healthCheck === 'loading' ? '正在检查服务可用性...' : undefined}
             />
           </List>
-          
+
           {elapsedTime > 20 && (
             <Alert severity="info" sx={{ mt: 3, width: '100%' }}>
               <Typography variant="body2">
@@ -307,11 +324,11 @@ const App: React.FC = () => {
           p: 3,
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            width: '100%', 
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            width: '100%',
             maxWidth: 500,
             borderRadius: 2,
             display: 'flex',
@@ -320,15 +337,15 @@ const App: React.FC = () => {
           }}
         >
           <ErrorIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
-          
+
           <Typography variant="h5" color="error" gutterBottom>
             出错了
           </Typography>
-          
+
           <Typography textAlign="center" sx={{ mb: 1 }}>
             {error}
           </Typography>
-          
+
           <Alert severity="info" sx={{ mb: 3, width: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body2">
@@ -336,16 +353,42 @@ const App: React.FC = () => {
               </Typography>
             </Box>
           </Alert>
-          
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<RefreshIcon />}
-            onClick={handleRetry}
-            size="large"
-          >
-            重试
-          </Button>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<RefreshIcon />}
+              onClick={handleRetry}
+              size="large"
+            >
+              重试
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="info"
+              startIcon={<InfoIcon />}
+              onClick={async () => {
+                try {
+                  if (window.electronAPI) {
+                    const isRunning = await window.electronAPI.checkBackendStatus();
+                    if (isRunning) {
+                      setBackendReady(true);
+                      setError(null);
+                    } else {
+                      setError('后端服务仍然不可用，请确认服务是否已启动');
+                    }
+                  }
+                } catch (err) {
+                  setError('检查连接失败: ' + (err as Error).message);
+                }
+              }}
+              size="large"
+            >
+              检查连接
+            </Button>
+          </Box>
         </Paper>
       </Box>
     );
@@ -356,6 +399,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/videos" element={<Videos />} />
+        <Route path="/videos/:id" element={<VideoDetail />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -363,4 +407,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App; 
+export default App;
