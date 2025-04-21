@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -33,18 +33,67 @@ const VideoDetail: React.FC = () => {
   const [subtitles, setSubtitles] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
 
-  // 查找视频信息
+  // 查找视频信息并上传到后端
   useEffect(() => {
     if (id) {
       const foundVideo = state.videos.find(v => v.id === id);
       if (foundVideo) {
+        console.log('找到视频信息:', foundVideo);
         setVideo(foundVideo);
 
-        // 如果有字幕轨道，默认选择第一个
-        if (foundVideo.subtitleTracks && foundVideo.subtitleTracks.length > 0) {
-          setSelectedTrack(foundVideo.subtitleTracks[0]);
+        // 上传视频到后端以确保后端有最新的视频信息
+        if (window.electronAPI && foundVideo.filePath) {
+          setLoading(true);
+          window.electronAPI.uploadVideo(foundVideo.filePath)
+            .then(response => {
+              console.log('视频上传到后端响应:', response);
+              if (response.success && response.data) {
+                // 更新视频信息，特别是后端生成的ID
+                // 将后端返回的字幕轨道转换为前端格式
+                const convertedTracks = (response.data.subtitle_tracks || []).map(track => ({
+                  id: track.index.toString(), // 使用轨道索引作为ID
+                  language: track.language || 'unknown',
+                  title: track.title || '',
+                  format: track.codec || 'unknown',
+                  isExternal: false,
+                  // 保存原始的后端轨道ID和索引
+                  backendId: track.id,
+                  backendIndex: track.index
+                }));
+
+                const updatedVideo = {
+                  ...foundVideo,
+                  backendId: response.data.id, // 保存后端ID
+                  subtitleTracks: convertedTracks
+                };
+                setVideo(updatedVideo);
+
+                // 如果有字幕轨道，默认选择第一个
+                if (updatedVideo.subtitleTracks && updatedVideo.subtitleTracks.length > 0) {
+                  setSelectedTrack(updatedVideo.subtitleTracks[0]);
+                }
+              } else {
+                console.error('上传视频到后端失败:', response.error || '未知错误');
+                setError('上传视频到后端失败: ' + (response.error || '未知错误'));
+              }
+            })
+            .catch(err => {
+              console.error('上传视频到后端出错:', err);
+              setError('上传视频到后端出错: ' + err.message);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        } else {
+          // 如果没有electronAPI或filePath，使用现有信息
+          // 如果有字幕轨道，默认选择第一个
+          if (foundVideo.subtitleTracks && foundVideo.subtitleTracks.length > 0) {
+            setSelectedTrack(foundVideo.subtitleTracks[0]);
+          }
         }
       } else {
+        console.error('未找到视频信息，ID:', id);
+        console.log('当前可用视频:', state.videos);
         setError('未找到视频信息');
       }
     }
@@ -53,7 +102,9 @@ const VideoDetail: React.FC = () => {
   // 加载字幕内容
   useEffect(() => {
     if (video && selectedTrack) {
-      loadSubtitleContent(video.id, selectedTrack.id);
+      // 使用后端生成的ID（如果有）或前端的ID
+      const videoId = (video as any).backendId || video.id;
+      loadSubtitleContent(videoId, selectedTrack.id);
     }
   }, [video, selectedTrack]);
 
@@ -65,15 +116,71 @@ const VideoDetail: React.FC = () => {
       // 先尝试使用API获取字幕内容
       if (window.electronAPI) {
         try {
-          // 构建请求URL
+          // 获取轨道索引
+          const track = video?.subtitleTracks?.find(t => t.id === trackId);
+          if (!track) {
+            throw new Error('找不到字幕轨道');
+          }
+
+          // 构建请求URL - 使用轨道索引
           const apiPort = '8000';
-          const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackId}/content`;
+          // 使用轨道的后端索引
+          let trackIndex = 0; // 默认使用第一个轨道
+
+          // 如果轨道有backendIndex属性，直接使用
+          if ((track as any).backendIndex !== undefined) {
+            trackIndex = (track as any).backendIndex;
+            console.log('使用轨道的backendIndex:', trackIndex);
+          } else {
+            // 否则尝试将轨道ID转换为数字
+            try {
+              const parsedIndex = parseInt(track.id);
+              if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                trackIndex = parsedIndex;
+                console.log('使用轨道ID解析的索引:', trackIndex);
+              }
+            } catch (e) {
+              console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+            }
+          }
+
+          // 先检查视频是否存在于后端
+          console.log('检查视频是否存在于后端:', videoId);
+          const checkUrl = `http://localhost:${apiPort}/api/videos/${videoId}`;
+          const checkResponse = await fetch(checkUrl);
+
+          // 如果视频不存在，尝试重新上传
+          if (!checkResponse.ok && video && video.filePath) {
+            console.log('视频不存在于后端，尝试重新上传:', video.filePath);
+            const uploadResponse = await window.electronAPI.uploadVideo(video.filePath);
+
+            if (uploadResponse.success && uploadResponse.data) {
+              console.log('重新上传视频成功，更新视频ID:', uploadResponse.data.id);
+              // 更新视频ID
+              videoId = uploadResponse.data.id;
+
+              // 更新轨道索引
+              if (uploadResponse.data.subtitle_tracks && uploadResponse.data.subtitle_tracks.length > trackIndex) {
+                trackIndex = uploadResponse.data.subtitle_tracks[trackIndex].index;
+                console.log('更新轨道索引:', trackIndex);
+              }
+            } else {
+              console.error('重新上传视频失败:', uploadResponse.error || '未知错误');
+              throw new Error('重新上传视频失败: ' + (uploadResponse.error || '未知错误'));
+            }
+          }
+
+          console.log('使用轨道索引:', trackIndex);
+          const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/content`;
+
+          console.log('请求字幕内容URL:', url);
 
           // 发送请求
           const response = await fetch(url);
 
           if (response.ok) {
             const result = await response.json();
+            console.log('获取字幕内容响应:', result);
 
             if (result.success && result.data && result.data.lines) {
               // 将后端数据转换为前端需要的格式
@@ -89,6 +196,8 @@ const VideoDetail: React.FC = () => {
               setLoading(false);
               return;
             }
+          } else {
+            console.error('获取字幕内容失败:', await response.text());
           }
 
           // 如果请求失败，回退到模拟数据
@@ -181,7 +290,7 @@ const VideoDetail: React.FC = () => {
             {/* 视频播放器 */}
             {video.filePath ? (
               <VideoPlayer
-                src={`file://${video.filePath}`}
+                src={video.filePath}
                 onTimeUpdate={handleTimeUpdate}
               />
             ) : (
@@ -253,7 +362,27 @@ const VideoDetail: React.FC = () => {
 
                     // 尝试调用后端 API 保存字幕
                     const apiPort = '8000';
-                    const url = `http://localhost:${apiPort}/api/videos/${video.id}/subtitles/${selectedTrack.id}/edit`;
+                    const videoId = (video as any).backendId || video.id;
+                    // 使用轨道的后端索引
+                    let trackIndex = 0;
+
+                    // 如果轨道有backendIndex属性，直接使用
+                    if ((selectedTrack as any).backendIndex !== undefined) {
+                      trackIndex = (selectedTrack as any).backendIndex;
+                      console.log('使用轨道的backendIndex:', trackIndex);
+                    } else {
+                      // 否则尝试将轨道ID转换为数字
+                      try {
+                        const parsedIndex = parseInt(selectedTrack.id);
+                        if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                          trackIndex = parsedIndex;
+                        }
+                      } catch (e) {
+                        console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+                      }
+                    }
+
+                    const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/edit`;
 
                     // 将前端数据转换为后端需要的格式
                     const payload = {
@@ -303,7 +432,27 @@ const VideoDetail: React.FC = () => {
 
                     // 尝试调用后端 API 删除字幕
                     const apiPort = '8000';
-                    const url = `http://localhost:${apiPort}/api/videos/${video.id}/subtitles/${selectedTrack.id}/delete/${id}`;
+                    const videoId = (video as any).backendId || video.id;
+                    // 使用轨道的后端索引
+                    let trackIndex = 0;
+
+                    // 如果轨道有backendIndex属性，直接使用
+                    if ((selectedTrack as any).backendIndex !== undefined) {
+                      trackIndex = (selectedTrack as any).backendIndex;
+                      console.log('使用轨道的backendIndex:', trackIndex);
+                    } else {
+                      // 否则尝试将轨道ID转换为数字
+                      try {
+                        const parsedIndex = parseInt(selectedTrack.id);
+                        if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                          trackIndex = parsedIndex;
+                        }
+                      } catch (e) {
+                        console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+                      }
+                    }
+
+                    const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/delete/${id}`;
 
                     const response = await fetch(url, {
                       method: 'DELETE'
@@ -340,7 +489,8 @@ const VideoDetail: React.FC = () => {
                 disabled={!selectedTrack}
                 onClick={() => {
                   if (video && selectedTrack) {
-                    loadSubtitleContent(video.id, selectedTrack.id);
+                    const videoId = (video as any).backendId || video.id;
+                    loadSubtitleContent(videoId, selectedTrack.id);
                   }
                 }}
                 startIcon={loading ? <CircularProgress size={20} /> : null}
@@ -368,7 +518,27 @@ const VideoDetail: React.FC = () => {
 
                       // 尝试调用后端 API 保存所有字幕
                       const apiPort = '8000';
-                      const url = `http://localhost:${apiPort}/api/videos/${video.id}/subtitles/${selectedTrack.id}/save`;
+                      const videoId = (video as any).backendId || video.id;
+                      // 使用轨道的后端索引
+                      let trackIndex = 0;
+
+                      // 如果轨道有backendIndex属性，直接使用
+                      if ((selectedTrack as any).backendIndex !== undefined) {
+                        trackIndex = (selectedTrack as any).backendIndex;
+                        console.log('使用轨道的backendIndex:', trackIndex);
+                      } else {
+                        // 否则尝试将轨道ID转换为数字
+                        try {
+                          const parsedIndex = parseInt(selectedTrack.id);
+                          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                            trackIndex = parsedIndex;
+                          }
+                        } catch (e) {
+                          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+                        }
+                      }
+
+                      const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
 
                       const response = await fetch(url, {
                         method: 'POST'

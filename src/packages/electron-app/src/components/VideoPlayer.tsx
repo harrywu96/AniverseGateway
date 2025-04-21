@@ -27,13 +27,63 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
     const video = videoRef.current;
     if (!video) return;
 
+    // 处理元数据加载
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      console.log('视频元数据加载成功:', { duration: video.duration });
+    };
+
+    // 处理加载错误
+    const handleError = (e: Event) => {
+      console.error('视频加载错误:', e);
+      console.error('视频元素错误代码:', video.error?.code);
+      console.error('视频元素错误消息:', video.error?.message);
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('error', handleError);
+
+    // 在Electron中加载本地文件需要特殊处理
+    if (src) {
+      console.log('加载视频:', src);
+
+      // 处理视频路径
+      try {
+        // 尝试使用标准格式的file://URL
+        if (src.startsWith('file://')) {
+          // 确保路径格式正确，应该是 file:///C:/path/to/video.mp4
+          let formattedSrc = src;
+
+          // 如果是Windows路径但缺少正确的斜杠数量
+          if (src.match(/^file:\/\/[A-Za-z]:/)) {
+            // 添加缺失的斜杠，应该是 file:///C:/path 而不是 file://C:/path
+            formattedSrc = src.replace(/^file:\/\/([A-Za-z]:)/, 'file:///$1');
+          }
+
+          console.log('格式化后的视频URL:', formattedSrc);
+          video.src = formattedSrc;
+        } else {
+          // 如果是其他URL或直接是本地路径，尝试转换为URL
+          if (!src.includes('://')) {
+            // 如果是绝对路径但没有协议前缀，添加file://前缀
+            const fileUrl = `file:///${src.replace(/\\/g, '/')}`;
+            console.log('转换为URL:', fileUrl);
+            video.src = fileUrl;
+          } else {
+            // 其他URL直接使用
+            video.src = src;
+          }
+        }
+      } catch (error) {
+        console.error('处理视频URL错误:', error);
+        // 出错时直接使用原始路径
+        video.src = src;
+      }
+    }
+
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('error', handleError);
     };
   }, [src]);
 
@@ -132,10 +182,35 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
       <Box sx={{ position: 'relative', width: '100%', bgcolor: 'black' }}>
         <video
           ref={videoRef}
-          src={src}
           style={{ width: '100%', display: 'block' }}
           onClick={handlePlayPause}
+          controls={false}
+          preload="metadata"
+          playsInline
         />
+        {/* 加载错误显示 */}
+        {videoRef.current?.error && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: 2,
+              textAlign: 'center'
+            }}
+          >
+            <Typography variant="body1">
+              视频加载失败: {videoRef.current.error.message || '未知错误'}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* 控制栏 */}

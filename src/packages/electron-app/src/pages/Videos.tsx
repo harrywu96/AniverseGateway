@@ -134,6 +134,31 @@ const Videos: React.FC = () => {
     setError(null);
   };
 
+  // 检查后端存储的视频列表
+  const checkBackendVideos = async () => {
+    try {
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/videos`);
+
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('后端存储的视频列表:', result);
+
+      if (result.success) {
+        alert(`后端存储的视频数量: ${result.data.length}\n\n` +
+              result.data.map((v: any) => `ID: ${v.id}, 文件名: ${v.filename}`).join('\n'));
+      } else {
+        alert(`获取视频列表失败: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('检查后端视频列表错误:', error);
+      alert(`检查后端视频列表错误: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
   const handleSelectVideo = async () => {
     try {
       if (!window.electronAPI) {
@@ -168,9 +193,12 @@ const Videos: React.FC = () => {
           // 使用后端返回的数据更新视频信息
           const videoData = response.data;
 
+          // 重要: 保存后端返回的视频ID，这对于后续的API调用至关重要
+          console.log('后端返回的视频ID:', videoData.id);
+
           // 将后端数据转换为前端需要的格式
           const vid: VideoInfo = {
-            id: videoData.id || tempVid.id,
+            id: videoData.id, // 必须使用后端返回的ID，而不是前端生成的
             fileName: videoData.filename || tempVid.fileName,
             filePath: videoData.path || tempVid.filePath,
             format: videoData.format || '',
@@ -455,15 +483,25 @@ const Videos: React.FC = () => {
         <Typography variant="h4" component="h1">
           视频管理
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <UploadIcon />}
-          onClick={handleSelectVideo}
-          disabled={loading}
-        >
-          {loading ? '正在处理...' : '导入视频'}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="info"
+            onClick={checkBackendVideos}
+            disabled={loading}
+          >
+            检查后端视频
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <UploadIcon />}
+            onClick={handleSelectVideo}
+            disabled={loading}
+          >
+            {loading ? '正在处理...' : '导入视频'}
+          </Button>
+        </Box>
       </Box>
 
       {videos.length === 0 ? (

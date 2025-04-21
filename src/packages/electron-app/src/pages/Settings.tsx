@@ -27,14 +27,14 @@ const Settings: React.FC = () => {
     message: '',
     type: '',
   });
-  
+
   // 通用设置
   const [apiKey, setApiKey] = useState('');
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('zh');
   const [defaultStyle, setDefaultStyle] = useState('natural');
   const [darkMode, setDarkMode] = useState(true);
-  
+
   // Faster-Whisper 设置
   const [modelPath, setModelPath] = useState('');
   const [configPath, setConfigPath] = useState('');
@@ -54,7 +54,7 @@ const Settings: React.FC = () => {
             setConfigPath(settings.configPath || '');
             setDevice(settings.device || 'auto');
             setComputeType(settings.computeType || 'auto');
-            
+
             // 设置其他配置参数
             if (settings.sourceLanguage) setSourceLanguage(settings.sourceLanguage);
             if (settings.targetLanguage) setTargetLanguage(settings.targetLanguage);
@@ -68,10 +68,10 @@ const Settings: React.FC = () => {
         console.error('加载设置时出错:', errorMessage);
       }
     };
-    
+
     loadSettings();
   }, []);
-  
+
   const handleSave = async () => {
     try {
       // 如果在Electron环境中
@@ -88,7 +88,7 @@ const Settings: React.FC = () => {
           apiKey
         });
       }
-      
+
       setSaved(true);
       setStatusMessage({ message: '设置已保存', type: 'success' });
       setTimeout(() => setSaved(false), 3000);
@@ -98,7 +98,7 @@ const Settings: React.FC = () => {
       setStatusMessage({ message: `保存设置出错: ${errorMessage || '未知错误'}`, type: 'error' });
     }
   };
-  
+
   const handleBrowseModelPath = async () => {
     if (window.electronAPI) {
       try {
@@ -106,7 +106,7 @@ const Settings: React.FC = () => {
           title: '选择Faster-Whisper模型目录',
           buttonLabel: '选择文件夹'
         });
-        
+
         if (!result.canceled && result.filePaths.length > 0) {
           setModelPath(result.filePaths[0]);
         }
@@ -116,7 +116,7 @@ const Settings: React.FC = () => {
       }
     }
   };
-  
+
   const handleBrowseConfigPath = async () => {
     if (window.electronAPI) {
       try {
@@ -127,7 +127,7 @@ const Settings: React.FC = () => {
             { name: 'JSON配置文件', extensions: ['json'] }
           ]
         });
-        
+
         if (!result.canceled && result.filePaths.length > 0) {
           setConfigPath(result.filePaths[0]);
         }
@@ -137,34 +137,34 @@ const Settings: React.FC = () => {
       }
     }
   };
-  
+
   const validateModel = async () => {
     if (!modelPath) {
       setStatusMessage({ message: '请先选择模型路径', type: 'error' });
       return;
     }
-    
+
     if (window.electronAPI) {
       try {
         setStatusMessage({ message: '正在验证模型...', type: '' });
         const result = await window.electronAPI.validateModel(modelPath);
-        
+
         if (result.valid) {
-          setStatusMessage({ 
-            message: `模型验证成功！检测到模型：${result.modelInfo?.name || '未知'}`, 
-            type: 'success' 
+          setStatusMessage({
+            message: `模型验证成功！检测到模型：${result.modelInfo?.name || '未知'}`,
+            type: 'success'
           });
         } else {
-          setStatusMessage({ 
-            message: `模型验证失败：${result.message || '未知错误'}`, 
-            type: 'error' 
+          setStatusMessage({
+            message: `模型验证失败：${result.message || '未知错误'}`,
+            type: 'error'
           });
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        setStatusMessage({ 
-          message: `验证出错：${errorMessage || '未知错误'}`, 
-          type: 'error' 
+        setStatusMessage({
+          message: `验证出错：${errorMessage || '未知错误'}`,
+          type: 'error'
         });
       }
     }
@@ -175,19 +175,19 @@ const Settings: React.FC = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         系统设置
       </Typography>
-      
+
       {saved && (
         <Alert severity="success" sx={{ mb: 2 }}>
           设置已保存
         </Alert>
       )}
-      
+
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           AI 服务配置
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <FormControl fullWidth variant="outlined">
@@ -204,7 +204,7 @@ const Settings: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -215,7 +215,7 @@ const Settings: React.FC = () => {
               onChange={(e) => setApiKey(e.target.value)}
             />
           </Grid>
-          
+
           <Grid item xs={12}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="model-label">模型</InputLabel>
@@ -233,13 +233,13 @@ const Settings: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-      
+
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           Faster-Whisper 设置
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
@@ -252,8 +252,8 @@ const Settings: React.FC = () => {
                 placeholder="选择或输入本地模型路径"
                 sx={{ mr: 1 }}
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={handleBrowseModelPath}
                 sx={{ minWidth: '100px' }}
               >
@@ -264,7 +264,7 @@ const Settings: React.FC = () => {
               请选择包含模型文件的文件夹，或者输入已下载的模型文件路径
             </Typography>
           </Grid>
-          
+
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
               <TextField
@@ -276,8 +276,8 @@ const Settings: React.FC = () => {
                 placeholder="选择Faster-Whisper配置文件"
                 sx={{ mr: 1 }}
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={handleBrowseConfigPath}
                 sx={{ minWidth: '100px' }}
               >
@@ -288,7 +288,7 @@ const Settings: React.FC = () => {
               可选：选择从Faster-Whisper GUI导出的配置文件
             </Typography>
           </Grid>
-          
+
           <Grid item xs={12}>
             <FormControl component="fieldset">
               <FormLabel component="legend">设备选项</FormLabel>
@@ -304,7 +304,7 @@ const Settings: React.FC = () => {
               </RadioGroup>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="compute-type-label">计算精度</InputLabel>
@@ -321,7 +321,7 @@ const Settings: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button variant="contained" color="primary" onClick={validateModel}>
@@ -331,13 +331,13 @@ const Settings: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-      
+
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           翻译设置
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
@@ -356,7 +356,7 @@ const Settings: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="target-lang-label">目标语言</InputLabel>
@@ -374,7 +374,7 @@ const Settings: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="style-label">翻译风格</InputLabel>
@@ -394,37 +394,82 @@ const Settings: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-      
+
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           应用设置
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        
-        <FormControlLabel
-          control={
-            <Switch
-              checked={darkMode}
-              onChange={(e) => setDarkMode(e.target.checked)}
+
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={darkMode}
+                  onChange={(e) => setDarkMode(e.target.checked)}
+                />
+              }
+              label="深色模式"
             />
-          }
-          label="深色模式"
-        />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              缓存管理
+            </Typography>
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={async () => {
+                try {
+                  if (window.electronAPI) {
+                    setStatusMessage({ message: '正在清除缓存...', type: '' });
+                    const result = await window.electronAPI.clearCache();
+
+                    if (result.success) {
+                      setStatusMessage({
+                        message: `缓存清除成功！${result.message || ''}`,
+                        type: 'success'
+                      });
+                    } else {
+                      setStatusMessage({
+                        message: `缓存清除失败：${result.error || '未知错误'}`,
+                        type: 'error'
+                      });
+                    }
+                  }
+                } catch (error) {
+                  const errorMessage = error instanceof Error ? error.message : String(error);
+                  setStatusMessage({
+                    message: `清除缓存出错：${errorMessage || '未知错误'}`,
+                    type: 'error'
+                  });
+                }
+              }}
+            >
+              清除临时缓存
+            </Button>
+            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+              清除所有临时文件和内存中的视频信息。如果遇到视频或字幕加载问题，可以尝试清除缓存。
+            </Typography>
+          </Grid>
+        </Grid>
       </Paper>
-      
+
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
         <Button variant="contained" color="primary" onClick={handleSave}>
           保存设置
         </Button>
       </Box>
-      
+
       <Snackbar
         open={!!statusMessage.message}
         autoHideDuration={statusMessage.type === 'success' ? 5000 : null}
         onClose={() => setStatusMessage({ message: '', type: '' })}
       >
-        <Alert 
-          severity={statusMessage.type || 'info'} 
+        <Alert
+          severity={statusMessage.type || 'info'}
           onClose={() => setStatusMessage({ message: '', type: '' })}
         >
           {statusMessage.message}
@@ -434,4 +479,4 @@ const Settings: React.FC = () => {
   );
 };
 
-export default Settings; 
+export default Settings;

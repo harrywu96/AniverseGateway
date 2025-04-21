@@ -21,11 +21,12 @@ interface ElectronAPI {
   checkBackendStatus: () => Promise<boolean>;
   selectVideo: () => Promise<string | null>;
   uploadVideo: (filePath: string) => Promise<any>;
+  clearCache: () => Promise<{ success: boolean; message?: string; error?: string; data?: any }>;
   onBackendStarted: (callback: () => void) => () => void;
   onBackendStopped: (callback: (data: { code: number }) => void) => () => void;
   restartBackend: () => Promise<{ success: boolean; error?: string }>;
   loadFasterWhisperConfig: (configPath: string) => Promise<{ success: boolean; message?: string; config?: any }>;
-  transcribeWithGUIConfig: (params: { videoPath: string; configPath?: string; outputDir?: string }) => 
+  transcribeWithGUIConfig: (params: { videoPath: string; configPath?: string; outputDir?: string }) =>
     Promise<{ success: boolean; message?: string; data?: any }>;
   getFasterWhisperParams: (configPath: string) => Promise<{ success: boolean; message?: string; parameters?: any }>;
 }
@@ -36,4 +37,4 @@ declare global {
   }
 }
 
-export {}; 
+export {};

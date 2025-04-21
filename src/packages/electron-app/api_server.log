@@ -927,3 +927,1004 @@ pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unk
 2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
 2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
 2025-04-21 15:19:01,272 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:24:33,431 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:24:33,431 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:24:34,203 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:24:34,308 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:24:34,309 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:36:49,904 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:36:49,904 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:36:49,904 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:36:49,904 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:36:51,883 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:36:59,143 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:36:59,143 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:36:59,969 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:37:00,076 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:37:00,077 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:37:01,988 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:37:46,828 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:44:18,692 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:44:18,697 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:44:29,375 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:44:29,375 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:44:29,375 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:44:29,375 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:44:31,408 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:44:35,135 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:44:35,135 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:44:35,974 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:44:36,087 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:44:37,808 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:46:32,966 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:46:32,966 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:46:32,966 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:46:32,966 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:46:35,008 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:46:39,990 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:46:39,990 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:46:40,787 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:46:40,897 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:46:40,897 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:46:40,897 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:46:40,897 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:46:40,898 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:46:40,898 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:46:40,898 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:46:40,898 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:46:40,898 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:46:42,256 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:53:35,283 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:53:35,283 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:53:35,284 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:53:35,284 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:53:37,311 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:56:45,915 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 15:56:45,915 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 15:56:45,915 - api_server - INFO - 区域设置: cp936
+2025-04-21 15:56:45,915 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 15:56:47,903 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 15:56:52,359 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:56:52,359 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:56:53,163 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:56:53,274 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:56:54,621 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:56:54,621 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:56:55,602 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:56:55,713 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:56:55,713 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:56:55,714 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:56:55,719 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 15:56:55,719 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 15:56:56,775 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 00b104b4-9326-4507-926b-84ec9473ff03_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 15:56:56,886 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 15:56:56,988 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:56:56,990 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:57:54,520 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:58:04,553 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:58:46,160 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:58:47,920 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:58:59,693 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 15:59:01,524 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:05:03,804 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 16:05:03,804 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 16:05:03,804 - api_server - INFO - 区域设置: cp936
+2025-04-21 16:05:03,804 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 16:05:05,783 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 16:05:10,119 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:05:10,119 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:05:10,911 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:05:11,018 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:05:11,019 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:05:12,404 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:05:12,404 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:05:13,461 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:05:13,572 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:05:13,576 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:05:13,576 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:05:14,454 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: e7ee1e08-7dee-4b61-b505-63d60f85ca0b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:05:14,563 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:05:14,667 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:05:14,669 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:17:49,900 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 16:17:49,900 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 16:17:49,900 - api_server - INFO - 区域设置: cp936
+2025-04-21 16:17:49,900 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 16:17:51,782 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 16:17:58,141 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:17:58,141 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:17:58,976 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:17:59,091 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:17:59,091 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:17:59,091 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:17:59,092 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:18:04,011 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:18:04,011 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:18:05,002 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:18:05,115 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:18:05,120 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:18:05,120 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:18:05,973 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:18:06,080 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:18:06,485 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:22:39,929 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:22:39,929 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:22:40,764 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:22:40,881 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:22:40,885 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:22:40,885 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:22:41,900 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:22:42,012 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:22:42,112 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:22:42,113 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:26:17,682 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:26:20,203 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:26:22,216 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:26:24,856 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:26:31,367 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:26:31,367 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:26:32,190 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:26:32,304 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:26:32,305 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:26:32,309 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:26:32,310 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:26:33,123 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:26:33,233 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:26:33,328 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:27:10,487 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:27:10,488 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:27:11,297 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:27:11,407 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:27:11,408 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:27:11,413 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:27:11,413 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:27:12,234 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:27:12,345 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:27:12,444 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:27:12,446 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:41:51,367 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:41:51,367 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:41:52,227 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:41:52,338 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:41:52,421 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:41:52,443 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:09,990 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:42:09,990 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:42:10,824 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:42:10,939 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:42:11,068 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:11,075 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:11,084 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:41,361 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:42:41,361 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:42:42,189 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:42:42,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:42:42,423 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:42,423 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:42:42,426 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:20,377 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:43:20,377 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:43:21,172 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:43:21,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:43:21,394 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:21,395 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:21,401 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:31,369 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:43:31,369 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:43:32,189 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 756db3d3-b0b6-41d9-8947-a570bd7aaf8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:43:32,300 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:43:32,301 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:43:32,301 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:43:32,301 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:43:32,420 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:32,426 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:43:32,437 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:44:26,890 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 16:44:26,890 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 16:44:26,890 - api_server - INFO - 区域设置: cp936
+2025-04-21 16:44:26,890 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 16:44:29,032 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 16:44:33,999 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:44:33,999 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:44:34,833 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:44:34,948 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:44:36,376 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:44:36,376 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:44:37,384 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:44:37,496 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:44:37,501 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 16:44:37,501 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 16:44:38,404 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: c093094b-8172-4848-af83-0d072b37cb0c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 16:44:38,515 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 16:44:38,619 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 16:44:38,622 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 374, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:00:03,986 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:00:03,986 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:00:03,986 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:00:03,986 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:00:05,909 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:00:35,080 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:00:35,080 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:00:35,892 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:00:36,005 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:00:40,745 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:00:40,745 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:00:41,736 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:00:41,850 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:00:41,851 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:00:41,851 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:00:41,855 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:00:41,855 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:00:42,942 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:00:43,055 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:00:43,056 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:00:43,056 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:00:43,497 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:00:43,497 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:00:44,321 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:00:44,436 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:00:44,436 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:00:44,436 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:00:44,436 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:00:44,436 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:00:44,437 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:00:44,437 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:00:44,437 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:00:44,437 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:00:44,441 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:00:44,441 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:00:45,431 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:00:45,545 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:00:45,671 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:00:45,672 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:01:09,217 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:01:09,217 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:01:10,032 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:01:10,145 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:01:10,146 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:01:10,150 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:01:10,150 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:01:11,154 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:01:11,268 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:01:11,383 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:01:11,383 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:01:12,997 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:01:13,107 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:01:13,108 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:01:13,113 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:01:13,113 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:01:15,114 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:01:15,230 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:01:15,314 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:01:15,397 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:02:07,498 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:02:07,498 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:02:08,561 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:02:08,674 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:02:08,680 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:02:08,680 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:02:09,911 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:02:10,024 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:02:10,025 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:02:10,025 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:02:10,140 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:02:10,140 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:02:10,957 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:02:11,070 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:02:11,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:02:11,078 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:02:11,078 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:02:11,901 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 90a4f8c5-f1a3-436e-bb2f-0a62edf41f4d_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:02:12,013 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:02:12,126 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:02:12,222 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 视频不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 454, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="视频不存在")
+fastapi.exceptions.HTTPException: 404: 视频不存在
+2025-04-21 17:02:44,116 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:02:44,116 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:02:44,116 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:02:44,116 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:02:46,227 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:02:55,850 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:02:55,850 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:02:56,639 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:02:56,750 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:11:10,024 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:11:10,024 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:11:10,025 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:11:10,025 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:11:11,933 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:11:15,836 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-04-21 17:11:15,836 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:11:15,836 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:11:16,662 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:11:16,774 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:11:24,555 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:11:24,555 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:11:25,533 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:11:25,645 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:11:25,650 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:11:25,651 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:11:26,597 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:11:26,711 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:11:26,829 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-04-21 17:11:27,239 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\bed60b9c-ab50-4b65-a713-99437dcaa67e_868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:11:27,239 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 471, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:11:27,619 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\245a5962-69e6-412d-bf8d-8f2bd33d9f7f_868ae6fe-5881-456a-a31b-a75fef3e3701_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:11:27,619 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 471, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:14:58,030 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:14:58,031 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:14:58,031 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:14:58,031 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:14:59,915 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:15:20,518 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:15:20,518 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:15:20,518 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:15:20,518 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:15:22,402 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:17:04,563 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:17:04,563 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:17:04,563 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:17:04,564 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:17:06,439 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:17:09,747 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-04-21 17:17:12,956 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:12,956 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:13,779 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:17:13,945 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:17:16,229 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:16,229 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:17,222 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:17:17,331 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:17:17,337 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:17,337 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:17,338 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:17,747 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-04-21 17:17:18,113 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:18,113 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:17:18,577 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:18,577 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:17:27,624 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:27,624 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:27,624 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:27,626 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:27,626 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:27,627 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:28,118 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:28,119 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:17:28,572 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:28,572 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:17:35,712 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:35,712 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:35,713 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:35,714 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:35,714 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:35,715 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:36,495 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:36,495 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:17:54,291 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:54,291 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:54,292 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:54,294 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:17:54,294 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:17:54,295 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:17:54,795 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:17:54,795 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:20:00,693 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:20:00,693 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:21:12,554 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:21:12,554 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:21:28,371 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:21:28,371 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:21:28,371 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:21:28,372 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:21:28,372 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:21:28,373 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 560f85e6-0568-40dd-89b4-d618b815e906
+2025-04-21 17:21:29,147 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:21:29,147 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:21:29,604 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\560f85e6-0568-40dd-89b4-d618b815e906_59b5ddb1-97c6-4165-b7fb-94dad32ab6fb_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:21:29,604 - subtranslate.api.videos - ERROR - 获取字幕内容失败: object WindowsPath can't be used in 'await' expression
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 472, in get_video_subtitle_content
+    subtitle_path = await extractor.extract_embedded_subtitle(
+TypeError: object WindowsPath can't be used in 'await' expression
+2025-04-21 17:30:08,171 - api_server - INFO - 系统默认编码: utf-8
+2025-04-21 17:30:08,171 - api_server - INFO - 文件系统编码: utf-8
+2025-04-21 17:30:08,171 - api_server - INFO - 区域设置: cp936
+2025-04-21 17:30:08,171 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-21 17:30:10,086 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-21 17:30:14,048 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-04-21 17:30:14,049 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:30:14,049 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:30:14,901 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:30:15,010 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:30:16,272 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:30:16,273 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:30:17,243 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-21 17:30:17,354 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-21 17:30:17,355 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-21 17:30:17,359 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-21 17:30:17,360 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-21 17:30:17,360 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 17ed3cd4-5cef-4279-874b-e5d70e92ab03
+2025-04-21 17:30:17,766 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-04-21 17:30:18,138 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:30:18,592 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt

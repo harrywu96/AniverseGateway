@@ -4,7 +4,7 @@
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from functools import lru_cache
 
 from fastapi import Depends, HTTPException, Security, status
@@ -22,6 +22,9 @@ logger = logging.getLogger("subtranslate.api.dependencies")
 
 # 定义API密钥安全依赖
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+# 服务实例存储
+_service_instances: Dict[str, Any] = {}
 
 
 @lru_cache()
@@ -137,7 +140,18 @@ def get_video_storage(
     Returns:
         VideoStorageService: 视频存储服务实例
     """
-    return VideoStorageService(config.temp_dir)
+    global _service_instances
+
+    # 如果实例已存在，直接返回
+    if "video_storage" in _service_instances:
+        logger.debug("使用现有的VideoStorageService实例")
+        return _service_instances["video_storage"]
+
+    # 创建新实例
+    logger.info("创建新的VideoStorageService实例")
+    service = VideoStorageService(config.temp_dir)
+    _service_instances["video_storage"] = service
+    return service
 
 
 def get_subtitle_storage(
@@ -151,10 +165,21 @@ def get_subtitle_storage(
     Returns:
         SubtitleStorageService: 字幕存储服务实例
     """
-    return SubtitleStorageService(config.temp_dir)
+    global _service_instances
+
+    # 如果实例已存在，直接返回
+    if "subtitle_storage" in _service_instances:
+        logger.debug("使用现有的SubtitleStorageService实例")
+        return _service_instances["subtitle_storage"]
+
+    # 创建新实例
+    logger.info("创建新的SubtitleStorageService实例")
+    service = SubtitleStorageService(config.temp_dir)
+    _service_instances["subtitle_storage"] = service
+    return service
 
 
-# 任务管理器实例存储
+# 全局实例存储
 _task_managers: Dict[str, object] = {}
 
 

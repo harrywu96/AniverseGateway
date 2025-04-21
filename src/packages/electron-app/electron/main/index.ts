@@ -27,6 +27,7 @@ function createWindow() {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      webSecurity: false, // 允许加载本地资源
     },
     show: false,
   });
@@ -218,7 +219,12 @@ function startPythonBackend() {
     // 监听标准输出
     pythonProcess.stdout.on('data', (data) => {
       const output = data.toString();
-      console.log(`Python后端输出: ${output}`);
+      // 检查是否包含INFO或DEBUG前缀，如果是则作为正常输出处理
+      if (output.includes('INFO:') || output.includes('DEBUG:')) {
+        console.log(`Python后端输出: ${output.trim()}`);
+      } else {
+        console.log(`Python后端输出: ${output.trim()}`);
+      }
 
       // 检测后端是否已经启动 - 保留原有检测，但增加了其他启动信息的检测
       if (output.includes('Application startup complete') ||
@@ -235,11 +241,25 @@ function startPythonBackend() {
 
     // 监听错误输出
     pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python后端错误: ${data}`);
+      const output = data.toString().trim();
+
+      // 检查是否是真正的错误，还是只是日志输出
+      if (output.includes('ERROR:') ||
+          output.includes('CRITICAL:') ||
+          output.includes('Exception:') ||
+          output.includes('Error:')) {
+        console.error(`Python后端错误: ${output}`);
+      } else if (output.includes('INFO:') || output.includes('DEBUG:') || output.includes('WARNING:')) {
+        // 这些实际上是日志输出，不是真正的错误
+        console.log(`Python后端日志: ${output}`);
+      } else {
+        // 其他未分类的输出
+        console.log(`Python后端stderr: ${output}`);
+      }
 
       // 如果检测到端口已被占用
-      if (data.toString().includes('address already in use') ||
-          data.toString().includes('Address already in use')) {
+      if (output.includes('address already in use') ||
+          output.includes('Address already in use')) {
         console.error(`错误: 端口${port}已被占用，请确保没有其他API服务器实例正在运行`);
         if (mainWindow) {
           mainWindow.webContents.send('backend-error', {
@@ -311,6 +331,39 @@ function registerIpcHandlers() {
     }
 
     return result.filePaths[0];
+  });
+
+  // 清除缓存
+  ipcMain.handle('clear-cache', async () => {
+    try {
+      const port = process.env.API_PORT || '8000';
+      const url = `http://127.0.0.1:${port}/api/videos/clear-cache`;
+
+      console.log('正在发送清除缓存请求:', url);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      // 检查响应状态
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error('清除缓存请求失败:', response.status, responseText);
+        return {
+          success: false,
+          error: `请求失败: ${response.status} ${response.statusText}`,
+          details: responseText
+        };
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('清除缓存时出错', error);
+      return { success: false, error: error.message };
+    }
   });
 
   // 上传本地视频文件

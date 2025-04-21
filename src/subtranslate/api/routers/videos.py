@@ -5,7 +5,8 @@
 
 import os
 import logging
-from typing import Optional
+import shutil
+from typing import Optional, Dict, Any
 from pathlib import Path
 from uuid import uuid4
 
@@ -20,13 +21,16 @@ from fastapi import (
 from pydantic import BaseModel, Field
 
 from ...schemas.api import APIResponse, VideoDetailResponse
+from ...schemas.subtitle import SubtitleLine, SubtitlePreview
 from ...schemas.config import SystemConfig
-from ...core.subtitle_extractor import SubtitleExtractor
+from ...core.subtitle_extractor import SubtitleExtractor, SubtitleFormat
 from ...services.video_storage import VideoStorageService
+from ...services.subtitle_storage import SubtitleStorageService
 from ..dependencies import (
     get_system_config,
     get_subtitle_extractor,
     get_video_storage,
+    get_subtitle_storage,
 )
 
 
@@ -36,6 +40,30 @@ logger = logging.getLogger("subtranslate.api.videos")
 
 # 创建路由器
 router = APIRouter()
+
+
+# 视频列表响应模型
+class VideoListResponse(APIResponse):
+    """视频列表响应模型"""
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "获取视频列表成功",
+                "data": [
+                    {
+                        "id": "48094602-cdde-4ce6-94fe-4b6c4b1762f7",
+                        "filename": "example.mp4",
+                        "duration": 120.5,
+                        "has_embedded_subtitle": True,
+                        "format": "mp4",
+                        "status": "ready",
+                        "created_at": "2023-01-01T12:00:00",
+                    }
+                ],
+            }
+        }
 
 
 # 视频加载请求模型
@@ -119,6 +147,91 @@ class VideoSubtitlesResponse(APIResponse):
                 },
             }
         }
+
+
+# 字幕内容响应模型
+class SubtitleContentResponse(APIResponse):
+    """字幕内容响应模型"""
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "获取字幕内容成功",
+                "data": {
+                    "lines": [
+                        {
+                            "index": 1,
+                            "start": "00:00:01,000",
+                            "end": "00:00:04,000",
+                            "text": "这是字幕内容",
+                            "start_ms": 1000,
+                            "end_ms": 4000,
+                        }
+                    ],
+                    "total_lines": 100,
+                    "language": "eng",
+                    "format": "srt",
+                    "duration_seconds": 600,
+                },
+            }
+        }
+
+
+@router.get("", response_model=VideoListResponse, tags=["视频管理"])
+async def list_videos(
+    config: SystemConfig = Depends(get_system_config),
+    video_storage: VideoStorageService = Depends(get_video_storage),
+):
+    """获取所有视频列表
+
+    获取当前系统中所有已加载的视频信息列表。
+
+    Args:
+        config: 系统配置
+        video_storage: 视频存储服务
+
+    Returns:
+        VideoListResponse: 视频列表响应
+    """
+    try:
+        # 获取所有视频
+        videos = video_storage.list_videos()
+
+        # 转换为简化的响应格式
+        video_list = []
+        for video in videos:
+            video_list.append(
+                {
+                    "id": video.id,
+                    "filename": video.filename,
+                    "duration": video.duration,
+                    "has_embedded_subtitle": video.has_embedded_subtitle,
+                    "format": video.format.value,
+                    "status": video.status.value,
+                    "created_at": video.created_at.isoformat(),
+                    "path": video.path,
+                    "subtitle_tracks_count": (
+                        len(video.subtitle_tracks)
+                        if video.subtitle_tracks
+                        else 0
+                    ),
+                    "external_subtitles_count": (
+                        len(video.external_subtitles)
+                        if video.external_subtitles
+                        else 0
+                    ),
+                }
+            )
+
+        return VideoListResponse(
+            success=True, message="获取视频列表成功", data=video_list
+        )
+    except Exception as e:
+        logger.error(f"获取视频列表失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"获取视频列表失败: {str(e)}"
+        )
 
 
 @router.post("/load", response_model=VideoDetailResponse, tags=["视频管理"])
@@ -307,6 +420,105 @@ async def get_video_subtitles(
         )
 
 
+@router.get(
+    "/{video_id}/subtitles/{track_index}/content",
+    response_model=SubtitleContentResponse,
+    tags=["视频管理"],
+)
+async def get_video_subtitle_content(
+    video_id: str,
+    track_index: int,
+    config: SystemConfig = Depends(get_system_config),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+    video_storage: VideoStorageService = Depends(get_video_storage),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
+):
+    """获取视频字幕轨道内容
+
+    获取指定视频的指定字幕轨道的完整内容。
+
+    Args:
+        video_id: 视频ID
+        track_index: 字幕轨道索引
+        config: 系统配置
+        extractor: 字幕提取器
+        video_storage: 视频存储服务
+        subtitle_storage: 字幕存储服务
+
+    Returns:
+        SubtitleContentResponse: 字幕内容响应
+    """
+    try:
+        # 获取视频信息
+        video_info = video_storage.get_video(video_id)
+        if not video_info:
+            raise HTTPException(status_code=404, detail="视频不存在")
+
+        # 检查字幕轨道是否存在
+        if (
+            not video_info.subtitle_tracks
+            or len(video_info.subtitle_tracks) <= track_index
+        ):
+            raise HTTPException(status_code=404, detail="字幕轨道不存在")
+
+        # 获取字幕轨道信息
+        track = video_info.subtitle_tracks[track_index]
+
+        # 创建临时目录
+        output_dir = Path(config.temp_dir) / "subtitles"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # 提取字幕内容
+        subtitle_path = extractor.extract_embedded_subtitle(
+            video_info,
+            track_index=track_index,
+            output_dir=output_dir,
+            target_format=SubtitleFormat.SRT,  # 默认使用SRT格式
+        )
+
+        if not subtitle_path or not os.path.exists(str(subtitle_path)):
+            raise HTTPException(status_code=500, detail="提取字幕内容失败")
+
+        # 读取字幕文件
+        with open(str(subtitle_path), "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 解析字幕内容
+        from ..routers.subtitles import _parse_subtitle_lines
+
+        lines = _parse_subtitle_lines(content, "srt")
+
+        # 计算总行数和总时长
+        total_lines = len(lines)
+        duration_seconds = 0
+        if lines:
+            last_line = lines[-1]
+            duration_seconds = last_line.end_ms / 1000.0
+
+        # 构建完整内容响应
+        subtitle_preview = SubtitlePreview(
+            lines=lines,
+            total_lines=total_lines,
+            language=track.language,
+            format="srt",
+            duration_seconds=duration_seconds,
+        )
+
+        return SubtitleContentResponse(
+            success=True,
+            message="获取字幕内容成功",
+            data=subtitle_preview,
+        )
+
+    except Exception as e:
+        logger.error(f"获取字幕内容失败: {e}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(
+            status_code=500, detail=f"获取字幕内容失败: {str(e)}"
+        )
+
+
 @router.post("/upload", response_model=VideoDetailResponse, tags=["视频管理"])
 async def upload_video(
     file: UploadFile = File(...),
@@ -417,6 +629,38 @@ async def upload_local_video(
             logger.error("请求中缺少必要的file_path字段")
             raise HTTPException(status_code=400, detail="缺少必要的文件路径")
 
+        # 生成文件指纹，用于检测重复上传
+        file_path = Path(video_request.file_path)
+        file_size = file_path.stat().st_size
+        file_mtime = file_path.stat().st_mtime
+        file_fingerprint = f"{file_path}_{file_size}_{file_mtime}"
+
+        # 检查是否已经上传过该文件
+        for video_id, video in video_storage.videos.items():
+            # 生成已存在视频的指纹
+            existing_path = Path(video.path)
+            if existing_path.exists():
+                existing_size = existing_path.stat().st_size
+                existing_mtime = existing_path.stat().st_mtime
+                existing_fingerprint = (
+                    f"{video.filename}_{existing_size}_{existing_mtime}"
+                )
+
+                # 如果指纹匹配，说明是同一个文件
+                if (
+                    file_path.name == video.filename
+                    and abs(file_size - existing_size) < 1024
+                ):  # 允许1KB的误差
+                    logger.info(
+                        f"检测到重复上传的视频: {file_path.name}, 返回现有视频ID: {video_id}"
+                    )
+                    return VideoDetailResponse(
+                        success=True,
+                        message="视频已存在，返回现有信息",
+                        data=video,
+                    )
+
+        # 如果没有找到匹配的视频，正常加载
         return await load_video(
             video_request, config, extractor, video_storage
         )
@@ -427,3 +671,57 @@ async def upload_local_video(
         raise HTTPException(
             status_code=500, detail=f"本地视频加载失败: {str(e)}"
         )
+
+
+@router.post("/clear-cache", response_model=APIResponse, tags=["视频管理"])
+async def clear_cache(
+    config: SystemConfig = Depends(get_system_config),
+    video_storage: VideoStorageService = Depends(get_video_storage),
+    subtitle_storage: SubtitleStorageService = Depends(get_subtitle_storage),
+):
+    """清除临时缓存
+
+    清除所有临时文件和内存中的视频信息。
+
+    Args:
+        config: 系统配置
+        video_storage: 视频存储服务
+        subtitle_storage: 字幕存储服务
+
+    Returns:
+        APIResponse: 操作响应
+    """
+    try:
+        # 清除视频存储
+        video_count = len(video_storage.videos)
+        video_storage.clear_all()
+
+        # 清除字幕存储
+        subtitle_count = len(subtitle_storage._subtitles)
+        subtitle_storage.clear_all()
+
+        # 清除临时目录
+        temp_dir = Path(config.temp_dir)
+        if temp_dir.exists():
+            # 先删除目录下的所有文件
+            for item in temp_dir.glob("*"):
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+            # 重新创建目录结构
+            temp_dir.mkdir(exist_ok=True)
+            (temp_dir / "subtitles").mkdir(exist_ok=True)
+
+        return APIResponse(
+            success=True,
+            message=f"清除缓存成功，删除了{video_count}个视频和{subtitle_count}个字幕文件",
+            data={
+                "cleared_videos": video_count,
+                "cleared_subtitles": subtitle_count,
+            },
+        )
+    except Exception as e:
+        logger.error(f"清除缓存失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"清除缓存失败: {str(e)}")
