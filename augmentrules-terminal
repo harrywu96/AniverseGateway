@@ -6,7 +6,7 @@ When executing PowerShell terminal commands in this project, always follow these
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 2. Then activate the Python virtual environment:
-   .\.venv\Scripts\Activate.ps1
+   .venv\Scripts\Activate.ps1
 
 3. When managing dependencies, always use UV instead of pip:
    - To sync dependencies: uv pip sync requirements.txt
@@ -20,6 +20,3 @@ IMPORTANT:
 - You can run the setup-env.ps1 script to automate these steps
 
 If you need to run a terminal command, first check if the virtual environment is activated (the prompt should show (.venv)). If not, execute these steps first.
-
-For automated setup, you can use:
-./setup-env.ps1 

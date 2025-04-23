@@ -18,8 +18,16 @@ import {
   RadioGroup,
   FormLabel,
   Snackbar,
+  CircularProgress,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { LANGUAGE_OPTIONS, TRANSLATION_STYLES } from '@subtranslate/shared';
+import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { LANGUAGE_OPTIONS, TRANSLATION_STYLES, AIProvider, AIModel } from '@subtranslate/shared';
+import { getProviders, getProviderModels } from '../services/api';
+import CustomProviderDialog from '../components/CustomProviderDialog';
+import ProviderList from '../components/ProviderList';
+import ProviderDetail from '../components/ProviderDetail';
 
 const Settings: React.FC = () => {
   const [saved, setSaved] = useState(false);
@@ -29,17 +37,138 @@ const Settings: React.FC = () => {
   });
 
   // 通用设置
-  const [apiKey, setApiKey] = useState('');
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('zh');
   const [defaultStyle, setDefaultStyle] = useState('natural');
   const [darkMode, setDarkMode] = useState(true);
+
+  // AI 服务设置
+  const [providers, setProviders] = useState<AIProvider[]>([]);
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [customProviderDialogOpen, setCustomProviderDialogOpen] = useState(false);
+  const [customProviderToEdit, setCustomProviderToEdit] = useState<any>(null);
 
   // Faster-Whisper 设置
   const [modelPath, setModelPath] = useState('');
   const [configPath, setConfigPath] = useState('');
   const [device, setDevice] = useState('auto');
   const [computeType, setComputeType] = useState('auto');
+
+  // 加载提供商列表
+  const fetchProviders = async () => {
+    setLoadingProviders(true);
+    try {
+      const response = await getProviders();
+      if (response.success && response.data) {
+        // 只显示硬基流动和自定义提供商
+        const allProviders = response.data.providers;
+        // 现在我们不需要过滤，因为后端已经只返回了硬基流动和自定义提供商
+        setProviders(allProviders);
+
+        // 如果有当前提供商，选中它
+        if (response.data.current_provider && !selectedProvider) {
+          const currentProvider = response.data.current_provider;
+          // 如果是自定义提供商，需要找到对应的custom-{id}
+          if (currentProvider === 'custom') {
+            // 尝试找到激活的自定义提供商
+            const activeCustomProvider = allProviders.find(p => p.id.startsWith('custom-') && p.is_active);
+            if (activeCustomProvider) {
+              setSelectedProvider(activeCustomProvider.id);
+              fetchModels(activeCustomProvider.id);
+            } else {
+              // 如果没有激活的自定义提供商，选择第一个自定义提供商
+              const firstCustomProvider = allProviders.find(p => p.id.startsWith('custom-'));
+              if (firstCustomProvider) {
+                setSelectedProvider(firstCustomProvider.id);
+                fetchModels(firstCustomProvider.id);
+              } else {
+                // 如果没有自定义提供商，选择硬基流动
+                const siliconflow = allProviders.find(p => p.id === 'siliconflow');
+                if (siliconflow) {
+                  setSelectedProvider('siliconflow');
+                  fetchModels('siliconflow');
+                }
+              }
+            }
+          } else if (currentProvider === 'siliconflow') {
+            // 如果当前提供商是硬基流动，直接选中
+            setSelectedProvider('siliconflow');
+            fetchModels('siliconflow');
+          } else {
+            // 如果是其他提供商，默认选择硬基流动
+            const siliconflow = allProviders.find(p => p.id === 'siliconflow');
+            if (siliconflow) {
+              setSelectedProvider('siliconflow');
+              fetchModels('siliconflow');
+            }
+          }
+        }
+      } else {
+        setStatusMessage({
+          message: response.message || '获取提供商列表失败',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setStatusMessage({
+        message: `获取提供商列表出错: ${errorMessage}`,
+        type: 'error'
+      });
+    } finally {
+      setLoadingProviders(false);
+    }
+  };
+
+  // 加载模型列表
+  const fetchModels = async (providerId: string) => {
+    if (!providerId) return;
+
+    setLoadingModels(true);
+    try {
+      const response = await getProviderModels(providerId);
+      if (response.success && response.data) {
+        setModels(response.data.models);
+        // 如果有模型且当前未选择模型，选择第一个
+        if (response.data.models.length > 0 && !selectedModel) {
+          const defaultModel = response.data.models.find(m => m.is_default);
+          setSelectedModel(defaultModel?.id || response.data.models[0].id);
+        }
+      } else {
+        setStatusMessage({
+          message: response.message || `获取${providerId}的模型列表失败`,
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setStatusMessage({
+        message: `获取模型列表出错: ${errorMessage}`,
+        type: 'error'
+      });
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  // 当选择提供商变化时加载相应的模型
+  useEffect(() => {
+    if (selectedProvider) {
+      fetchModels(selectedProvider);
+      // 获取提供商的配置信息
+      const provider = providers.find(p => p.id === selectedProvider);
+      if (provider) {
+        // 清空之前的模型选择
+        setSelectedModel('');
+      }
+    }
+  }, [selectedProvider]);
 
   // 加载保存的设置
   useEffect(() => {
@@ -61,7 +190,13 @@ const Settings: React.FC = () => {
             if (settings.defaultStyle) setDefaultStyle(settings.defaultStyle);
             if (settings.darkMode !== undefined) setDarkMode(settings.darkMode);
             if (settings.apiKey) setApiKey(settings.apiKey);
+            if (settings.baseUrl) setBaseUrl(settings.baseUrl);
+            if (settings.selectedProvider) setSelectedProvider(settings.selectedProvider);
+            if (settings.selectedModel) setSelectedModel(settings.selectedModel);
           }
+
+          // 加载提供商列表
+          await fetchProviders();
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -85,7 +220,10 @@ const Settings: React.FC = () => {
           targetLanguage,
           defaultStyle,
           darkMode,
-          apiKey
+          apiKey,
+          baseUrl,
+          selectedProvider,
+          selectedModel
         });
       }
 
@@ -188,51 +326,69 @@ const Settings: React.FC = () => {
         </Typography>
         <Divider sx={{ mb: 3 }} />
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="provider-label">AI 服务提供商</InputLabel>
-              <Select
-                labelId="provider-label"
-                label="AI 服务提供商"
-                value="openai"
-              >
-                <MenuItem value="openai">OpenAI</MenuItem>
-                <MenuItem value="azure">Azure OpenAI</MenuItem>
-                <MenuItem value="anthropic">Anthropic Claude</MenuItem>
-                <MenuItem value="glm">智谱 GLM</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="API 密钥"
-              variant="outlined"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+        <Box sx={{ display: 'flex', height: 500 }}>
+          {/* 提供商列表 */}
+          <Box sx={{ mr: 2 }}>
+            <ProviderList
+              providers={providers}
+              selectedProvider={selectedProvider}
+              onSelectProvider={setSelectedProvider}
+              onAddProvider={() => {
+                setCustomProviderToEdit(null);
+                setCustomProviderDialogOpen(true);
+              }}
+              onRefreshProviders={fetchProviders}
+              loading={loadingProviders}
             />
-          </Grid>
+          </Box>
 
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="model-label">模型</InputLabel>
-              <Select
-                labelId="model-label"
-                label="模型"
-                value="gpt-4"
-              >
-                <MenuItem value="gpt-4">GPT-4</MenuItem>
-                <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
-                <MenuItem value="claude-3-opus">Claude 3 Opus</MenuItem>
-                <MenuItem value="glm-4">GLM-4</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+          {/* 提供商详情 */}
+          <ProviderDetail
+            provider={providers.find(p => p.id === selectedProvider) || null}
+            models={models}
+            selectedModel={selectedModel}
+            onSelectModel={setSelectedModel}
+            onUpdateProvider={() => {
+              fetchProviders();
+              fetchModels(selectedProvider);
+            }}
+            onEditProvider={() => {
+              // 打开编辑对话框，传入当前提供商信息
+              setCustomProviderToEdit(null);
+              setCustomProviderDialogOpen(true);
+            }}
+            onRefreshModels={() => fetchModels(selectedProvider)}
+            loadingModels={loadingModels}
+            onDeleteProvider={() => {
+              // 删除提供商后，刷新提供商列表并选择第一个提供商
+              fetchProviders();
+              // 重置选中的提供商和模型
+              setSelectedProvider('');
+              setSelectedModel('');
+              setModels([]);
+              setStatusMessage({
+                message: '删除提供商成功',
+                type: 'success'
+              });
+            }}
+          />
+        </Box>
       </Paper>
+
+      {/* 自定义提供商对话框 */}
+      <CustomProviderDialog
+        open={customProviderDialogOpen}
+        onClose={() => {
+          setCustomProviderDialogOpen(false);
+          setCustomProviderToEdit(null);
+        }}
+        onSave={() => {
+          fetchProviders();
+          setCustomProviderDialogOpen(false);
+          setCustomProviderToEdit(null);
+        }}
+        editProvider={customProviderToEdit || (selectedProvider === 'custom' ? providers.find(p => p.id === 'custom') : undefined)}
+      />
 
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>

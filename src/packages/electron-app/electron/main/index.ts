@@ -489,7 +489,7 @@ function registerIpcHandlers() {
   ipcMain.handle('validate-model', async (event, modelPath) => {
     try {
       const port = process.env.API_PORT || '8000';
-      const response = await fetch(`http://localhost:${port}/api/speech-to-text/validate-model`, {
+      const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/validate-model`, {
         method: 'POST',
         body: JSON.stringify({ model_path: modelPath }),
         headers: {
@@ -515,7 +515,7 @@ function registerIpcHandlers() {
   ipcMain.handle('load-faster-whisper-config', async (event, configPath) => {
     try {
       const port = process.env.API_PORT || '8000';
-      const response = await fetch(`http://localhost:${port}/api/speech-to-text/load-gui-config`, {
+      const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/load-gui-config`, {
         method: 'POST',
         body: JSON.stringify({ config_path: configPath }),
         headers: {
@@ -548,7 +548,7 @@ function registerIpcHandlers() {
   ipcMain.handle('transcribe-with-gui-config', async (event, { videoPath, configPath, outputDir }) => {
     try {
       const port = process.env.API_PORT || '8000';
-      const response = await fetch(`http://localhost:${port}/api/speech-to-text/transcribe-with-gui-config`, {
+      const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/transcribe-with-gui-config`, {
         method: 'POST',
         body: JSON.stringify({
           video_path: videoPath,
@@ -579,7 +579,7 @@ function registerIpcHandlers() {
   ipcMain.handle('get-faster-whisper-params', async (event, configPath) => {
     try {
       const port = process.env.API_PORT || '8000';
-      const response = await fetch(`http://localhost:${port}/api/speech-to-text/get-config-params`, {
+      const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/get-config-params`, {
         method: 'POST',
         body: JSON.stringify({ config_path: configPath }),
         headers: {
@@ -601,6 +601,134 @@ function registerIpcHandlers() {
       };
     }
   });
+
+  // ==== AI提供商相关处理程序 ====
+  // 获取提供商列表
+  ipcMain.handle('get-providers', () => {
+    try {
+      return getProviderList();
+    } catch (error) {
+      console.error('获取提供商列表出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 获取提供商详情
+  ipcMain.handle('get-provider-details', (event, providerId) => {
+    try {
+      const details = getProviderDetails(providerId);
+      return { success: true, data: details };
+    } catch (error) {
+      console.error('获取提供商详情出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 获取提供商模型列表
+  ipcMain.handle('get-provider-models', (event, providerId) => {
+    try {
+      return getProviderModels(providerId);
+    } catch (error) {
+      console.error('获取提供商模型列表出错:', error);
+      return { success: false, error: error.message, models: [] };
+    }
+  });
+
+  // 更新提供商配置
+  ipcMain.handle('update-provider', (event, providerId, apiKey, defaultModel, baseUrl) => {
+    try {
+      return updateProvider(providerId, apiKey, defaultModel, baseUrl);
+    } catch (error) {
+      console.error('更新提供商配置出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 测试提供商连接
+  ipcMain.handle('test-provider', async (event, providerId, apiKey, baseUrl, model, formatType) => {
+    try {
+      // 如果是自定义提供商，将请求发送到后端进行测试
+      const port = process.env.API_PORT || '8000';
+
+      // 如果API密钥为空，从已保存的配置中获取实际的API密钥
+      let actualApiKey = apiKey;
+      if (!actualApiKey || actualApiKey.trim() === '') {
+        // 如果是自定义提供商
+        if (providerId.startsWith('custom-')) {
+          const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+          const providersData = loadProviders();
+          const provider = providersData.providers[realProviderId];
+          if (provider && provider.api_key) {
+            actualApiKey = provider.api_key;
+            console.log(`使用已保存的自定义提供商API密钥进行测试: ${providerId}`);
+          }
+        }
+        // 如果是硬基流动提供商
+        else if (providerId === 'siliconflow') {
+          const settings = loadSettings();
+          if (settings.siliconflowApiKey) {
+            actualApiKey = settings.siliconflowApiKey;
+            console.log('使用已保存的硬基流动API密钥进行测试');
+          }
+        }
+      }
+
+      console.log(`测试提供商连接: ${providerId}, 模型: ${model || '未指定'}`);
+
+      const response = await fetch(`http://127.0.0.1:${port}/api/providers/test`, {
+        method: 'POST',
+        body: JSON.stringify({
+          provider: providerId.startsWith('custom-') ? 'custom' : providerId,
+          api_key: actualApiKey,
+          base_url: baseUrl,
+          model: model,
+          format_type: formatType || 'openai'
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`服务器返回错误: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('测试提供商连接出错:', error);
+      return { success: false, message: `测试失败: ${error.message}` };
+    }
+  });
+
+  // 创建自定义提供商
+  ipcMain.handle('create-custom-provider', (event, name, apiKey, baseUrl, defaultModel, formatType, models) => {
+    try {
+      return createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models);
+    } catch (error) {
+      console.error('创建自定义提供商出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 删除自定义提供商
+  ipcMain.handle('delete-custom-provider', (event, providerId) => {
+    try {
+      return deleteCustomProvider(providerId);
+    } catch (error) {
+      console.error('删除自定义提供商出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 激活提供商
+  ipcMain.handle('activate-provider', (event, providerId) => {
+    try {
+      return activateProvider(providerId);
+    } catch (error) {
+      console.error('激活提供商出错:', error);
+      return { success: false, error: error.message };
+    }
+  });
 }
 
 /**
@@ -608,6 +736,7 @@ function registerIpcHandlers() {
  */
 const userDataPath = app.getPath('userData');
 const settingsPath = join(userDataPath, 'settings.json');
+const providersPath = join(userDataPath, 'providers.json');
 
 /**
  * 加载设置
@@ -649,6 +778,292 @@ function saveSettings(newSettings) {
     console.error('保存设置出错:', error);
     throw error;
   }
+}
+
+/**
+ * 加载AI服务提供商配置
+ */
+function loadProviders() {
+  try {
+    if (fs.existsSync(providersPath)) {
+      const data = fs.readFileSync(providersPath, 'utf8');
+      const providers = JSON.parse(data);
+      // console.log('已加载提供商配置:', providers);
+      return providers;
+    }
+    return {
+      providers: {},
+      active_provider: null
+    };
+  } catch (error) {
+    console.error('加载提供商配置出错:', error);
+    return {
+      providers: {},
+      active_provider: null
+    };
+  }
+}
+
+/**
+ * 保存AI服务提供商配置
+ */
+function saveProviders(providersData) {
+  try {
+    // 确保目录存在
+    const dir = join(userDataPath, '..');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // 保存提供商配置
+    fs.writeFileSync(providersPath, JSON.stringify(providersData, null, 2));
+    console.log('提供商配置已保存:', providersData);
+  } catch (error) {
+    console.error('保存提供商配置出错:', error);
+    throw error;
+  }
+}
+
+/**
+ * 获取提供商列表
+ */
+function getProviderList() {
+  const providersData = loadProviders();
+  const providers = [];
+
+  // 添加硬基流动提供商
+  providers.push({
+    id: 'siliconflow',
+    name: 'SiliconFlow',
+    is_active: providersData.active_provider === 'siliconflow',
+    is_configured: true,
+    model_count: 0
+  });
+
+  // 添加自定义提供商
+  for (const [providerId, provider] of Object.entries(providersData.providers)) {
+    providers.push({
+      id: `custom-${providerId}`,
+      name: provider.name,
+      is_active: providersData.active_provider === providerId,
+      is_configured: true,
+      model_count: provider.models ? provider.models.length : 0
+    });
+  }
+
+  return {
+    providers,
+    current_provider: providersData.active_provider
+  };
+}
+
+/**
+ * 获取提供商详情
+ */
+function getProviderDetails(providerId) {
+  // 如果是自定义提供商
+  if (providerId.startsWith('custom-')) {
+    const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+    const providersData = loadProviders();
+    const provider = providersData.providers[realProviderId];
+
+    if (provider) {
+      return {
+        id: providerId,
+        name: provider.name,
+        base_url: provider.base_url,
+        api_key: provider.api_key ? '********' : '', // 掩码API密钥
+        default_model: provider.model,
+        format_type: provider.format_type
+      };
+    }
+  }
+  // 如果是硬基流动提供商
+  else if (providerId === 'siliconflow') {
+    const settings = loadSettings();
+    return {
+      id: 'siliconflow',
+      name: 'SiliconFlow',
+      base_url: settings.siliconflowBaseUrl || 'https://api.siliconflow.cn/v1',
+      api_key: settings.siliconflowApiKey ? '********' : '',
+      default_model: settings.siliconflowModel || 'deepseek-ai/DeepSeek-V2.5'
+    };
+  }
+
+  return null;
+}
+
+/**
+ * 更新提供商配置
+ */
+function updateProvider(providerId, apiKey, defaultModel, baseUrl) {
+  // 如果是自定义提供商
+  if (providerId.startsWith('custom-')) {
+    const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+    const providersData = loadProviders();
+    const provider = providersData.providers[realProviderId];
+
+    if (provider) {
+      // 只更新提供的字段
+      if (apiKey) provider.api_key = apiKey;
+      if (defaultModel) provider.model = defaultModel;
+      if (baseUrl !== undefined) provider.base_url = baseUrl;
+
+      saveProviders(providersData);
+      return { success: true };
+    }
+  }
+  // 如果是硬基流动提供商
+  else if (providerId === 'siliconflow') {
+    const settings = loadSettings();
+    const newSettings = { ...settings };
+
+    // 只更新提供的字段
+    if (apiKey) newSettings.siliconflowApiKey = apiKey;
+    if (defaultModel) newSettings.siliconflowModel = defaultModel;
+    if (baseUrl !== undefined) newSettings.siliconflowBaseUrl = baseUrl;
+
+    saveSettings(newSettings);
+    return { success: true };
+  }
+
+  return { success: false, message: '未找到提供商' };
+}
+
+/**
+ * 创建自定义提供商
+ */
+function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models = []) {
+  const providersData = loadProviders();
+  const providerId = Date.now().toString(); // 使用时间戳作为ID
+
+  // 处理模型数据
+  const processedModels = Array.isArray(models) ? models.map(model => ({
+    id: model.id,
+    name: model.name,
+    context_window: model.context_window || model.contextWindow || 4096,
+    capabilities: model.capabilities || ['chat']
+  })) : [];
+
+  providersData.providers[providerId] = {
+    name,
+    api_key: apiKey,
+    base_url: baseUrl,
+    model: defaultModel || 'default',
+    format_type: formatType || 'openai',
+    models: processedModels
+  };
+
+  // 如果没有激活的提供商，将新提供商设为激活
+  if (!providersData.active_provider) {
+    providersData.active_provider = providerId;
+  }
+
+  saveProviders(providersData);
+  return { success: true, provider_id: providerId };
+}
+
+/**
+ * 删除自定义提供商
+ */
+function deleteCustomProvider(providerId) {
+  if (providerId.startsWith('custom-')) {
+    const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+    const providersData = loadProviders();
+
+    if (providersData.providers[realProviderId]) {
+      delete providersData.providers[realProviderId];
+
+      // 如果删除的是当前激活的提供商，重置激活的提供商
+      if (providersData.active_provider === realProviderId) {
+        // 如果还有其他提供商，选择第一个作为激活的提供商
+        const providerIds = Object.keys(providersData.providers);
+        providersData.active_provider = providerIds.length > 0 ? providerIds[0] : null;
+      }
+
+      saveProviders(providersData);
+      return { success: true };
+    }
+  }
+
+  return { success: false, message: '未找到提供商' };
+}
+
+/**
+ * 激活提供商
+ */
+function activateProvider(providerId) {
+  if (providerId === 'siliconflow') {
+    const providersData = loadProviders();
+    providersData.active_provider = 'siliconflow';
+    saveProviders(providersData);
+    return { success: true };
+  }
+  else if (providerId.startsWith('custom-')) {
+    const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+    const providersData = loadProviders();
+
+    if (providersData.providers[realProviderId]) {
+      providersData.active_provider = realProviderId;
+      saveProviders(providersData);
+      return { success: true };
+    }
+  }
+
+  return { success: false, message: '未找到提供商' };
+}
+
+/**
+ * 获取提供商模型列表
+ */
+function getProviderModels(providerId) {
+  if (providerId.startsWith('custom-')) {
+    const realProviderId = providerId.substring(7); // 去除'custom-'前缀
+    const providersData = loadProviders();
+    const provider = providersData.providers[realProviderId];
+
+    if (provider && provider.models) {
+      return {
+        success: true,
+        models: provider.models.map(model => ({
+          id: model.id,
+          name: model.name,
+          context_window: model.context_window || 4096,
+          capabilities: model.capabilities || ['chat'],
+          is_default: model.id === provider.model
+        }))
+      };
+    }
+
+    return { success: true, models: [] };
+  }
+  else if (providerId === 'siliconflow') {
+    // 硬基流动的默认模型
+    const settings = loadSettings();
+    const defaultModel = settings.siliconflowModel || 'deepseek-ai/DeepSeek-V2.5';
+
+    return {
+      success: true,
+      models: [
+        {
+          id: 'deepseek-ai/DeepSeek-V2.5',
+          name: 'DeepSeek-V2.5',
+          context_window: 8192,
+          capabilities: ['chat'],
+          is_default: defaultModel === 'deepseek-ai/DeepSeek-V2.5'
+        },
+        {
+          id: 'deepseek-ai/deepseek-coder',
+          name: 'DeepSeek Coder',
+          context_window: 16384,
+          capabilities: ['chat'],
+          is_default: defaultModel === 'deepseek-ai/deepseek-coder'
+        }
+      ]
+    };
+  }
+
+  return { success: false, models: [] };
 }
 
 // 应用启动完成时

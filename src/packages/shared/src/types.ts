@@ -33,6 +33,8 @@ export interface TranslationConfig {
   style?: string;
   aiProvider: string;
   model: string;
+  apiKey?: string;
+  baseUrl?: string;
   customPrompt?: string;
   glossary?: Record<string, string>;
 }
@@ -80,8 +82,14 @@ export interface ApiResponse<T = any> {
 export interface AIProvider {
   id: string;
   name: string;
-  models: AIModel[];
-  apiKeyConfigured: boolean;
+  description?: string;
+  logo_url?: string;
+  website?: string;
+  is_configured: boolean;
+  is_active: boolean;
+  model_count: number;
+  default_model?: string;
+  models?: AIModel[];
 }
 
 /**
@@ -90,8 +98,12 @@ export interface AIProvider {
 export interface AIModel {
   id: string;
   name: string;
+  provider: string;
+  context_window: number;
   capabilities: string[];
-  contextWindow: number;
+  is_default: boolean;
+  description?: string;
+  default_parameters?: Record<string, any>;
 }
 
 /**
@@ -115,4 +127,4 @@ export interface AppState {
   isProcessing: boolean;
   currentTask?: TranslationTask;
   recentVideos: VideoInfo[];
-} 
+}

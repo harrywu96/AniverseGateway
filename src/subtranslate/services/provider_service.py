@@ -14,6 +14,7 @@ from ..schemas.config import (
     AIProviderType,
     AIServiceConfig,
     CustomAPIConfig,
+    CustomProviderConfig,
     FormatType,
     ModelCapability,
     ModelEndpoint,
@@ -163,18 +164,45 @@ class ProviderService:
             ),
         }
 
-        # 更新自定义提供商的模型数量
-        if (
-            self.config.ai_service.custom
-            and self.config.ai_service.custom.models
-        ):
-            self.provider_info_cache[AIProviderType.CUSTOM].model_count = len(
-                self.config.ai_service.custom.models
+        # 更新自定义提供商的信息
+        if self.config.ai_service.custom:
+            # 如果有自定义提供商，则更新为已配置状态
+            self.provider_info_cache[AIProviderType.CUSTOM].is_configured = (
+                True
             )
-            if self.config.ai_service.custom.model:
-                self.provider_info_cache[
-                    AIProviderType.CUSTOM
-                ].default_model = self.config.ai_service.custom.model
+
+            # 如果有激活的提供商，则更新模型数量和默认模型
+            active_provider = (
+                self.config.ai_service.custom.get_active_provider()
+            )
+            if active_provider and active_provider.models:
+                self.provider_info_cache[AIProviderType.CUSTOM].model_count = (
+                    len(active_provider.models)
+                )
+                if active_provider.model:
+                    self.provider_info_cache[
+                        AIProviderType.CUSTOM
+                    ].default_model = active_provider.model
+
+            # 如果没有激活的提供商，但有提供商列表，则显示提供商数量
+            elif self.config.ai_service.custom.providers:
+                provider_count = len(self.config.ai_service.custom.providers)
+                self.provider_info_cache[AIProviderType.CUSTOM].description = (
+                    f"自定义API服务 ({provider_count} 个提供商)"
+                )
+
+            # 兼容旧版本的模型数量和默认模型
+            if (
+                hasattr(self.config.ai_service.custom, "models")
+                and self.config.ai_service.custom.models
+            ):
+                self.provider_info_cache[AIProviderType.CUSTOM].model_count = (
+                    len(self.config.ai_service.custom.models)
+                )
+                if self.config.ai_service.custom.model:
+                    self.provider_info_cache[
+                        AIProviderType.CUSTOM
+                    ].default_model = self.config.ai_service.custom.model
 
     def _load_predefined_models(self) -> None:
         """加载预定义的模型列表"""
@@ -366,25 +394,73 @@ class ProviderService:
         ]
 
         # 加载自定义模型
-        if (
-            self.config.ai_service.custom
-            and self.config.ai_service.custom.models
-        ):
+        if self.config.ai_service.custom:
             custom_models = []
-            for model_config in self.config.ai_service.custom.models:
-                default_model = self.config.ai_service.custom.model
-                custom_models.append(
-                    ModelInfo(
-                        id=model_config.id,
-                        name=model_config.name,
-                        provider=AIProviderType.CUSTOM,
-                        context_window=model_config.context_window,
-                        capabilities=model_config.capabilities,
-                        is_default=model_config.id == default_model,
-                        default_parameters=model_config.parameters,
+
+            # 先尝试加载当前激活的提供商的模型
+            active_provider = (
+                self.config.ai_service.custom.get_active_provider()
+            )
+            if active_provider and active_provider.models:
+                for model_config in active_provider.models:
+                    default_model = active_provider.model
+                    custom_models.append(
+                        ModelInfo(
+                            id=model_config.id,
+                            name=model_config.name,
+                            provider=AIProviderType.CUSTOM,
+                            context_window=model_config.context_window,
+                            capabilities=model_config.capabilities,
+                            is_default=model_config.id == default_model,
+                            default_parameters=model_config.parameters,
+                        )
                     )
-                )
-            self.models_cache[AIProviderType.CUSTOM] = custom_models
+            # 兼容旧版本的模型加载
+            elif (
+                hasattr(self.config.ai_service.custom, "models")
+                and self.config.ai_service.custom.models
+            ):
+                for model_config in self.config.ai_service.custom.models:
+                    default_model = self.config.ai_service.custom.model
+                    custom_models.append(
+                        ModelInfo(
+                            id=model_config.id,
+                            name=model_config.name,
+                            provider=AIProviderType.CUSTOM,
+                            context_window=model_config.context_window,
+                            capabilities=model_config.capabilities,
+                            is_default=model_config.id == default_model,
+                            default_parameters=model_config.parameters,
+                        )
+                    )
+
+            # 如果没有激活的提供商，但有提供商列表，则加载所有提供商的模型
+            elif self.config.ai_service.custom.providers:
+                for (
+                    provider_id,
+                    provider,
+                ) in self.config.ai_service.custom.providers.items():
+                    if provider.models:
+                        for model_config in provider.models:
+                            # 添加提供商名称前缀，以区分不同提供商的模型
+                            model_name = (
+                                f"{provider.name}: {model_config.name}"
+                            )
+                            custom_models.append(
+                                ModelInfo(
+                                    id=model_config.id,
+                                    name=model_name,
+                                    provider=AIProviderType.CUSTOM,
+                                    context_window=model_config.context_window,
+                                    capabilities=model_config.capabilities,
+                                    is_default=model_config.id
+                                    == provider.model,
+                                    default_parameters=model_config.parameters,
+                                )
+                            )
+
+            if custom_models:
+                self.models_cache[AIProviderType.CUSTOM] = custom_models
 
     def get_provider_list(self) -> List[ProviderInfo]:
         """获取所有提供商信息列表
@@ -392,11 +468,45 @@ class ProviderService:
         Returns:
             List[ProviderInfo]: 提供商信息列表
         """
-        return list(self.provider_info_cache.values())
+        # 获取预定义提供商列表
+        providers = []
 
-    def get_provider_info(
-        self, provider_id: AIProviderType
-    ) -> Optional[ProviderInfo]:
+        # 只添加硬基流动提供商
+        providers.append(self.provider_info_cache[AIProviderType.SILICONFLOW])
+
+        # 如果有自定义提供商，将每个自定义提供商作为独立提供商添加到列表中
+        if (
+            self.config.ai_service.custom
+            and self.config.ai_service.custom.providers
+        ):
+            for (
+                provider_id,
+                provider,
+            ) in self.config.ai_service.custom.providers.items():
+                # 创建一个唯一的提供商ID，格式为 custom-{provider_id}
+                unique_id = f"custom-{provider_id}"
+
+                # 创建提供商信息
+                provider_info = ProviderInfo(
+                    id=unique_id,  # 使用唯一ID
+                    name=provider.name,
+                    description=f"自定义提供商: {provider.base_url}",
+                    logo_url="/assets/logos/custom.png",
+                    website="",
+                    is_configured=True,
+                    is_active=self.config.ai_service.provider
+                    == AIProviderType.CUSTOM
+                    and self.config.ai_service.custom.active_provider
+                    == provider_id,
+                    model_count=len(provider.models) if provider.models else 0,
+                    default_model=provider.model if provider.model else None,
+                )
+
+                providers.append(provider_info)
+
+        return providers
+
+    def get_provider_info(self, provider_id: str) -> Optional[ProviderInfo]:
         """获取指定提供商信息
 
         Args:
@@ -405,7 +515,42 @@ class ProviderService:
         Returns:
             Optional[ProviderInfo]: 提供商信息，不存在则返回None
         """
-        return self.provider_info_cache.get(provider_id)
+        # 如果是预定义提供商，直接从缓存中获取
+        if provider_id in self.provider_info_cache:
+            return self.provider_info_cache.get(provider_id)
+
+        # 如果是自定义提供商，格式为 custom-{provider_id}
+        if provider_id.startswith("custom-"):
+            # 提取真正的提供商ID
+            real_provider_id = provider_id[7:]  # 去除 "custom-" 前缀
+
+            # 检查自定义提供商是否存在
+            if (
+                self.config.ai_service.custom
+                and self.config.ai_service.custom.providers
+                and real_provider_id in self.config.ai_service.custom.providers
+            ):
+                provider = self.config.ai_service.custom.providers[
+                    real_provider_id
+                ]
+
+                # 创建提供商信息
+                return ProviderInfo(
+                    id=provider_id,
+                    name=provider.name,
+                    description=f"自定义提供商: {provider.base_url}",
+                    logo_url="/assets/logos/custom.png",
+                    website="",
+                    is_configured=True,
+                    is_active=self.config.ai_service.provider
+                    == AIProviderType.CUSTOM
+                    and self.config.ai_service.custom.active_provider
+                    == real_provider_id,
+                    model_count=len(provider.models) if provider.models else 0,
+                    default_model=provider.model if provider.model else None,
+                )
+
+        return None
 
     def get_current_provider(self) -> ProviderInfo:
         """获取当前使用的提供商信息
@@ -414,12 +559,30 @@ class ProviderService:
             ProviderInfo: 当前提供商信息
         """
         current_provider = self.config.ai_service.provider
+
+        # 如果是自定义提供商，需要找到对应的custom-{id}
+        if (
+            current_provider == AIProviderType.CUSTOM
+            and self.config.ai_service.custom
+            and self.config.ai_service.custom.active_provider
+        ):
+            # 尝试找到当前激活的自定义提供商
+            active_provider_id = self.config.ai_service.custom.active_provider
+            custom_provider_id = f"custom-{active_provider_id}"
+
+            # 使用get_provider_info方法获取自定义提供商信息
+            provider_info = self.get_provider_info(custom_provider_id)
+            if provider_info:
+                return provider_info
+
+        # 如果不是自定义提供商或者找不到对应的自定义提供商，则使用预定义提供商
         return self.provider_info_cache.get(
-            current_provider, self.provider_info_cache[AIProviderType.OPENAI]
+            current_provider,
+            self.provider_info_cache[AIProviderType.SILICONFLOW],
         )
 
     def get_provider_models(
-        self, provider_id: AIProviderType
+        self, provider_id: str
     ) -> ProviderModelListResponse:
         """获取指定提供商的模型列表
 
@@ -429,8 +592,50 @@ class ProviderService:
         Returns:
             ProviderModelListResponse: 模型列表响应
         """
-        models = self.models_cache.get(provider_id, [])
-        return ProviderModelListResponse(provider=provider_id, models=models)
+        # 如果是预定义提供商，直接从缓存中获取
+        if provider_id in self.models_cache:
+            models = self.models_cache.get(provider_id, [])
+            return ProviderModelListResponse(
+                provider=provider_id, models=models
+            )
+
+        # 如果是自定义提供商，格式为 custom-{provider_id}
+        if provider_id.startswith("custom-"):
+            # 提取真正的提供商ID
+            real_provider_id = provider_id[7:]  # 去除 "custom-" 前缀
+
+            # 检查自定义提供商是否存在
+            if (
+                self.config.ai_service.custom
+                and self.config.ai_service.custom.providers
+                and real_provider_id in self.config.ai_service.custom.providers
+            ):
+                provider = self.config.ai_service.custom.providers[
+                    real_provider_id
+                ]
+
+                # 加载该提供商的模型
+                custom_models = []
+                if provider.models:
+                    for model_config in provider.models:
+                        custom_models.append(
+                            ModelInfo(
+                                id=model_config.id,
+                                name=model_config.name,
+                                provider=provider_id,  # 使用完整的提供商ID
+                                context_window=model_config.context_window,
+                                capabilities=model_config.capabilities,
+                                is_default=model_config.id == provider.model,
+                                default_parameters=model_config.parameters,
+                            )
+                        )
+
+                return ProviderModelListResponse(
+                    provider=provider_id, models=custom_models
+                )
+
+        # 如果没有找到模型，返回空列表
+        return ProviderModelListResponse(provider=provider_id, models=[])
 
     async def test_provider_connection(
         self,
@@ -462,7 +667,8 @@ class ProviderService:
             factory = AIServiceFactory()
 
             if provider_id == AIProviderType.CUSTOM:
-                from ..schemas.config import CustomAPIConfig
+                from ..schemas.config import CustomProviderConfig
+                import uuid
 
                 # 使用默认模型或提供的模型
                 test_model = model or "default"
@@ -470,11 +676,15 @@ class ProviderService:
                 # 使用默认格式或提供的格式
                 test_format = format_type or FormatType.OPENAI
 
-                # 创建自定义API配置
-                temp_config = CustomAPIConfig(
+                # 创建自定义提供商配置
+                temp_config = CustomProviderConfig(
+                    id=str(uuid.uuid4()),
+                    name="测试提供商",
                     api_key=SecretStr(api_key),
                     base_url=base_url,
                     model=test_model,
+                    max_tokens=4096,  # 默认值
+                    temperature=0.3,  # 默认值
                     format_type=test_format,
                     model_parameters=parameters or {},
                 )
@@ -503,9 +713,27 @@ class ProviderService:
             # 创建服务并测试连接
             service = factory.create_service(provider_id, temp_config)
 
+            # 记录测试的模型结果
+            models_tested = []
+
+            # 测试指定模型
             start_time = time.time()
-            test_result = await service.test_connection()
+            test_result = await service.test_connection(model)
             response_time = time.time() - start_time
+
+            # 打印测试结果以便调试
+            logger.info(f"测试返回结果: {test_result}")
+
+            # 处理响应数据，确保是字典类型
+            response_data = None
+            if "response" in test_result:
+                response = test_result.get("response")
+                if isinstance(response, dict):
+                    response_data = response
+                elif isinstance(response, str):
+                    # 将字符串响应包装在字典中
+                    response_data = {"text": response}
+                    logger.info(f"将字符串响应包装为字典: {response_data}")
 
             # 格式化测试结果
             model_test_result = ModelTestResult(
@@ -513,14 +741,19 @@ class ProviderService:
                 success=test_result.get("success", False),
                 message=test_result.get("message", "测试完成"),
                 response_time=response_time,
-                response_data=test_result.get("data"),
+                response_data=response_data,
             )
+            models_tested.append(model_test_result)
+
+            # 汇总测试结果
+            overall_success = any(m.success for m in models_tested)
+            overall_message = "测试成功" if overall_success else "测试失败"
 
             return ProviderTestResponse(
                 provider=provider_id,
-                success=model_test_result.success,
-                message=model_test_result.message,
-                models_tested=[model_test_result],
+                success=overall_success,
+                message=overall_message,
+                models_tested=models_tested,
             )
 
         except Exception as e:
@@ -544,7 +777,8 @@ class ProviderService:
         endpoints: Dict[str, ModelEndpoint],
         model_parameters: Dict[str, Any],
         custom_parser: Optional[str] = None,
-    ) -> bool:
+        provider_id: Optional[str] = None,
+    ) -> Tuple[bool, Optional[str]]:
         """创建自定义提供商
 
         Args:
@@ -558,74 +792,94 @@ class ProviderService:
             endpoints: API端点
             model_parameters: 模型参数
             custom_parser: 自定义解析器
+            provider_id: 提供商ID，如果为None则自动生成
 
         Returns:
-            bool: 是否创建成功
+            Tuple[bool, Optional[str]]: (是否创建成功, 提供商ID)
         """
         from pydantic import SecretStr
+        import uuid
 
         try:
-            # 更新自定义提供商配置
+            # 生成或使用提供商ID
+            if not provider_id:
+                provider_id = str(uuid.uuid4())
+
+            # 创建提供商配置
+            provider_config = CustomProviderConfig(
+                id=provider_id,
+                name=name,
+                api_key=SecretStr(api_key),
+                base_url=base_url,
+                model=default_model,
+                format_type=format_type,
+                headers=headers,
+                model_parameters=model_parameters,
+                endpoints=endpoints,
+                models=models,
+                custom_parser=custom_parser,
+            )
+
+            # 初始化自定义API配置（如果不存在）
             if not self.config.ai_service.custom:
                 self.config.ai_service.custom = CustomAPIConfig(
-                    api_key=SecretStr(api_key),
-                    base_url=base_url,
-                    model=default_model,
-                    format_type=format_type,
-                    headers=headers,
-                    model_parameters=model_parameters,
-                    endpoints=endpoints,
-                    models=models,
-                    custom_parser=custom_parser,
+                    providers={},
+                    active_provider=None,
                 )
-            else:
-                self.config.ai_service.custom.api_key = SecretStr(api_key)
-                self.config.ai_service.custom.base_url = base_url
-                self.config.ai_service.custom.model = default_model
-                self.config.ai_service.custom.format_type = format_type
-                self.config.ai_service.custom.headers = headers
-                self.config.ai_service.custom.model_parameters = (
-                    model_parameters
-                )
-                self.config.ai_service.custom.endpoints = endpoints
-                self.config.ai_service.custom.models = models
-                self.config.ai_service.custom.custom_parser = custom_parser
+
+            # 添加或更新提供商
+            self.config.ai_service.custom.providers[provider_id] = (
+                provider_config
+            )
+
+            # 如果没有激活的提供商，则将新提供商设为激活
+            if not self.config.ai_service.custom.active_provider:
+                self.config.ai_service.custom.active_provider = provider_id
 
             # 更新缓存
-            self.provider_info_cache[AIProviderType.CUSTOM].name = name
             self.provider_info_cache[AIProviderType.CUSTOM].is_configured = (
                 True
             )
-            self.provider_info_cache[AIProviderType.CUSTOM].model_count = len(
-                models
-            )
-            self.provider_info_cache[AIProviderType.CUSTOM].default_model = (
-                default_model
-            )
 
-            # 更新模型缓存
-            custom_models = []
-            for model_config in models:
-                custom_models.append(
-                    ModelInfo(
-                        id=model_config.id,
-                        name=model_config.name,
-                        provider=AIProviderType.CUSTOM,
-                        context_window=model_config.context_window,
-                        capabilities=model_config.capabilities,
-                        is_default=model_config.id == default_model,
-                        default_parameters=model_config.parameters,
-                    )
+            # 如果这是当前激活的提供商，更新模型数量和默认模型
+            if self.config.ai_service.custom.active_provider == provider_id:
+                self.provider_info_cache[AIProviderType.CUSTOM].model_count = (
+                    len(models)
                 )
-            self.models_cache[AIProviderType.CUSTOM] = custom_models
+                self.provider_info_cache[
+                    AIProviderType.CUSTOM
+                ].default_model = default_model
+
+                # 更新模型缓存
+                custom_models = []
+                for model_config in models:
+                    custom_models.append(
+                        ModelInfo(
+                            id=model_config.id,
+                            name=model_config.name,
+                            provider=AIProviderType.CUSTOM,
+                            context_window=model_config.context_window,
+                            capabilities=model_config.capabilities,
+                            is_default=model_config.id == default_model,
+                            default_parameters=model_config.parameters,
+                        )
+                    )
+                self.models_cache[AIProviderType.CUSTOM] = custom_models
+
+            # 如果有多个提供商，更新描述
+            if len(self.config.ai_service.custom.providers) > 1:
+                provider_count = len(self.config.ai_service.custom.providers)
+                self.provider_info_cache[AIProviderType.CUSTOM].description = (
+                    f"自定义API服务 ({provider_count} 个提供商)"
+                )
 
             # 保存配置
-            # TODO: 实现配置保存逻辑
+            self._save_config()
 
-            return True
+            return True, provider_id
         except Exception as e:
             logger.error(f"创建自定义提供商失败: {e}", exc_info=True)
-            return False
+            return False, None
 
     def update_provider_config(
         self,
@@ -692,14 +946,14 @@ class ProviderService:
                 )
 
             # 保存配置
-            # TODO: 实现配置保存逻辑
+            self._save_config()
 
             return True
         except Exception as e:
             logger.error(f"更新提供商配置失败: {e}", exc_info=True)
             return False
 
-    def set_active_provider(self, provider_id: AIProviderType) -> bool:
+    def set_active_provider(self, provider_id: str) -> bool:
         """设置活动提供商
 
         Args:
@@ -709,22 +963,56 @@ class ProviderService:
             bool: 是否设置成功
         """
         try:
-            # 检查提供商是否已配置
-            provider_info = self.provider_info_cache.get(provider_id)
-            if not provider_info or not provider_info.is_configured:
-                return False
+            # 如果是自定义提供商，格式为 custom-{provider_id}
+            if provider_id.startswith("custom-"):
+                # 提取真正的提供商ID
+                real_provider_id = provider_id[7:]  # 去除 "custom-" 前缀
 
-            # 更新当前提供商
-            self.config.ai_service.provider = provider_id
+                # 检查自定义提供商是否存在
+                if (
+                    self.config.ai_service.custom
+                    and self.config.ai_service.custom.providers
+                    and real_provider_id
+                    in self.config.ai_service.custom.providers
+                ):
+                    # 设置当前提供商为自定义提供商
+                    self.config.ai_service.provider = AIProviderType.CUSTOM
 
-            # 更新提供商信息缓存
-            for pid, info in self.provider_info_cache.items():
-                self.provider_info_cache[pid].is_active = pid == provider_id
+                    # 设置激活的自定义提供商
+                    self.config.ai_service.custom.active_provider = (
+                        real_provider_id
+                    )
 
-            # 保存配置
-            # TODO: 实现配置保存逻辑
+                    # 更新提供商信息缓存
+                    for pid in self.provider_info_cache:
+                        self.provider_info_cache[pid].is_active = False
 
-            return True
+                    # 保存配置
+                    self._save_config()
+
+                    return True
+                else:
+                    return False
+            else:
+                # 如果是预定义提供商
+                # 检查提供商是否已配置
+                provider_info = self.provider_info_cache.get(provider_id)
+                if not provider_info or not provider_info.is_configured:
+                    return False
+
+                # 更新当前提供商
+                self.config.ai_service.provider = provider_id
+
+                # 更新提供商信息缓存
+                for pid in self.provider_info_cache:
+                    self.provider_info_cache[pid].is_active = (
+                        pid == provider_id
+                    )
+
+                # 保存配置
+                self._save_config()
+
+                return True
         except Exception as e:
             logger.error(f"设置活动提供商失败: {e}", exc_info=True)
             return False
@@ -814,7 +1102,7 @@ class ProviderService:
                 ].default_model = model_id
 
             # 保存配置
-            # TODO: 实现配置保存逻辑
+            self._save_config()
 
             return True
         except Exception as e:
@@ -864,9 +1152,240 @@ class ProviderService:
             )
 
             # 保存配置
-            # TODO: 实现配置保存逻辑
+            self._save_config()
 
             return True
         except Exception as e:
             logger.error(f"删除自定义模型失败: {e}", exc_info=True)
+            return False
+
+    def set_active_custom_provider(self, provider_id: str) -> bool:
+        """设置激活的自定义提供商
+
+        Args:
+            provider_id: 提供商ID
+
+        Returns:
+            bool: 是否设置成功
+        """
+        try:
+            if (
+                not self.config.ai_service.custom
+                or not self.config.ai_service.custom.providers
+            ):
+                return False
+
+            # 检查提供商是否存在
+            if provider_id not in self.config.ai_service.custom.providers:
+                return False
+
+            # 设置激活的提供商
+            self.config.ai_service.custom.active_provider = provider_id
+
+            # 更新模型缓存
+            active_provider = self.config.ai_service.custom.providers[
+                provider_id
+            ]
+            if active_provider.models:
+                custom_models = []
+                for model_config in active_provider.models:
+                    custom_models.append(
+                        ModelInfo(
+                            id=model_config.id,
+                            name=model_config.name,
+                            provider=AIProviderType.CUSTOM,
+                            context_window=model_config.context_window,
+                            capabilities=model_config.capabilities,
+                            is_default=model_config.id
+                            == active_provider.model,
+                            default_parameters=model_config.parameters,
+                        )
+                    )
+                self.models_cache[AIProviderType.CUSTOM] = custom_models
+
+                # 更新提供商信息缓存
+                self.provider_info_cache[AIProviderType.CUSTOM].model_count = (
+                    len(active_provider.models)
+                )
+                if active_provider.model:
+                    self.provider_info_cache[
+                        AIProviderType.CUSTOM
+                    ].default_model = active_provider.model
+
+            # 保存配置
+            self._save_config()
+
+            return True
+        except Exception as e:
+            logger.error(f"设置激活的自定义提供商失败: {e}", exc_info=True)
+            return False
+
+    def delete_custom_provider(self, provider_id: str) -> bool:
+        """删除自定义提供商
+
+        Args:
+            provider_id: 提供商ID
+
+        Returns:
+            bool: 是否删除成功
+        """
+        try:
+            if (
+                not self.config.ai_service.custom
+                or not self.config.ai_service.custom.providers
+            ):
+                return False
+
+            # 检查提供商是否存在
+            if provider_id not in self.config.ai_service.custom.providers:
+                return False
+
+            # 如果是当前激活的提供商，需要切换到其他提供商
+            if self.config.ai_service.custom.active_provider == provider_id:
+                # 如果有其他提供商，切换到第一个
+                other_providers = [
+                    p
+                    for p in self.config.ai_service.custom.providers.keys()
+                    if p != provider_id
+                ]
+                if other_providers:
+                    self.config.ai_service.custom.active_provider = (
+                        other_providers[0]
+                    )
+                else:
+                    self.config.ai_service.custom.active_provider = None
+
+            # 删除提供商
+            del self.config.ai_service.custom.providers[provider_id]
+
+            # 更新提供商信息缓存
+            if len(self.config.ai_service.custom.providers) > 0:
+                provider_count = len(self.config.ai_service.custom.providers)
+                self.provider_info_cache[AIProviderType.CUSTOM].description = (
+                    f"自定义API服务 ({provider_count} 个提供商)"
+                )
+
+                # 如果还有激活的提供商，更新模型缓存
+                if self.config.ai_service.custom.active_provider:
+                    active_provider = self.config.ai_service.custom.providers[
+                        self.config.ai_service.custom.active_provider
+                    ]
+                    if active_provider.models:
+                        self.provider_info_cache[
+                            AIProviderType.CUSTOM
+                        ].model_count = len(active_provider.models)
+                        if active_provider.model:
+                            self.provider_info_cache[
+                                AIProviderType.CUSTOM
+                            ].default_model = active_provider.model
+            else:
+                # 如果没有提供商了，重置信息
+                self.provider_info_cache[
+                    AIProviderType.CUSTOM
+                ].is_configured = False
+                self.provider_info_cache[AIProviderType.CUSTOM].model_count = 0
+                self.provider_info_cache[
+                    AIProviderType.CUSTOM
+                ].default_model = None
+                self.provider_info_cache[AIProviderType.CUSTOM].description = (
+                    "自定义API服务"
+                )
+
+            # 保存配置
+            self._save_config()
+
+            return True
+        except Exception as e:
+            logger.error(f"删除自定义提供商失败: {e}", exc_info=True)
+            return False
+
+    def _save_config(self) -> bool:
+        """保存配置到文件
+
+        Returns:
+            bool: 是否保存成功
+        """
+        try:
+            # 如果有自定义提供商，将其保存到配置文件
+            if (
+                self.config.ai_service.custom
+                and self.config.ai_service.custom.providers
+            ):
+                # 准备保存的数据
+                providers_data = {
+                    "providers": {},
+                    "active_provider": self.config.ai_service.custom.active_provider,
+                }
+
+                # 处理每个提供商的数据
+                for (
+                    provider_id,
+                    provider,
+                ) in self.config.ai_service.custom.providers.items():
+                    # 将SecretStr转换为普通字符串
+                    api_key = (
+                        provider.api_key.get_secret_value()
+                        if provider.api_key
+                        else ""
+                    )
+
+                    # 处理模型数据
+                    models_data = []
+                    for model in provider.models:
+                        models_data.append(
+                            {
+                                "id": model.id,
+                                "name": model.name,
+                                "context_window": model.context_window,
+                                "capabilities": [
+                                    str(cap) for cap in model.capabilities
+                                ],
+                                "parameters": model.parameters,
+                            }
+                        )
+
+                    # 处理端点数据
+                    endpoints_data = {}
+                    for endpoint_name, endpoint in provider.endpoints.items():
+                        endpoints_data[endpoint_name] = {
+                            "name": endpoint.name,
+                            "path": endpoint.path,
+                            "capabilities": [
+                                str(cap) for cap in endpoint.capabilities
+                            ],
+                            "format_type": str(endpoint.format_type),
+                            "parameters": endpoint.parameters,
+                        }
+
+                    # 添加到提供商数据
+                    providers_data["providers"][provider_id] = {
+                        "name": provider.name,
+                        "api_key": api_key,
+                        "base_url": provider.base_url,
+                        "model": provider.model,
+                        "format_type": str(provider.format_type),
+                        "headers": provider.headers,
+                        "model_parameters": provider.model_parameters,
+                        "models": models_data,
+                        "endpoints": endpoints_data,
+                        "custom_parser": provider.custom_parser,
+                    }
+
+                # 确定配置文件路径
+                config_dir = os.path.expanduser("~/.subtranslate")
+                os.makedirs(config_dir, exist_ok=True)
+                config_file = os.path.join(config_dir, "custom_providers.json")
+
+                # 写入配置文件
+                with open(config_file, "w", encoding="utf-8") as f:
+                    json.dump(providers_data, f, ensure_ascii=False, indent=2)
+
+                # 设置环境变量，使得下次启动时可以加载该配置
+                os.environ["CUSTOM_PROVIDERS_CONFIG"] = config_file
+
+                logger.info(f"已保存自定义提供商配置到: {config_file}")
+
+            return True
+        except Exception as e:
+            logger.error(f"保存配置失败: {e}", exc_info=True)
             return False

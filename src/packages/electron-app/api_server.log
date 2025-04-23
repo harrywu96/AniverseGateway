@@ -1928,3 +1928,1605 @@ TypeError: object WindowsPath can't be used in 'await' expression
 2025-04-21 17:30:17,766 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
 2025-04-21 17:30:18,138 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
 2025-04-21 17:30:18,592 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-21 17:30:30,846 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track1.srt
+2025-04-21 17:30:32,810 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\17ed3cd4-5cef-4279-874b-e5d70e92ab03_98ec2376-dbfe-44b1-83fa-408e15a87c1b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 10:10:31,730 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 10:10:31,730 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 10:10:31,731 - api_server - INFO - 区域设置: cp936
+2025-04-22 10:10:31,731 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 10:10:34,207 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 10:13:19,277 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-04-22 10:13:19,277 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 10:13:19,278 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 10:13:20,040 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-22 10:13:20,144 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-22 10:13:27,047 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 10:13:27,047 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 10:13:27,990 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-22 10:13:28,095 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-22 10:13:28,100 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 10:13:28,100 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 10:13:28,101 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 1c167fb0-4ad1-4041-90eb-a70607b156a7
+2025-04-22 10:13:28,506 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-04-22 10:13:28,872 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\1c167fb0-4ad1-4041-90eb-a70607b156a7_0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 10:13:29,299 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\1c167fb0-4ad1-4041-90eb-a70607b156a7_0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 10:31:28,862 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 10:31:28,862 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 10:31:28,863 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 1c167fb0-4ad1-4041-90eb-a70607b156a7
+2025-04-22 10:31:28,863 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 10:31:28,863 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 10:31:28,864 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 1c167fb0-4ad1-4041-90eb-a70607b156a7
+2025-04-22 10:31:29,632 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\1c167fb0-4ad1-4041-90eb-a70607b156a7_0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 10:31:30,074 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\1c167fb0-4ad1-4041-90eb-a70607b156a7_0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 10:31:34,028 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\1c167fb0-4ad1-4041-90eb-a70607b156a7_0624938a-c5c3-4aa0-ae2a-a5400bafe5dd_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 11:03:22,694 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:03:23,713 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:03:25,728 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:03:25,728 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:03:25,729 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:04:50,917 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:04:51,922 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:04:53,908 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:04:53,908 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:04:53,908 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:07:58,738 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:07:59,759 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:01,776 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:01,776 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:01,776 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:17,386 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:18,401 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:20,408 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:20,408 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:08:20,408 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:19:03,152 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 11:19:03,153 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 11:19:03,153 - api_server - INFO - 区域设置: cp936
+2025-04-22 11:19:03,153 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 11:19:05,122 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 11:19:46,056 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:19:47,075 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:19:49,089 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:19:49,089 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:19:49,089 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:10,297 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:11,303 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:13,320 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:13,320 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:13,320 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:27,903 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:28,900 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:30,917 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:30,918 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:20:30,918 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: unsupported operand type(s) for /: 'coroutine' and 'int'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 401, in chat_completion
+    dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+TypeError: unsupported operand type(s) for /: 'coroutine' and 'int'
+2025-04-22 11:25:19,765 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 11:25:19,765 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 11:25:19,765 - api_server - INFO - 区域设置: cp936
+2025-04-22 11:25:19,765 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 11:25:21,696 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 11:27:18,981 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:27:18,981 - subtranslate.services.custom_ai_service - ERROR - JSON解析错误: Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:18,981 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:20,756 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:27:20,757 - subtranslate.services.custom_ai_service - ERROR - JSON解析错误: Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:20,758 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:23,575 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:27:23,575 - subtranslate.services.custom_ai_service - ERROR - JSON解析错误: Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:23,576 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:23,576 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:27:23,576 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 453, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 411, in chat_completion
+    data = response.json()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 832, in json
+    return jsonlib.loads(self.content, **kwargs)
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2025-04-22 11:40:40,930 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 11:40:40,930 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 11:40:40,930 - api_server - INFO - 区域设置: cp936
+2025-04-22 11:40:40,930 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 11:40:42,907 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 11:41:23,534 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:41:23,534 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:41:23,534 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:41:23,534 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:41:25,551 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:41:25,552 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:41:25,553 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 1 validation error for ModelTestResult
+response_data
+  Input should be a valid dictionary [type=dict_type, input_value='Yes, I am working.', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/dict_type
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 515, in test_provider_connection
+    model_test_result = ModelTestResult(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelTestResult
+response_data
+  Input should be a valid dictionary [type=dict_type, input_value='Yes, I am working.', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/dict_type
+2025-04-22 11:52:40,617 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 11:52:40,617 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 11:52:40,617 - api_server - INFO - 区域设置: cp936
+2025-04-22 11:52:40,617 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 11:52:42,584 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 11:53:15,641 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:53:15,641 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:15,641 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:53:15,642 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:17,920 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:53:17,921 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:53:17,922 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.28秒', 'response': 'Yes, I am working.', 'response_time': 2.28092098236084, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 11:53:17,922 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 11:53:27,143 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:53:27,143 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:27,143 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:53:27,143 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:28,858 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:53:28,859 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:53:28,860 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.72秒', 'response': 'Yes, I am working.', 'response_time': 1.7170302867889404, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 11:53:28,860 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 11:53:36,655 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:53:36,655 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy20125.me/v1/chat/completions
+2025-04-22 11:53:36,655 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:53:36,655 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy20125.me/v1/chat/completions
+2025-04-22 11:53:37,161 - subtranslate.services.custom_ai_service - ERROR - 请求错误: 
+2025-04-22 11:53:37,161 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): 
+2025-04-22 11:53:38,172 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy20125.me/v1/chat/completions
+2025-04-22 11:53:38,387 - subtranslate.services.custom_ai_service - ERROR - 请求错误: 
+2025-04-22 11:53:38,389 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): 
+2025-04-22 11:53:40,392 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy20125.me/v1/chat/completions
+2025-04-22 11:53:40,631 - subtranslate.services.custom_ai_service - ERROR - 请求错误: 
+2025-04-22 11:53:40,632 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): 
+2025-04-22 11:53:40,632 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: 
+2025-04-22 11:53:40,632 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: 
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http_proxy.py", line 316, in handle_async_request
+    stream = await stream.start_tls(**kwargs)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http11.py", line 376, in start_tls
+    return await self._stream.start_tls(ssl_context, server_hostname, timeout)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_backends\anyio.py", line 67, in start_tls
+    with map_exceptions(exc_map):
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 438, in chat_completion
+    response = await client.post(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError
+2025-04-22 11:53:40,635 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': '测试连接失败: ', 'error': '', 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 11:53:43,452 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:53:43,452 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:43,453 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:53:43,453 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:45,203 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:53:45,203 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:53:45,204 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.75秒', 'response': 'Yes, I am working.', 'response_time': 1.7512316703796387, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 11:53:45,204 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 11:53:50,087 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 11:53:50,087 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:50,087 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:53:50,087 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:53:51,611 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:53:51,612 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:53:51,613 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.53秒', 'response': 'Yes, I am working.', 'response_time': 1.5260496139526367, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 11:53:51,613 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 11:54:25,269 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-z1-32b:free
+2025-04-22 11:54:25,269 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:54:25,269 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 11:54:25,269 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 11:54:29,043 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 11:54:29,045 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 11:54:29,046 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 3.78秒', 'response': 'Yes, I am working.', 'response_time': 3.7769582271575928, 'model_tested': 'thudm/glm-z1-32b:free'}
+2025-04-22 11:54:29,046 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 15:02:27,699 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 15:02:27,699 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 15:02:27,699 - api_server - INFO - 区域设置: cp936
+2025-04-22 15:02:27,699 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 15:02:29,657 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 15:02:33,766 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-04-22 15:02:33,767 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 15:02:33,767 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 15:02:34,652 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-22 15:02:34,766 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-22 15:02:36,088 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 15:02:36,088 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 15:02:37,087 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-04-22 15:02:37,198 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-04-22 15:02:37,199 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-04-22 15:02:37,199 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-04-22 15:02:37,199 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-04-22 15:02:37,203 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-04-22 15:02:37,203 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-04-22 15:02:37,204 - subtranslate.api.videos - INFO - 检测到重复上传的视频: 258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: de1172bb-e870-45b8-ab94-bed00e2a71c4
+2025-04-22 15:02:37,618 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-04-22 15:02:37,985 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\de1172bb-e870-45b8-ab94-bed00e2a71c4_258d9971-f504-4210-8ffc-9d604a4eecf7_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-04-22 15:03:55,732 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 15:03:55,732 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:03:55,732 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 15:03:55,732 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:03:57,787 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 15:03:57,787 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 15:03:57,788 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.06秒', 'response': 'Yes, I am working.', 'response_time': 2.0561089515686035, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 15:03:57,788 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 15:29:04,370 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 15:29:04,370 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 15:29:04,370 - api_server - INFO - 区域设置: cp936
+2025-04-22 15:29:04,370 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 15:29:06,320 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 15:29:43,346 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 'CustomAPIConfig' object has no attribute 'max_tokens'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 580, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 144, in __init__
+    self.max_tokens = config.max_tokens
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 994, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'CustomAPIConfig' object has no attribute 'max_tokens'
+2025-04-22 15:29:51,466 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 'CustomAPIConfig' object has no attribute 'max_tokens'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 580, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 144, in __init__
+    self.max_tokens = config.max_tokens
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 994, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'CustomAPIConfig' object has no attribute 'max_tokens'
+2025-04-22 15:34:56,665 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 'CustomAPIConfig' object has no attribute 'max_tokens'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 580, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 144, in __init__
+    self.max_tokens = config.max_tokens
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 994, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'CustomAPIConfig' object has no attribute 'max_tokens'
+2025-04-22 15:35:08,184 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 'CustomAPIConfig' object has no attribute 'max_tokens'
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 580, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 144, in __init__
+    self.max_tokens = config.max_tokens
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 994, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'CustomAPIConfig' object has no attribute 'max_tokens'
+2025-04-22 15:40:55,429 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 15:40:55,429 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 15:40:55,429 - api_server - INFO - 区域设置: cp936
+2025-04-22 15:40:55,429 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 15:40:57,378 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 15:41:33,255 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 15:41:33,255 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:41:33,255 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer https://aiapi.hlwy2025.me'}
+2025-04-22 15:41:33,255 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:41:34,285 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:41:34,285 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:41:34,286 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154139109120021DANVaNe1)","type":"new_api_error"}}
+2025-04-22 15:41:34,286 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:41:35,309 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:41:36,818 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:41:36,818 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:41:36,818 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154141654245794QhCsRREX)","type":"new_api_error"}}
+2025-04-22 15:41:36,819 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:41:38,833 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:41:40,223 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:41:40,223 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:41:40,224 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 202504221541449536335919Hmlj5vn)","type":"new_api_error"}}
+2025-04-22 15:41:40,225 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:41:40,225 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:41:40,225 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:41:40,226 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 15:42:52,441 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-z1-32b:free
+2025-04-22 15:42:52,441 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:42:52,441 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer https://aiapi.hlwy2025.me'}
+2025-04-22 15:42:52,441 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:42:53,324 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:42:53,324 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:42:53,325 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 202504221542581479509934pkHLRgQ)","type":"new_api_error"}}
+2025-04-22 15:42:53,325 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:42:54,336 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:42:55,100 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:42:55,100 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:42:55,101 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154259967273733HnpPAnf0)","type":"new_api_error"}}
+2025-04-22 15:42:55,102 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:42:57,094 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:42:57,884 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:42:57,885 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:42:57,885 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154302741686886MuWgSf1m)","type":"new_api_error"}}
+2025-04-22 15:42:57,886 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:42:57,886 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:42:57,887 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:42:57,887 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-z1-32b:free'}
+2025-04-22 15:44:02,499 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-z1-32b:free
+2025-04-22 15:44:02,499 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:44:02,499 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer https://aiapi.hlwy2025.me'}
+2025-04-22 15:44:02,499 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:44:03,757 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:44:03,758 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:44:03,758 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154408626704006TmQkN04T)","type":"new_api_error"}}
+2025-04-22 15:44:03,758 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:44:04,763 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:44:05,440 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:44:05,441 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:44:05,441 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154410274743241InpPCpgz)","type":"new_api_error"}}
+2025-04-22 15:44:05,442 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:44:07,457 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:44:09,127 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:44:09,128 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:44:09,128 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154413904554755A3gE0vr0)","type":"new_api_error"}}
+2025-04-22 15:44:09,129 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:44:09,129 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:44:09,129 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:44:09,130 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-z1-32b:free'}
+2025-04-22 15:46:59,054 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-z1-32b:free
+2025-04-22 15:46:59,054 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:46:59,054 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer thudm/glm-z1-32b:free'}
+2025-04-22 15:46:59,054 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:47:00,058 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:47:00,059 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:47:00,059 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154704864557319caSVAVla)","type":"new_api_error"}}
+2025-04-22 15:47:00,059 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:47:01,063 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:47:01,958 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:47:01,958 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:47:01,959 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154706751779027MS2YLMoc)","type":"new_api_error"}}
+2025-04-22 15:47:01,959 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:47:03,976 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:47:04,751 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 15:47:04,751 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 15:47:04,752 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422154709619980661nVn19lQt)","type":"new_api_error"}}
+2025-04-22 15:47:04,753 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:47:04,753 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:47:04,753 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 15:47:04,753 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-z1-32b:free'}
+2025-04-22 15:47:16,121 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-z1-32b:free
+2025-04-22 15:47:16,121 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:47:16,121 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 15:47:16,121 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 15:47:19,762 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 15:47:19,762 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 15:47:19,764 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 3.64秒', 'response': 'Yes, I am working.', 'response_time': 3.641587257385254, 'model_tested': 'thudm/glm-z1-32b:free'}
+2025-04-22 15:47:19,764 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 15:47:45,989 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:47:46,007 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:28,408 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:28,427 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:32,044 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:53,808 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:55,545 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:51:57,998 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 15:52:03,957 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:09:42,372 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 16:09:42,372 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 16:09:42,372 - api_server - INFO - 区域设置: cp936
+2025-04-22 16:09:42,372 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 16:09:44,324 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 16:10:21,250 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 16:10:21,250 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:21,250 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer https://aiapi.hlwy2025.me'}
+2025-04-22 16:10:21,250 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:22,625 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 16:10:22,626 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 16:10:22,626 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 2025042216102752221306169zJMt7t)","type":"new_api_error"}}
+2025-04-22 16:10:22,626 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 16:10:23,638 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:24,859 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 16:10:24,860 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 16:10:24,860 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422161029807160230Nj9IGJJm)","type":"new_api_error"}}
+2025-04-22 16:10:24,861 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 16:10:26,876 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:28,225 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 16:10:28,225 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 16:10:28,225 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422161033125457292w3eGP85B)","type":"new_api_error"}}
+2025-04-22 16:10:28,227 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 16:10:28,227 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 16:10:28,227 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 16:10:28,228 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 16:10:31,208 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 16:10:31,208 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:31,208 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 16:10:31,208 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:10:33,264 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 16:10:33,265 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 16:10:33,266 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.06秒', 'response': 'Yes, I am working.', 'response_time': 2.057668447494507, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 16:10:33,266 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 16:10:34,741 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:10:34,760 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:10:34,763 - subtranslate.api.providers - ERROR - 获取提供商列表失败: 1 validation error for ProviderInfo
+id
+  Input should be 'openai', 'zhipuai', 'volcengine', 'baidu', 'azure', 'anthropic', 'custom', 'siliconflow', 'gemini', 'ollama' or 'local' [type=enum, input_value='custom-ced3bf3b-43e7-4710-be83-828352d2612a', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\providers.py", line 45, in get_providers
+    providers = provider_service.get_provider_list()
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 490, in get_provider_list
+    provider_info = ProviderInfo(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ProviderInfo
+id
+  Input should be 'openai', 'zhipuai', 'volcengine', 'baidu', 'azure', 'anthropic', 'custom', 'siliconflow', 'gemini', 'ollama' or 'local' [type=enum, input_value='custom-ced3bf3b-43e7-4710-be83-828352d2612a', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+2025-04-22 16:12:52,280 - subtranslate.api.providers - ERROR - 获取提供商列表失败: 1 validation error for ProviderInfo
+id
+  Input should be 'openai', 'zhipuai', 'volcengine', 'baidu', 'azure', 'anthropic', 'custom', 'siliconflow', 'gemini', 'ollama' or 'local' [type=enum, input_value='custom-ced3bf3b-43e7-4710-be83-828352d2612a', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\providers.py", line 45, in get_providers
+    providers = provider_service.get_provider_list()
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 490, in get_provider_list
+    provider_info = ProviderInfo(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\pydantic\main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ProviderInfo
+id
+  Input should be 'openai', 'zhipuai', 'volcengine', 'baidu', 'azure', 'anthropic', 'custom', 'siliconflow', 'gemini', 'ollama' or 'local' [type=enum, input_value='custom-ced3bf3b-43e7-4710-be83-828352d2612a', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+2025-04-22 16:17:59,396 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 16:17:59,396 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 16:17:59,396 - api_server - INFO - 区域设置: cp936
+2025-04-22 16:17:59,397 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 16:18:01,366 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 16:18:31,288 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 16:18:31,288 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:18:31,288 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 16:18:31,288 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:18:33,407 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 16:18:33,408 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 16:18:33,409 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.12秒', 'response': 'Yes, I am working.', 'response_time': 2.1201019287109375, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 16:18:33,409 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 16:18:35,212 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:18:35,229 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:27:16,271 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 16:27:16,272 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 16:27:16,272 - api_server - INFO - 区域设置: cp936
+2025-04-22 16:27:16,272 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 16:27:18,313 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 16:27:41,675 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 16:27:41,675 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:27:41,675 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 16:27:41,675 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:27:43,683 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 16:27:43,683 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 16:27:43,685 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.01秒', 'response': 'Yes, I am working.', 'response_time': 2.009531259536743, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 16:27:43,685 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 16:27:45,385 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:27:45,401 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:30:56,773 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:30:56,792 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:52:59,616 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 16:52:59,616 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 16:52:59,616 - api_server - INFO - 区域设置: cp936
+2025-04-22 16:52:59,616 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 16:53:01,611 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 16:53:16,263 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:16,263 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 16:53:16,263 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:17,243 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 403 Forbidden"
+2025-04-22 16:53:17,244 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 403 Forbidden
+2025-04-22 16:53:17,244 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 403 - {"error":{"message":"该令牌无权访问模型 default (request id: 20250422165322301819680Mj3YTNrC)","type":"new_api_error"}}
+2025-04-22 16:53:17,244 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2025-04-22 16:53:18,260 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:19,176 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 403 Forbidden"
+2025-04-22 16:53:19,177 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 403 Forbidden
+2025-04-22 16:53:19,177 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 403 - {"error":{"message":"该令牌无权访问模型 default (request id: 20250422165324240031282vJV3SBwY)","type":"new_api_error"}}
+2025-04-22 16:53:19,178 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2025-04-22 16:53:21,173 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:21,794 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 403 Forbidden"
+2025-04-22 16:53:21,795 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 403 Forbidden
+2025-04-22 16:53:21,795 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 403 - {"error":{"message":"该令牌无权访问模型 default (request id: 20250422165326861478205hWhtlfYR)","type":"new_api_error"}}
+2025-04-22 16:53:21,796 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2025-04-22 16:53:21,796 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2025-04-22 16:53:21,796 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2025-04-22 16:53:21,797 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403", 'error': "Client error '403 Forbidden' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403", 'model_tested': 'default'}
+2025-04-22 16:53:32,563 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 16:53:32,563 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:32,563 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 16:53:32,563 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 16:53:35,027 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 16:53:35,027 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 16:53:35,028 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.46秒', 'response': 'Yes, I am working.', 'response_time': 2.4649696350097656, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 16:53:35,028 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 16:53:37,531 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:53:37,547 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 16:54:02,528 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 自定义API服务需要提供base_url
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 714, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 142, in __init__
+    raise ValueError("自定义API服务需要提供base_url")
+ValueError: 自定义API服务需要提供base_url
+2025-04-22 16:54:04,751 - subtranslate.services.provider_service - ERROR - 测试提供商连接失败: 自定义API服务需要提供base_url
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\provider_service.py", line 714, in test_provider_connection
+    service = factory.create_service(provider_id, temp_config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\ai_service.py", line 1135, in create_service
+    return EnhancedCustomAPIService(config)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 142, in __init__
+    raise ValueError("自定义API服务需要提供base_url")
+ValueError: 自定义API服务需要提供base_url
+2025-04-22 17:10:25,140 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 17:10:25,140 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 17:10:25,140 - api_server - INFO - 区域设置: cp936
+2025-04-22 17:10:25,140 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 17:10:27,140 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 17:10:47,707 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 17:10:47,707 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 17:10:47,707 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 17:10:47,707 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 17:10:50,055 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 17:10:50,055 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 17:10:50,057 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.35秒', 'response': 'Yes, I am working.', 'response_time': 2.349670886993408, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 17:10:50,057 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 17:10:51,315 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:10:51,331 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:17:27,388 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 17:17:27,388 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 17:17:27,388 - api_server - INFO - 区域设置: cp936
+2025-04-22 17:17:27,389 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 17:17:29,369 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 17:17:41,849 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:17:41,865 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:19:18,773 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:19:18,789 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:22:48,239 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 17:22:48,239 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 17:22:48,239 - api_server - INFO - 区域设置: cp936
+2025-04-22 17:22:48,239 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 17:22:50,265 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 17:23:02,838 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:23:02,852 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:28:03,820 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 17:28:03,820 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 17:28:03,820 - api_server - INFO - 区域设置: cp936
+2025-04-22 17:28:03,820 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-04-22 17:28:05,754 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 17:28:19,714 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 17:28:19,729 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:24:06,428 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 19:24:06,428 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 19:24:06,428 - api_server - INFO - 区域设置: cp936
+2025-04-22 19:24:06,428 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 19:24:09,032 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:24:09,034 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:24:09,046 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:24:09,056 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:24:24,166 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: 12312/v1/chat/completions
+2025-04-22 19:24:24,166 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer 3213'}
+2025-04-22 19:24:24,166 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 19:24:24,207 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:24,208 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:25,217 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 19:24:25,235 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:25,236 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:27,224 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 19:24:27,241 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:27,243 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:27,243 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:27,243 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 207, in handle_async_request
+    raise UnsupportedProtocol(
+httpcore.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 438, in chat_completion
+    response = await client.post(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 19:24:27,245 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.", 'error': "Request URL is missing an 'http://' or 'https://' protocol.", 'model_tested': 'default'}
+2025-04-22 19:24:29,058 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:24:29,073 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:25:08,613 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:25:08,628 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:26:04,273 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:26:04,286 - subtranslate.services.provider_service - INFO - 已保存自定义提供商配置到: C:\Users\Harry/.subtranslate\custom_providers.json
+2025-04-22 19:50:40,711 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 19:50:40,711 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 19:50:40,711 - api_server - INFO - 区域设置: cp936
+2025-04-22 19:50:40,711 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 19:50:43,121 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:50:43,186 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:50:43,204 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 19:50:43,206 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:08:14,022 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:08:14,022 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:08:14,022 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:08:14,022 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:08:16,318 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:08:16,364 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:08:16,414 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:08:16,418 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:16:27,007 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:16:27,007 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:16:27,007 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:16:27,007 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:16:29,358 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:16:29,398 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:16:29,451 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:16:29,451 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:18:40,846 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:18:40,846 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:18:40,846 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:18:40,846 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:18:43,294 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:18:43,328 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:18:43,351 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:18:43,357 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:21:19,846 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:21:19,847 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:21:19,847 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:21:19,847 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:21:22,177 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:21:22,238 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:21:22,261 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:21:22,263 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:30:51,983 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:30:51,983 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:30:51,983 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:30:51,983 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:30:54,512 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:30:54,516 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:30:54,532 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:30:54,535 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:32:26,093 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:32:26,093 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:32:26,093 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:32:26,093 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:32:28,449 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:32:28,491 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:32:28,512 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:32:28,517 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:32:34,243 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: 12312/v1/chat/completions
+2025-04-22 20:32:34,243 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:32:34,244 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 20:32:34,286 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:34,286 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:35,287 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 20:32:35,307 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:35,309 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:37,319 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 12312/v1/chat/completions
+2025-04-22 20:32:37,340 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:37,342 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:37,342 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:37,342 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 207, in handle_async_request
+    raise UnsupportedProtocol(
+httpcore.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 438, in chat_completion
+    response = await client.post(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:32:37,344 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.", 'error': "Request URL is missing an 'http://' or 'https://' protocol.", 'model_tested': 'default'}
+2025-04-22 20:33:12,639 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:33:12,639 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:33:12,639 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 20:33:12,639 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:33:14,494 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 20:33:14,495 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 20:33:14,496 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.86秒', 'response': 'Yes, I am working.', 'response_time': 1.8566992282867432, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:33:14,496 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 20:36:53,899 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:36:53,899 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:36:53,900 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:36:53,900 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:36:56,316 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:36:56,323 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:36:56,350 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:36:56,363 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:20,593 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:37:20,593 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:37:20,593 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:37:20,593 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:37:22,958 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:22,981 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:23,044 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:23,045 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:42,358 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:37:42,359 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:37:42,359 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:37:42,359 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:37:44,699 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:44,770 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:44,810 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:37:44,813 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:39:59,225 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:39:59,225 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:39:59,225 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 20:39:59,225 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:01,066 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 20:40:01,067 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 20:40:01,068 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.84秒', 'response': 'Yes, I am working.', 'response_time': 1.8422553539276123, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:40:01,068 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 20:40:14,641 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:40:14,641 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:14,641 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:40:14,641 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:15,457 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:15,458 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:15,459 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204015629952131nvWgwaIL)","type":"new_api_error"}}
+2025-04-22 20:40:15,459 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:16,473 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:17,495 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:17,495 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:17,495 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204017668888580eniicfIo)","type":"new_api_error"}}
+2025-04-22 20:40:17,496 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:19,504 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:20,387 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:20,387 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:20,387 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204020537387733zlw8JdZE)","type":"new_api_error"}}
+2025-04-22 20:40:20,388 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:20,388 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:20,388 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:20,389 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:40:22,561 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:40:22,561 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:22,561 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:40:22,561 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:23,506 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:23,506 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:23,507 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204023667744805LzKXeeCi)","type":"new_api_error"}}
+2025-04-22 20:40:23,507 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:24,522 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:25,397 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:25,397 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:25,397 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204025569390627mVh1fvRM)","type":"new_api_error"}}
+2025-04-22 20:40:25,398 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:27,416 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:40:28,040 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:40:28,040 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:40:28,040 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204028217870706iJB5k9lT)","type":"new_api_error"}}
+2025-04-22 20:40:28,041 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:28,041 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:28,041 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:40:28,042 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:41:26,913 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:41:26,913 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:41:26,913 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:41:26,913 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:41:29,246 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:41:29,310 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:41:29,333 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:41:29,341 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:41:37,460 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:41:37,460 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:41:37,460 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:41:37,460 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:41:38,103 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:41:38,104 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:41:38,104 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204138260198110ts7fQfDX)","type":"new_api_error"}}
+2025-04-22 20:41:38,104 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:41:39,108 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:41:39,937 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:41:39,937 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:41:39,938 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204140114893121BOElSOyK)","type":"new_api_error"}}
+2025-04-22 20:41:39,939 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:41:41,910 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:41:42,820 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:41:42,820 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:41:42,820 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204142978283537opFC33g5)","type":"new_api_error"}}
+2025-04-22 20:41:42,821 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:41:42,821 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:41:42,821 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:41:42,822 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:45:06,709 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:45:06,709 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:06,709 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:45:06,709 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:07,553 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:07,553 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:07,554 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204507744338598vp5J9ZSM)","type":"new_api_error"}}
+2025-04-22 20:45:07,554 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:08,569 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:09,390 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:09,391 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:09,391 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204509576079621xb9eewqs)","type":"new_api_error"}}
+2025-04-22 20:45:09,392 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:11,401 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:12,062 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:12,063 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:12,063 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204512248799958F22Q9wvz)","type":"new_api_error"}}
+2025-04-22 20:45:12,064 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:12,064 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:12,064 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:12,065 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:45:27,375 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:45:27,375 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:45:27,375 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:45:27,375 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:45:29,725 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:45:29,762 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:45:29,800 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:45:29,803 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:45:36,012 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:36,012 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:45:36,013 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:36,895 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:36,896 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:36,896 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 2025042220453777793820bbdQI1Jy)","type":"new_api_error"}}
+2025-04-22 20:45:36,896 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:37,905 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:38,526 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:38,526 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:38,527 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204538715245423Glay7ppT)","type":"new_api_error"}}
+2025-04-22 20:45:38,528 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:40,540 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:45:41,418 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:45:41,418 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:45:41,419 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204541589842992Db3tULqn)","type":"new_api_error"}}
+2025-04-22 20:45:41,419 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:41,419 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:41,419 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:45:41,421 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'default'}
+2025-04-22 20:47:38,140 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: 111
+2025-04-22 20:47:38,140 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: 111/v1/chat/completions
+2025-04-22 20:47:38,140 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer 11'}
+2025-04-22 20:47:38,140 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 111/v1/chat/completions
+2025-04-22 20:47:38,183 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:38,183 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:39,168 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 111/v1/chat/completions
+2025-04-22 20:47:39,187 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:39,188 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:41,202 - subtranslate.services.custom_ai_service - INFO - 发送请求到: 111/v1/chat/completions
+2025-04-22 20:47:41,219 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:41,221 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:41,221 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:41,221 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 207, in handle_async_request
+    raise UnsupportedProtocol(
+httpcore.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 438, in chat_completion
+    response = await client.post(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
+2025-04-22 20:47:41,223 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Request URL is missing an 'http://' or 'https://' protocol.", 'error': "Request URL is missing an 'http://' or 'https://' protocol.", 'model_tested': '111'}
+2025-04-22 20:48:02,529 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: 111
+2025-04-22 20:48:02,530 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:02,530 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer 11'}
+2025-04-22 20:48:02,530 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:03,558 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:03,558 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:03,558 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:03,558 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:04,574 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:05,653 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:05,654 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:05,654 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:05,655 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:07,671 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:08,730 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:08,759 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:08,759 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:08,760 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:08,760 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:08,760 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:08,761 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': '111'}
+2025-04-22 20:48:40,119 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:48:40,119 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:40,119 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 20:48:40,120 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:41,107 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:41,108 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:41,108 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:41,108 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:42,126 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:43,226 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:43,226 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:43,227 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:43,228 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:45,236 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://apiv2.aliyahzombie.top/v1/chat/completions
+2025-04-22 20:48:46,294 - httpx - INFO - HTTP Request: POST https://apiv2.aliyahzombie.top/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:48:46,295 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:48:46,296 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":"Invalid API key"}
+
+2025-04-22 20:48:46,297 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:46,297 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:46,297 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:48:46,298 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://apiv2.aliyahzombie.top/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:48:57,453 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:48:57,453 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:48:57,453 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 20:48:57,453 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:48:59,809 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 20:48:59,809 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 20:48:59,810 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.36秒', 'response': 'Yes, I am working.', 'response_time': 2.3577754497528076, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:48:59,811 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 20:49:26,428 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: 111
+2025-04-22 20:49:26,428 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:26,428 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer 111'}
+2025-04-22 20:49:26,428 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:27,217 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:27,217 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:27,217 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204927411328619MuDmUAcG)","type":"new_api_error"}}
+2025-04-22 20:49:27,217 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:28,209 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:28,865 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:28,866 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:28,866 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 2025042220492967451530OJPx3WWx)","type":"new_api_error"}}
+2025-04-22 20:49:28,867 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:30,886 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:31,814 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:31,814 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:31,814 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 202504222049319816998343fBuAXeU)","type":"new_api_error"}}
+2025-04-22 20:49:31,815 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:31,815 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:31,815 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:31,816 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': '111'}
+2025-04-22 20:49:46,864 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:46,864 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer ********'}
+2025-04-22 20:49:46,864 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:47,646 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:47,646 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:47,647 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 202504222049478476439414Es4GHcU)","type":"new_api_error"}}
+2025-04-22 20:49:47,647 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:48,664 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:49,501 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:49,502 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:49,502 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204949689373058fwrz2QkO)","type":"new_api_error"}}
+2025-04-22 20:49:49,503 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:51,509 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:49:52,312 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-04-22 20:49:52,312 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 401 Unauthorized
+2025-04-22 20:49:52,313 - subtranslate.services.custom_ai_service - ERROR - HTTP请求错误: 401 - {"error":{"message":"无效的令牌 (request id: 20250422204952515947981MU8KvwrO)","type":"new_api_error"}}
+2025-04-22 20:49:52,314 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:52,314 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:52,314 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 451, in chat_completion
+    response.raise_for_status()
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-04-22 20:49:52,314 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'error': "Client error '401 Unauthorized' for url 'https://aiapi.hlwy2025.me/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401", 'model_tested': 'default'}
+2025-04-22 20:53:44,568 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:53:44,568 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:53:44,568 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:53:44,568 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:53:46,940 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:53:46,987 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:53:47,013 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:53:47,017 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:54:00,468 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 20:54:00,468 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:54:00,468 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer '}
+2025-04-22 20:54:00,468 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:54:00,750 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Illegal header value b'Bearer '
+2025-04-22 20:54:00,750 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 1/3): Illegal header value b'Bearer '
+2025-04-22 20:54:01,760 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:54:02,007 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Illegal header value b'Bearer '
+2025-04-22 20:54:02,009 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 2/3): Illegal header value b'Bearer '
+2025-04-22 20:54:04,009 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 20:54:04,252 - subtranslate.services.custom_ai_service - ERROR - 请求错误: Illegal header value b'Bearer '
+2025-04-22 20:54:04,254 - subtranslate.services.utils - WARNING - chat_completion 失败，准备重试 (尝试 3/3): Illegal header value b'Bearer '
+2025-04-22 20:54:04,254 - subtranslate.services.utils - ERROR - chat_completion 失败，已达最大重试次数: Illegal header value b'Bearer '
+2025-04-22 20:54:04,254 - subtranslate.services.custom_ai_service - ERROR - 测试连接失败: Illegal header value b'Bearer '
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http_proxy.py", line 343, in handle_async_request
+    return await self._connection.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http11.py", line 136, in handle_async_request
+    raise exc
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http11.py", line 86, in handle_async_request
+    await self._send_request_headers(**kwargs)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_async\http11.py", line 144, in _send_request_headers
+    with map_exceptions({h11.LocalProtocolError: LocalProtocolError}):
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.LocalProtocolError: Illegal header value b'Bearer '
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 530, in test_connection
+    response = await self.chat_completion(system_prompt, user_prompt)
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 80, in wrapper
+    raise last_exception or Exception("达到最大重试次数")
+  File "E:\ai_study\ai_project\src\subtranslate\services\utils.py", line 47, in wrapper
+    result = await func(*args, **kwargs)
+  File "E:\ai_study\ai_project\src\subtranslate\services\custom_ai_service.py", line 438, in chat_completion
+    response = await client.post(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+  File "C:\Users\Harry\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "E:\ai_study\ai_project\.venv\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.LocalProtocolError: Illegal header value b'Bearer '
+2025-04-22 20:54:04,256 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': False, 'message': "测试连接失败: Illegal header value b'Bearer '", 'error': "Illegal header value b'Bearer '", 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 20:58:26,462 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 20:58:26,462 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 20:58:26,462 - api_server - INFO - 区域设置: cp936
+2025-04-22 20:58:26,462 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 20:58:28,942 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:58:28,951 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:58:28,972 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 20:58:28,982 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:01:31,001 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 21:01:31,001 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 21:01:31,002 - api_server - INFO - 区域设置: cp936
+2025-04-22 21:01:31,002 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 21:01:33,441 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:01:33,454 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:01:33,483 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:01:33,484 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:01:41,285 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 21:01:41,285 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:01:41,285 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 21:01:41,285 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:01:43,210 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 21:01:43,211 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 21:01:43,212 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.93秒', 'response': 'Yes, I am working.', 'response_time': 1.9272809028625488, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 21:01:43,212 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 21:01:55,102 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 21:01:55,103 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:01:55,103 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 21:01:55,103 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:01:57,027 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 21:01:57,027 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 21:01:57,029 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.93秒', 'response': 'Yes, I am working.', 'response_time': 1.926095962524414, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 21:01:57,029 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 21:02:06,441 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 21:02:06,441 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:02:06,441 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 21:02:06,441 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:02:08,105 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 21:02:08,106 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 21:02:08,107 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 1.67秒', 'response': 'Yes, I am working.', 'response_time': 1.666158676147461, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 21:02:08,107 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-22 21:08:36,400 - api_server - INFO - 系统默认编码: utf-8
+2025-04-22 21:08:36,400 - api_server - INFO - 文件系统编码: utf-8
+2025-04-22 21:08:36,400 - api_server - INFO - 区域设置: cp936
+2025-04-22 21:08:36,400 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-22 21:08:38,774 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:08:38,804 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:08:38,833 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:08:38,840 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-22 21:09:00,544 - subtranslate.services.custom_ai_service - INFO - 测试连接使用指定模型: thudm/glm-4-32b:free
+2025-04-22 21:09:00,544 - subtranslate.services.custom_ai_service - INFO - 测试连接URL: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:09:00,544 - subtranslate.services.custom_ai_service - INFO - 测试连接请求头: {'Content-Type': 'application/json', 'Authorization': 'Bearer sk-FXM4DJUB8MBsoypy3HnmZwwehPJ3fNxeJs6RZglBXV9UqJ5O'}
+2025-04-22 21:09:00,544 - subtranslate.services.custom_ai_service - INFO - 发送请求到: https://aiapi.hlwy2025.me/v1/chat/completions
+2025-04-22 21:09:02,643 - httpx - INFO - HTTP Request: POST https://aiapi.hlwy2025.me/v1/chat/completions "HTTP/1.1 200 OK"
+2025-04-22 21:09:02,643 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
+2025-04-22 21:09:02,644 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.10秒', 'response': 'Yes, I am working.', 'response_time': 2.1003201007843018, 'model_tested': 'thudm/glm-4-32b:free'}
+2025-04-22 21:09:02,644 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}

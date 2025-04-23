@@ -172,15 +172,42 @@ class EnhancedCustomAPIService(AIService):
         if self.endpoints:
             for endpoint_name, endpoint in self.endpoints.items():
                 if capability in endpoint.capabilities:
-                    return f"{self.base_url}{endpoint.path}"
+                    # 确保端点路径与基础URL正确连接
+                    if endpoint.path.startswith("/"):
+                        return f"{self.base_url.rstrip('/')}{endpoint.path}"
+                    else:
+                        return f"{self.base_url.rstrip('/')}/{endpoint.path}"
 
-        # 否则使用默认端点
+        # 格式化基础URL
+        base_url = self._format_api_host(self.base_url)
+
+        # 根据格式类型构建端点URL
         if self.format_type == FormatType.OPENAI:
-            return f"{self.base_url}/chat/completions"
+            return f"{base_url}chat/completions"
         elif self.format_type == FormatType.ANTHROPIC:
-            return f"{self.base_url}/messages"
+            return f"{base_url}messages"
         else:
-            return self.base_url
+            return base_url
+
+    def _format_api_host(self, host: str) -> str:
+        """格式化API基础URL，类似于Cherry Studio的formatApiHost函数
+
+        Args:
+            host: API基础URL
+
+        Returns:
+            str: 格式化后的URL
+        """
+        # 如果已经以斜杠结尾，直接返回
+        if host.endswith("/"):
+            return host
+
+        # 特殊情况处理，类似于Cherry Studio的逻辑
+        if "/api/" in host or "/v1/" in host:
+            return f"{host}/"
+
+        # 添加/v1/路径
+        return f"{host}/v1/"
 
     def _format_openai_request(
         self,
@@ -397,16 +424,50 @@ class EnhancedCustomAPIService(AIService):
             )
 
         # 计算超时时间（每1000个token增加5秒超时）
-        total_prompt_tokens = self.get_token_count(system_prompt + user_prompt)
+        total_prompt_tokens = await self.get_token_count(
+            system_prompt + user_prompt
+        )
         dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
 
         try:
+            logger.info(f"发送请求到: {url}")
+            logger.debug(f"请求头: {self.headers}")
+            logger.debug(f"请求体: {json.dumps(payload, ensure_ascii=False)}")
+
             async with httpx.AsyncClient(timeout=dynamic_timeout) as client:
                 response = await client.post(
                     url, headers=self.headers, json=payload
                 )
+
+                # 记录响应状态和内容
+                logger.info(
+                    f"HTTP响应: {response.status_code} {response.reason_phrase}"
+                )
+                response_text = response.text
+                logger.debug(
+                    f"响应内容: {response_text[:1000]}{'...' if len(response_text) > 1000 else ''}"
+                )
+
                 response.raise_for_status()
-                data = response.json()
+
+                # 尝试解析JSON
+                try:
+                    data = response.json()
+                except json.JSONDecodeError as e:
+                    # 如果响应不是JSON格式，尝试处理纯文本响应
+                    if response_text.strip():
+                        logger.warning(
+                            f"响应不是JSON格式，尝试处理为纯文本响应"
+                        )
+                        # 构造一个简单的兼容结构
+                        data = {
+                            "choices": [
+                                {"message": {"content": response_text}}
+                            ]
+                        }
+                    else:
+                        logger.error(f"JSON解析错误: {e}, 响应为空")
+                        raise
 
                 # 解析响应
                 return self._parse_response(data)
@@ -419,7 +480,9 @@ class EnhancedCustomAPIService(AIService):
             logger.error(f"请求错误: {e}")
             raise
         except json.JSONDecodeError as e:
-            logger.error(f"JSON解析错误: {e}")
+            logger.error(
+                f"JSON解析错误: {e}, 响应内容: {response_text[:500] if 'response_text' in locals() else '无法获取响应内容'}"
+            )
             raise
         except Exception as e:
             logger.error(f"自定义API请求失败: {e}", exc_info=True)
@@ -436,13 +499,29 @@ class EnhancedCustomAPIService(AIService):
         """
         return self.token_counter.estimate_tokens(text)
 
-    async def test_connection(self) -> Dict[str, Any]:
+    async def test_connection(
+        self, model_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """测试API连接
+
+        Args:
+            model_id: 可选的模型ID，如果提供则使用指定模型进行测试
 
         Returns:
             Dict[str, Any]: 测试结果
         """
+        # 如果提供了模型ID，临时切换模型
+        original_model = self.model
+        if model_id:
+            self.model = model_id
+            logger.info(f"测试连接使用指定模型: {model_id}")
+
         try:
+            # 获取并记录API端点URL，便于调试
+            url = self._get_endpoint_url()
+            logger.info(f"测试连接URL: {url}")
+            logger.info(f"测试连接请求头: {self.headers}")
+
             # 简单测试请求
             system_prompt = "You are a helpful assistant."
             user_prompt = "Hello, are you working? Please respond with a simple 'Yes, I am working.'"
@@ -456,15 +535,23 @@ class EnhancedCustomAPIService(AIService):
             return {
                 "success": success,
                 "message": (
-                    "连接测试成功" if success else "响应收到但内容不符合预期"
+                    f"连接测试成功，响应时间: {elapsed_time:.2f}秒"
+                    if success
+                    else "响应收到但内容不符合预期"
                 ),
                 "response": response,
-                "elapsed_time": elapsed_time,
+                "response_time": elapsed_time,
+                "model_tested": self.model,
             }
         except Exception as e:
             logger.error(f"测试连接失败: {e}", exc_info=True)
             return {
                 "success": False,
-                "message": f"连接测试失败: {str(e)}",
+                "message": f"测试连接失败: {str(e)}",
                 "error": str(e),
+                "model_tested": self.model,
             }
+        finally:
+            # 恢复原始模型
+            if model_id:
+                self.model = original_model

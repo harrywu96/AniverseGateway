@@ -46,6 +46,34 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 验证模型
   validateModel: (modelPath: string) => ipcRenderer.invoke('validate-model', modelPath),
 
+  // ==== AI提供商相关接口 ====
+  // 获取提供商列表
+  getProviders: () => ipcRenderer.invoke('get-providers'),
+
+  // 获取提供商详情
+  getProviderDetails: (providerId: string) => ipcRenderer.invoke('get-provider-details', providerId),
+
+  // 获取提供商模型列表
+  getProviderModels: (providerId: string) => ipcRenderer.invoke('get-provider-models', providerId),
+
+  // 更新提供商配置
+  updateProvider: (providerId: string, apiKey: string, defaultModel: string, baseUrl?: string) =>
+    ipcRenderer.invoke('update-provider', providerId, apiKey, defaultModel, baseUrl),
+
+  // 测试提供商连接
+  testProvider: (providerId: string, apiKey: string, baseUrl?: string, model?: string, formatType?: string) =>
+    ipcRenderer.invoke('test-provider', providerId, apiKey, baseUrl, model, formatType),
+
+  // 创建自定义提供商
+  createCustomProvider: (name: string, apiKey: string, baseUrl: string, defaultModel?: string, formatType?: string, models?: any[]) =>
+    ipcRenderer.invoke('create-custom-provider', name, apiKey, baseUrl, defaultModel, formatType, models),
+
+  // 删除自定义提供商
+  deleteCustomProvider: (providerId: string) => ipcRenderer.invoke('delete-custom-provider', providerId),
+
+  // 激活提供商
+  activateProvider: (providerId: string) => ipcRenderer.invoke('activate-provider', providerId),
+
   // ==== Faster Whisper 相关接口 ====
   // 加载Faster Whisper GUI配置文件
   loadFasterWhisperConfig: (configPath: string) => ipcRenderer.invoke('load-faster-whisper-config', configPath),

@@ -18,7 +18,7 @@ class ModelInfo(BaseModel):
 
     id: str = Field(..., description="模型ID")
     name: str = Field(..., description="模型名称")
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     context_window: int = Field(default=4096, description="上下文窗口大小")
     capabilities: List[ModelCapability] = Field(
         default=[ModelCapability.CHAT], description="模型能力列表"
@@ -33,7 +33,7 @@ class ModelInfo(BaseModel):
 class ProviderModelListResponse(BaseModel):
     """提供商模型列表响应"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     models: List[ModelInfo] = Field(
         default_factory=list, description="模型列表"
     )
@@ -42,7 +42,7 @@ class ProviderModelListResponse(BaseModel):
 class ProviderInfo(BaseModel):
     """提供商信息"""
 
-    id: AIProviderType = Field(..., description="提供商ID")
+    id: str = Field(..., description="提供商ID")
     name: str = Field(..., description="提供商名称")
     description: Optional[str] = Field(None, description="提供商描述")
     logo_url: Optional[str] = Field(None, description="提供商Logo URL")
@@ -59,8 +59,8 @@ class ProviderListResponse(BaseModel):
     providers: List[ProviderInfo] = Field(
         default_factory=list, description="提供商列表"
     )
-    current_provider: Optional[AIProviderType] = Field(
-        None, description="当前使用的提供商"
+    current_provider: Optional[str] = Field(
+        None, description="当前使用的提供商ID"
     )
 
 
@@ -90,7 +90,7 @@ class ProviderCreateRequest(BaseModel):
 class ProviderUpdateRequest(BaseModel):
     """更新提供商请求"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     api_key: Optional[str] = Field(None, description="API密钥")
     base_url: Optional[str] = Field(None, description="API基础URL")
     default_model: Optional[str] = Field(None, description="默认模型ID")
@@ -111,7 +111,7 @@ class ProviderUpdateRequest(BaseModel):
 class ProviderTestRequest(BaseModel):
     """测试提供商请求"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     api_key: str = Field(..., description="API密钥")
     base_url: Optional[str] = Field(None, description="API基础URL")
     model: Optional[str] = Field(None, description="模型ID")
@@ -134,7 +134,7 @@ class ModelTestResult(BaseModel):
 class ProviderTestResponse(BaseModel):
     """提供商测试响应"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     success: bool = Field(..., description="是否成功")
     message: str = Field(..., description="测试结果消息")
     models_tested: List[ModelTestResult] = Field(
@@ -145,7 +145,7 @@ class ProviderTestResponse(BaseModel):
 class ModelCreateRequest(BaseModel):
     """创建自定义模型请求"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     id: str = Field(..., description="模型ID")
     name: str = Field(..., description="模型名称")
     context_window: int = Field(default=4096, description="上下文窗口大小")
@@ -161,5 +161,5 @@ class ModelCreateRequest(BaseModel):
 class ModelDeleteRequest(BaseModel):
     """删除自定义模型请求"""
 
-    provider: AIProviderType = Field(..., description="提供商类型")
+    provider: str = Field(..., description="提供商ID")
     model_id: str = Field(..., description="模型ID")

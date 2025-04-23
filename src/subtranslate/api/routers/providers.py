@@ -43,7 +43,10 @@ async def get_providers(
     """
     try:
         providers = provider_service.get_provider_list()
-        current_provider = provider_service.get_current_provider().id
+        current_provider_info = provider_service.get_current_provider()
+        current_provider = (
+            current_provider_info.id if current_provider_info else None
+        )
 
         response = ProviderListResponse(
             providers=providers,
@@ -64,7 +67,7 @@ async def get_providers(
 
 @router.get("/{provider_id}", response_model=APIResponse, tags=["提供商管理"])
 async def get_provider_info(
-    provider_id: AIProviderType,
+    provider_id: str,
     provider_service: ProviderService = Depends(get_provider_service),
 ):
     """获取指定提供商信息
@@ -79,6 +82,7 @@ async def get_provider_info(
     """
     try:
         provider_info = provider_service.get_provider_info(provider_id)
+        print("provider_info", provider_info)
         if not provider_info:
             raise HTTPException(
                 status_code=404, detail=f"未找到提供商: {provider_id}"
@@ -102,7 +106,7 @@ async def get_provider_info(
     "/{provider_id}/models", response_model=APIResponse, tags=["提供商管理"]
 )
 async def get_provider_models(
-    provider_id: AIProviderType,
+    provider_id: str,
     provider_service: ProviderService = Depends(get_provider_service),
 ):
     """获取提供商模型列表
@@ -195,7 +199,7 @@ async def create_custom_provider(
         APIResponse: 创建结果响应
     """
     try:
-        success = provider_service.create_custom_provider(
+        success, provider_id = provider_service.create_custom_provider(
             name=request.name,
             api_key=request.api_key,
             base_url=request.base_url,
@@ -218,7 +222,10 @@ async def create_custom_provider(
         return APIResponse(
             success=True,
             message="创建自定义提供商成功",
-            data={"provider_id": AIProviderType.CUSTOM},
+            data={
+                "provider_type": AIProviderType.CUSTOM,
+                "provider_id": provider_id,
+            },
         )
     except Exception as e:
         logger.error(f"创建自定义提供商失败: {e}", exc_info=True)
@@ -229,7 +236,7 @@ async def create_custom_provider(
 
 @router.put("/{provider_id}", response_model=APIResponse, tags=["提供商管理"])
 async def update_provider(
-    provider_id: AIProviderType,
+    provider_id: str,
     request: ProviderUpdateRequest,
     provider_service: ProviderService = Depends(get_provider_service),
 ):
@@ -251,9 +258,7 @@ async def update_provider(
             )
 
         # 对于自定义提供商的特殊处理
-        if provider_id == AIProviderType.CUSTOM and (
-            request.models or request.endpoints
-        ):
+        if provider_id == "custom" and (request.models or request.endpoints):
             # 这里需要更完整的更新逻辑，但为了简单起见，暂时不实现
             success = provider_service.update_provider_config(
                 provider_id=provider_id,
@@ -295,7 +300,7 @@ async def update_provider(
     "/activate/{provider_id}", response_model=APIResponse, tags=["提供商管理"]
 )
 async def activate_provider(
-    provider_id: AIProviderType,
+    provider_id: str,
     provider_service: ProviderService = Depends(get_provider_service),
 ):
     """激活提供商
@@ -348,7 +353,7 @@ async def create_model(
     """
     try:
         # 目前仅支持为自定义提供商创建模型
-        if request.provider != AIProviderType.CUSTOM:
+        if request.provider != "custom":
             raise HTTPException(
                 status_code=400, detail="目前仅支持为自定义提供商创建模型"
             )
@@ -399,7 +404,7 @@ async def delete_model(
     """
     try:
         # 目前仅支持删除自定义提供商的模型
-        if request.provider != AIProviderType.CUSTOM:
+        if request.provider != "custom":
             raise HTTPException(
                 status_code=400, detail="目前仅支持删除自定义提供商的模型"
             )
@@ -423,3 +428,146 @@ async def delete_model(
     except Exception as e:
         logger.error(f"删除模型失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"删除模型失败: {str(e)}")
+
+
+@router.post(
+    "/custom/{provider_id}/activate",
+    response_model=APIResponse,
+    tags=["提供商管理"],
+)
+async def activate_custom_provider(
+    provider_id: str,
+    provider_service: ProviderService = Depends(get_provider_service),
+):
+    """激活自定义提供商
+
+    将指定的自定义提供商设置为当前激活的自定义提供商。
+
+    Args:
+        provider_id: 提供商ID
+
+    Returns:
+        APIResponse: 激活结果响应
+    """
+    try:
+        success = provider_service.set_active_custom_provider(provider_id)
+
+        if not success:
+            return APIResponse(
+                success=False,
+                message=f"激活自定义提供商失败: 提供商ID {provider_id} 不存在",
+                data=None,
+            )
+
+        return APIResponse(
+            success=True,
+            message=f"成功激活自定义提供商",
+            data={"provider_id": provider_id},
+        )
+    except Exception as e:
+        logger.error(f"激活自定义提供商失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"激活自定义提供商失败: {str(e)}"
+        )
+
+
+@router.delete(
+    "/custom/{provider_id}", response_model=APIResponse, tags=["提供商管理"]
+)
+async def delete_custom_provider(
+    provider_id: str,
+    provider_service: ProviderService = Depends(get_provider_service),
+):
+    """删除自定义提供商
+
+    删除指定的自定义提供商。
+
+    Args:
+        provider_id: 提供商ID
+
+    Returns:
+        APIResponse: 删除结果响应
+    """
+    try:
+        success = provider_service.delete_custom_provider(provider_id)
+
+        if not success:
+            return APIResponse(
+                success=False,
+                message=f"删除自定义提供商失败: 提供商ID {provider_id} 不存在",
+                data=None,
+            )
+
+        return APIResponse(
+            success=True,
+            message=f"删除自定义提供商成功",
+            data=None,
+        )
+    except Exception as e:
+        logger.error(f"删除自定义提供商失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"删除自定义提供商失败: {str(e)}"
+        )
+
+
+@router.get("/custom/list", response_model=APIResponse, tags=["提供商管理"])
+async def list_custom_providers(
+    provider_service: ProviderService = Depends(get_provider_service),
+):
+    """获取所有自定义提供商
+
+    获取所有已配置的自定义提供商列表。
+
+    Returns:
+        APIResponse: 自定义提供商列表响应
+    """
+    try:
+        # 获取自定义提供商列表
+        if (
+            not provider_service.config.ai_service.custom
+            or not provider_service.config.ai_service.custom.providers
+        ):
+            return APIResponse(
+                success=True,
+                message="没有自定义提供商",
+                data={"providers": [], "active_provider": None},
+            )
+
+        # 准备提供商数据
+        providers_data = []
+        for (
+            provider_id,
+            provider,
+        ) in provider_service.config.ai_service.custom.providers.items():
+            # 将SecretStr转换为描述性文本
+            api_key_masked = "********" if provider.api_key else ""
+
+            providers_data.append(
+                {
+                    "id": provider_id,
+                    "name": provider.name,
+                    "base_url": provider.base_url,
+                    "api_key": api_key_masked,
+                    "model": provider.model,
+                    "format_type": str(provider.format_type),
+                    "model_count": (
+                        len(provider.models) if provider.models else 0
+                    ),
+                    "is_active": provider_id
+                    == provider_service.config.ai_service.custom.active_provider,
+                }
+            )
+
+        return APIResponse(
+            success=True,
+            message="获取自定义提供商列表成功",
+            data={
+                "providers": providers_data,
+                "active_provider": provider_service.config.ai_service.custom.active_provider,
+            },
+        )
+    except Exception as e:
+        logger.error(f"获取自定义提供商列表失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"获取自定义提供商列表失败: {str(e)}"
+        )

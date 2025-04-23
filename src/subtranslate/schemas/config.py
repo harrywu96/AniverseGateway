@@ -142,9 +142,11 @@ class CustomModelConfig(BaseModel):
     )
 
 
-class CustomAPIConfig(BaseAIConfig):
-    """自定义API配置模型"""
+class CustomProviderConfig(BaseAIConfig):
+    """单个自定义提供商配置"""
 
+    id: str = Field(..., description="提供商ID")
+    name: str = Field(..., description="提供商名称")
     model: str = Field(default="default", description="使用的模型")
     max_tokens: int = Field(default=4096, description="最大token数")
     temperature: float = Field(default=0.3, description="温度参数")
@@ -166,6 +168,45 @@ class CustomAPIConfig(BaseAIConfig):
     custom_parser: Optional[str] = Field(
         None, description="自定义响应解析器脚本（Python代码）"
     )
+
+
+class CustomAPIConfig(BaseModel):
+    """自定义API配置模型，支持多个提供商"""
+
+    providers: Dict[str, CustomProviderConfig] = Field(
+        default_factory=dict, description="自定义提供商列表"
+    )
+    active_provider: Optional[str] = Field(
+        None, description="当前激活的提供商ID"
+    )
+
+    # 兼容旧版本的属性
+    api_key: Optional[SecretStr] = Field(
+        None, description="默认API密钥（兼容旧版本）"
+    )
+    base_url: Optional[str] = Field(
+        None, description="默认API基础URL（兼容旧版本）"
+    )
+    model: Optional[str] = Field(
+        None, description="默认使用的模型（兼容旧版本）"
+    )
+    format_type: FormatType = Field(
+        default=FormatType.OPENAI,
+        description="默认API请求/响应格式（兼容旧版本）",
+    )
+
+    def get_active_provider(self) -> Optional[CustomProviderConfig]:
+        """获取当前激活的提供商配置
+
+        Returns:
+            Optional[CustomProviderConfig]: 当前激活的提供商配置，如果没有则返回None
+        """
+        if (
+            not self.active_provider
+            or self.active_provider not in self.providers
+        ):
+            return None
+        return self.providers[self.active_provider]
 
 
 class SiliconFlowConfig(BaseAIConfig):
@@ -237,7 +278,9 @@ class AIServiceConfig(BaseModel):
     ollama: Optional[OllamaConfig] = None
     local: Optional[LocalModelConfig] = None
 
-    def get_provider_config(self) -> Union[BaseAIConfig, None]:
+    def get_provider_config(
+        self,
+    ) -> Union[BaseAIConfig, CustomProviderConfig, None]:
         """获取当前选择的服务提供商配置"""
         if self.provider == AIProviderType.OPENAI:
             return self.openai
@@ -252,6 +295,12 @@ class AIServiceConfig(BaseModel):
         elif self.provider == AIProviderType.ANTHROPIC:
             return self.anthropic
         elif self.provider == AIProviderType.CUSTOM:
+            # 如果是自定义提供商，尝试获取当前激活的提供商配置
+            if self.custom and self.custom.active_provider:
+                active_provider = self.custom.get_active_provider()
+                if active_provider:
+                    return active_provider
+            # 如果没有激活的提供商或获取失败，返回自定义配置
             return self.custom
         elif self.provider == AIProviderType.SILICONFLOW:
             return self.siliconflow
@@ -502,6 +551,7 @@ class SystemConfig(BaseModel):
             headers_str = os.getenv("CUSTOM_API_HEADERS", "{}")
             params_str = os.getenv("CUSTOM_API_MODEL_PARAMS", "{}")
             import json
+            import uuid
 
             try:
                 headers = json.loads(headers_str)
@@ -510,18 +560,109 @@ class SystemConfig(BaseModel):
                 headers = {}
                 model_parameters = {}
 
+            # 创建自定义API配置
             ai_service_config.custom = CustomAPIConfig(
                 api_key=SecretStr(os.getenv("CUSTOM_API_KEY", "")),
                 base_url=os.getenv("CUSTOM_API_BASE_URL"),
                 model=os.getenv("CUSTOM_API_MODEL", "default"),
-                max_tokens=int(os.getenv("CUSTOM_API_MAX_TOKENS", "4096")),
-                temperature=float(os.getenv("CUSTOM_API_TEMPERATURE", "0.3")),
-                headers=headers,
-                model_parameters=model_parameters,
                 format_type=FormatType(
                     os.getenv("CUSTOM_API_FORMAT_TYPE", "openai")
                 ),
+                providers={},
+                active_provider=None,
             )
+
+            # 如果有环境变量中的自定义提供商配置，创建一个默认的自定义提供商
+            if os.getenv("CUSTOM_API_KEY") and os.getenv(
+                "CUSTOM_API_BASE_URL"
+            ):
+                default_provider_id = str(uuid.uuid4())
+                default_provider = CustomProviderConfig(
+                    id=default_provider_id,
+                    name="默认自定义提供商",
+                    api_key=SecretStr(os.getenv("CUSTOM_API_KEY", "")),
+                    base_url=os.getenv("CUSTOM_API_BASE_URL"),
+                    model=os.getenv("CUSTOM_API_MODEL", "default"),
+                    max_tokens=int(os.getenv("CUSTOM_API_MAX_TOKENS", "4096")),
+                    temperature=float(
+                        os.getenv("CUSTOM_API_TEMPERATURE", "0.3")
+                    ),
+                    headers=headers,
+                    model_parameters=model_parameters,
+                    format_type=FormatType(
+                        os.getenv("CUSTOM_API_FORMAT_TYPE", "openai")
+                    ),
+                )
+                ai_service_config.custom.providers[default_provider_id] = (
+                    default_provider
+                )
+                ai_service_config.custom.active_provider = default_provider_id
+
+            # 尝试从配置文件加载自定义提供商
+            config_file = os.getenv("CUSTOM_PROVIDERS_CONFIG")
+            if config_file and os.path.exists(config_file):
+                try:
+                    with open(config_file, "r", encoding="utf-8") as f:
+                        providers_data = json.load(f)
+
+                    for provider_id, provider_data in providers_data.get(
+                        "providers", {}
+                    ).items():
+                        if (
+                            "api_key" in provider_data
+                            and "base_url" in provider_data
+                        ):
+                            provider_config = CustomProviderConfig(
+                                id=provider_id,
+                                name=provider_data.get("name", "自定义提供商"),
+                                api_key=SecretStr(provider_data["api_key"]),
+                                base_url=provider_data["base_url"],
+                                model=provider_data.get("model", "default"),
+                                max_tokens=provider_data.get(
+                                    "max_tokens", 4096
+                                ),
+                                temperature=provider_data.get(
+                                    "temperature", 0.3
+                                ),
+                                headers=provider_data.get("headers", {}),
+                                model_parameters=provider_data.get(
+                                    "model_parameters", {}
+                                ),
+                                format_type=FormatType(
+                                    provider_data.get("format_type", "openai")
+                                ),
+                                models=[
+                                    CustomModelConfig(**model)
+                                    for model in provider_data.get(
+                                        "models", []
+                                    )
+                                ],
+                                endpoints={
+                                    k: ModelEndpoint(**v)
+                                    for k, v in provider_data.get(
+                                        "endpoints", {}
+                                    ).items()
+                                },
+                                custom_parser=provider_data.get(
+                                    "custom_parser"
+                                ),
+                            )
+                            ai_service_config.custom.providers[provider_id] = (
+                                provider_config
+                            )
+
+                    # 设置激活的提供商
+                    active_provider = providers_data.get("active_provider")
+                    if (
+                        active_provider
+                        and active_provider
+                        in ai_service_config.custom.providers
+                    ):
+                        ai_service_config.custom.active_provider = (
+                            active_provider
+                        )
+                except Exception as e:
+                    print(f"加载自定义提供商配置文件失败: {e}")
 
         # 创建FFmpeg配置
         ffmpeg_config = FFmpegConfig(
