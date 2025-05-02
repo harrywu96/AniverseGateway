@@ -3530,3 +3530,11 @@ httpx.LocalProtocolError: Illegal header value b'Bearer '
 2025-04-22 21:09:02,643 - subtranslate.services.custom_ai_service - INFO - HTTP响应: 200 OK
 2025-04-22 21:09:02,644 - subtranslate.services.provider_service - INFO - 测试返回结果: {'success': True, 'message': '连接测试成功，响应时间: 2.10秒', 'response': 'Yes, I am working.', 'response_time': 2.1003201007843018, 'model_tested': 'thudm/glm-4-32b:free'}
 2025-04-22 21:09:02,644 - subtranslate.services.provider_service - INFO - 将字符串响应包装为字典: {'text': 'Yes, I am working.'}
+2025-04-28 09:42:30,541 - api_server - INFO - 系统默认编码: utf-8
+2025-04-28 09:42:30,541 - api_server - INFO - 文件系统编码: utf-8
+2025-04-28 09:42:30,541 - api_server - INFO - 区域设置: cp936
+2025-04-28 09:42:30,541 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-04-28 09:42:33,760 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-28 09:42:33,762 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-28 09:42:33,763 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-04-28 09:42:33,765 - subtranslate.api - INFO - SubTranslate API服务启动

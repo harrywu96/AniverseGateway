@@ -2,6 +2,7 @@
 import { join } from 'path';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
+import * as fsPromises from 'fs/promises';
 import fetch from 'node-fetch';
 
 // 定义全局变量
@@ -10,6 +11,7 @@ let pythonProcess: ChildProcessWithoutNullStreams | null = null;
 let isBackendStarted = false;
 let apiCheckInterval: NodeJS.Timeout | null = null;
 let startupTimeout: NodeJS.Timeout | null = null;
+const tempDirPath = join(__dirname, '..', '..', 'temp'); // 定义 temp 目录路径
 
 // 是否是开发环境
 const isDev = process.env.NODE_ENV === 'development';
@@ -1091,6 +1093,31 @@ app.on('before-quit', () => {
   if (pythonProcess) {
     pythonProcess.kill();
     pythonProcess = null;
+  }
+});
+
+// 应用退出前清理临时目录
+app.on('will-quit', async () => {
+  console.log('应用程序即将退出...');
+
+  // 1. 关闭 Python 后端服务
+  if (pythonProcess && !pythonProcess.killed) {
+    console.log('正在关闭 Python 后端服务...');
+    pythonProcess.kill();
+    // 等待一段时间确保进程关闭，或监听 'close' 事件
+    await new Promise(resolve => setTimeout(resolve, 500)); // 简单延时
+    console.log('Python 后端服务已发送关闭信号');
+  } else {
+    console.log('Python 后端服务未运行或已关闭');
+  }
+
+  // 2. 清理 temp 目录
+  console.log(`准备清理临时目录: ${tempDirPath}`);
+  try {
+    await fsPromises.rm(tempDirPath, { recursive: true, force: true });
+    console.log(`临时目录清理成功: ${tempDirPath}`);
+  } catch (error) {
+    console.error(`清理临时目录失败: ${tempDirPath}`, error);
   }
 });
 

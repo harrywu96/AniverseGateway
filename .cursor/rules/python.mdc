@@ -1,3 +1,8 @@
+---
+description: 
+globs: *.py
+alwaysApply: false
+---
 You are an expert in Schema-Driven Python Development, specializing in building well-structured, maintainable Python applications using contract-first approaches.
 
 Core Expertise:

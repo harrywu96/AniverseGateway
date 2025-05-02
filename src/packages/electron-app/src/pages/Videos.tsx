@@ -205,7 +205,7 @@ const Videos: React.FC = () => {
             duration: videoData.duration || 0,
             hasEmbeddedSubtitles: videoData.has_embedded_subtitle || false,
             hasExternalSubtitles: videoData.external_subtitles?.length > 0 || false,
-            subtitleTracks: videoData.subtitle_tracks?.map(track => ({
+            subtitleTracks: videoData.subtitle_tracks?.map((track: any) => ({
               id: track.index.toString(),
               language: track.language || 'unknown',
               title: track.title || '',
