@@ -1,15 +1,15 @@
 # SubTranslate - 智能视频字幕翻译系统
 
-SubTranslate是一个自动化视频字幕提取、翻译和整合系统，能够从各种视频格式中提取字幕，借助AI进行智能翻译，并将翻译后的字幕与原视频关联。
+SubTranslate 是一款基于人工智能的视频字幕翻译系统，支持多种 AI 模型和语言，为您提供高质量的字幕翻译体验。
 
 ## 功能特点
 
-- 自动从MKV、MP4等视频格式中提取字幕
-- 通过GPT进行智能翻译，保持对话自然流畅
-- 智能处理文化差异和上下文连贯性
-- 支持批量处理多个视频文件
-- 提供友好的Web界面和命令行接口
-- 自动保存翻译后的字幕到原视频所在目录
+- **智能字幕提取**：自动从视频中提取内嵌字幕或识别外挂字幕文件
+- **上下文感知翻译**：保持对话连贯性，理解角色关系和情境
+- **多种 AI 模型支持**：支持 OpenAI、智谱 AI 等多种 AI 服务提供商
+- **自定义 AI 提供商**：支持添加自定义 AI 服务提供商
+- **字幕编辑器**：直观的界面，方便编辑和调整翻译结果
+- **多种导出格式**：支持 SRT、ASS 等多种字幕格式导出
 
 ## 安装指南
 
@@ -38,48 +38,49 @@ docker pull yourusername/subtranslate:latest
 docker run -p 8000:8000 -v /path/to/videos:/videos yourusername/subtranslate
 ```
 
-## 快速开始
+## 开发环境设置
 
-### 配置
+### 前提条件
 
-1. 复制示例配置文件
-```bash
-cp .env.example .env
-```
+- Python 3.10+
+- Node.js 18+
+- pnpm 8+
 
-2. 编辑配置文件，添加您的API密钥
-```
-# 使用OpenAI
-AI_PROVIDER=openai
-OPENAI_API_KEY=your_api_key_here
-
-# 或使用智谱AI
-AI_PROVIDER=zhipuai
-ZHIPUAI_API_KEY=your_api_key_here
-
-# 或使用SiliconFlow
-AI_PROVIDER=siliconflow
-SILICONFLOW_API_KEY=your_api_key_here
-SILICONFLOW_MODEL=deepseek-ai/DeepSeek-V2.5
-```
-
-### 使用Web界面
-
-1. 启动服务器
-```bash
-python -m subtranslate.main
-```
-
-2. 在浏览器中访问 http://localhost:8000
-
-### 使用命令行
+### 安装依赖
 
 ```bash
-# 翻译单个视频字幕
-subtranslate translate /path/to/video.mp4
+# 安装 Python 依赖
+pip install -e .
 
-# 批量翻译目录中的所有视频
-subtranslate translate-batch /path/to/videos/
+# 安装前端依赖
+pnpm install
+```
+
+### 开发模式运行
+
+```bash
+# 使用开发脚本启动
+python scripts/dev.py
+```
+
+或者分别启动前端和后端：
+
+```bash
+# 启动后端
+python backend/main.py
+
+# 启动前端
+pnpm dev
+```
+
+## 构建和打包
+
+```bash
+# 构建项目
+python scripts/build.py
+
+# 打包应用
+python scripts/package.py
 ```
 
 ## 系统要求
@@ -121,19 +122,22 @@ subtranslate translate-batch /path/to/videos/
 
 ```
 subtranslate/
-├── src/
-│   └── subtranslate/
-│       ├── api/            # FastAPI后端
-│       ├── cli/            # 命令行接口
-│       ├── core/           # 核心业务逻辑
-│       ├── schemas/        # Pydantic数据模型
-│       ├── services/       # 业务服务
-│       └── ui/             # 前端资源
-├── frontend/               # React前端应用
-├── tests/                  # 测试目录
-├── docs/                   # 文档
-├── pyproject.toml          # 项目配置
-└── README.md               # 项目说明
+├── frontend/                      # 所有前端代码
+│   ├── electron-app/              # Electron 应用
+│   │   ├── electron/              # Electron 主进程代码
+│   │   ├── src/                   # 渲染进程代码 (React)
+│   │   └── ...
+│   └── shared/                    # 共享代码
+├── backend/                       # 所有后端代码
+│   ├── api/                       # API 接口
+│   ├── core/                      # 核心功能
+│   ├── schemas/                   # 数据模型
+│   ├── services/                  # 服务
+│   └── ...
+├── scripts/                       # 构建和部署脚本
+├── tests/                         # 测试
+├── docs/                          # 文档
+└── ...
 ```
 
 ## 详细文档

@@ -9187,3 +9187,93 @@ fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
 2025-05-06 18:12:14,105 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
 2025-05-06 18:12:14,109 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
 2025-05-06 18:12:14,109 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 19:21:41,410 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 19:21:41,411 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 19:21:41,411 - api_server - INFO - 区域设置: cp936
+2025-05-06 19:21:41,411 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 19:21:44,079 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 19:21:44,080 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2209876209488, 临时目录: ./temp
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 19:21:44,081 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 19:21:44,082 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 19:21:44,082 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2209876209488
+2025-05-06 19:21:44,082 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 19:21:44,082 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2209876209488
+2025-05-06 19:21:44,082 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2
+2025-05-06 19:21:44,111 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 19:21:44,112 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 19:21:44,112 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1207376735936, 临时目录: ./temp
+2025-05-06 19:21:44,112 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 19:21:44,112 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 19:21:44,113 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,113 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,113 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 19:21:44,113 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 19:21:44,113 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 19:21:44,113 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1207376735936
+2025-05-06 19:21:44,113 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 19:21:44,113 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 19:21:44,113 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1207376735936
+2025-05-06 19:21:44,113 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1979682057920, 临时目录: ./temp
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 19:21:44,114 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 19:21:44,114 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1979682057920
+2025-05-06 19:21:44,114 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 19:21:44,115 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1979682057920
+2025-05-06 19:21:44,115 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2
+2025-05-06 19:21:44,125 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 19:21:44,126 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 19:21:44,126 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1831500115744, 临时目录: ./temp
+2025-05-06 19:21:44,126 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 19:21:44,127 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,127 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:21:44,127 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 19:21:44,127 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 19:21:44,127 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 19:21:44,127 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1831500115744
+2025-05-06 19:21:44,127 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 19:21:44,127 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1831500115744
+2025-05-06 19:21:44,127 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2
+2025-05-06 19:50:09,615 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 19:50:09,615 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 19:50:09,615 - api_server - INFO - 区域设置: cp936
+2025-05-06 19:50:09,616 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-05-06 19:50:11,628 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 19:50:11,629 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2149767082480, 临时目录: ./temp
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 19:50:11,630 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 19:50:11,630 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2149767082480
+2025-05-06 19:50:11,630 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 19:50:11,630 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2149767082480
+2025-05-06 19:50:11,630 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2
+2025-05-06 20:31:07,297 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 20:31:07,297 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 20:31:07,299 - api_server - INFO - 区域设置: cp936
+2025-05-06 20:31:07,299 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=1
+2025-05-06 20:31:09,428 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 20:31:09,429 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 20:31:09,429 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 3193501823424, 临时目录: ./temp
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - WARNING - 视频 603123da-6cdb-4e8e-9401-e10efdacf04e 没有字幕轨道信息，可能需要重新提取
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - INFO - 从磁盘加载了 2 个视频信息
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b', '603123da-6cdb-4e8e-9401-e10efdacf04e']
+2025-05-06 20:31:09,430 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 20:31:09,430 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 3193501823424
+2025-05-06 20:31:09,430 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 2
+2025-05-06 20:31:09,430 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 3193501823424
+2025-05-06 20:31:09,430 - subtranslate.api - INFO - 初始视频存储中的视频数量: 2

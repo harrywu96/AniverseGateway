@@ -19,7 +19,8 @@
 
 ### 前提条件
 - Python 3.10 或更高版本
-- 安装 UV 包管理工具
+- Node.js 18 或更高版本
+- pnpm 8 或更高版本
 - FFmpeg（用于视频处理）
 - Git 版本控制
 
@@ -31,61 +32,74 @@
    cd subtranslate
    ```
 
-2. **设置虚拟环境**
+2. **安装 Python 依赖**
    ```bash
-   # 使用项目中的脚本自动设置环境
-   python uv_setup.py setup
-   
-   # 激活虚拟环境
-   # Windows
-   .venv\Scripts\activate
-   # macOS/Linux
-   source .venv/bin/activate
+   # 安装 Python 依赖
+   pip install -e .
    ```
 
-3. **配置环境变量**
+3. **安装前端依赖**
+   ```bash
+   # 安装前端依赖
+   pnpm install
+   ```
+
+4. **配置环境变量**
    ```bash
    # 复制环境变量模板
    cp .env.example .env
-   
+
    # 编辑 .env 文件，填入必要的配置信息
-   # 特别是 OpenAI API 密钥等敏感信息
+   # 特别是 AI 服务提供商的 API 密钥等敏感信息
    ```
 
-4. **验证设置**
+5. **验证设置**
    ```bash
-   python uv_setup.py check
+   # 启动开发环境
+   python scripts/dev.py
    ```
 
 ## 代码组织结构
 
-SubTranslate 项目采用结构化模块设计，严格遵循关注点分离原则：
+SubTranslate 项目采用前后端分离的结构化模块设计，严格遵循关注点分离原则：
 
 ```
 subtranslate/
-├── src/
-│   └── subtranslate/           # 主包
-│       ├── __init__.py         # 包初始化
-│       ├── api/                # API 子包
-│       ├── cli/                # 命令行接口
-│       ├── core/               # 核心功能
-│       ├── schemas/            # 数据模型定义
-│       ├── services/           # 服务集成
-│       └── ui/                 # 用户界面资源
-├── tests/                      # 测试目录
-├── docs/                       # 文档
-├── .env.example                # 环境变量模板
-└── pyproject.toml              # 项目配置
+├── frontend/                      # 所有前端代码
+│   ├── electron-app/              # Electron 应用
+│   │   ├── electron/              # Electron 主进程代码
+│   │   ├── src/                   # 渲染进程代码 (React)
+│   │   └── ...
+│   └── shared/                    # 共享代码
+├── backend/                       # 所有后端代码
+│   ├── api/                       # API 接口
+│   ├── core/                      # 核心功能
+│   ├── schemas/                   # 数据模型
+│   ├── services/                  # 服务
+│   └── ...
+├── scripts/                       # 构建和部署脚本
+├── tests/                         # 测试目录
+├── docs/                          # 文档
+└── ...
 ```
 
 ### 模块职责
 
-- **api**: FastAPI 应用和路由定义
-- **cli**: 命令行接口和参数处理
-- **core**: 核心业务逻辑，包括视频处理、字幕提取和翻译
-- **schemas**: Pydantic 数据模型定义
-- **services**: 外部服务集成，如 FFmpeg 和 OpenAI
-- **ui**: 前端资源和模板
+#### 后端模块
+
+- **backend/api**: FastAPI 应用和路由定义
+- **backend/core**: 核心业务逻辑，包括视频处理、字幕提取和翻译
+- **backend/schemas**: Pydantic 数据模型定义
+- **backend/services**: 外部服务集成，如 FFmpeg 和 AI 服务提供商
+
+#### 前端模块
+
+- **frontend/electron-app/electron/main**: Electron 主进程代码
+- **frontend/electron-app/electron/preload**: Electron 预加载脚本
+- **frontend/electron-app/src/components**: React 组件
+- **frontend/electron-app/src/pages**: 页面组件
+- **frontend/electron-app/src/services**: 前端服务
+- **frontend/shared**: 共享类型和常量
 
 ## 开发工作流
 
@@ -112,7 +126,7 @@ subtranslate/
    ```bash
    # 运行单元测试
    pytest
-   
+
    # 运行代码质量检查
    ruff check .
    mypy .
@@ -286,4 +300,4 @@ pytest --cov=src/subtranslate
 
 ---
 
-本指南将根据项目的发展不断更新。如有问题或建议，请联系项目维护者。 
+本指南将根据项目的发展不断更新。如有问题或建议，请联系项目维护者。

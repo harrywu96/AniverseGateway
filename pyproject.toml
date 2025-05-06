@@ -36,13 +36,13 @@ dependencies = [
     "asyncio>=3.4.3",
     "websockets>=12.0",
     "python-multipart>=0.0.6",
-    
+
     # Video and subtitle processing
     "ffmpeg-python>=0.2.0",
     "pysrt>=1.1.2",
     "chardet>=5.2.0",
     "faster-whisper>=0.10.0",
-    
+
     # AI service integrations
     "openai>=1.6.0",
     "zhipuai>=2.0.0",  # 智谱AI集成
@@ -51,7 +51,7 @@ dependencies = [
     "baidu-aip>=4.16.10",  # 百度AI集成
     "anthropic>=0.5.0",  # Anthropic Claude集成
     "google-generativeai>=0.3.0",  # Google Gemini集成
-    
+
     # Utility libraries
     "tiktoken>=0.5.1",  # OpenAI token counting
     "torch>=2.0.0",  # PyTorch for AI models
@@ -65,7 +65,7 @@ dev = [
     "pytest-asyncio>=0.21.1",
     "pytest-mock>=3.12.0",
     "hypothesis>=6.82.0",  # 属性测试
-    
+
     # Code quality
     "black>=23.11.0",
     "isort>=5.12.0",
@@ -73,13 +73,13 @@ dev = [
     "ruff>=0.1.5",
     "pylint>=3.0.2",
     "flake8>=6.1.0",
-    
+
     # Type checking
     "pyright>=1.1.333",
     "pydantic-extra-types>=2.1.0",  # 额外类型支持
     "types-requests>=2.31.0",
     "types-aiofiles>=23.1.0",
-    
+
     # Development tools
     "pre-commit>=3.5.0",
     "bandit>=1.7.5",  # 安全检查
@@ -105,18 +105,18 @@ full = [
 "Source" = "https://github.com/yourusername/subtranslate"
 
 [project.scripts]
-subtranslate = "subtranslate.cli.main:app"
+subtranslate = "backend.main:run_server"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"" = "."}
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["subtranslate*"]
-exclude = ["tests*", "examples*"]
+where = ["."]
+include = ["backend*"]
+exclude = ["tests*", "examples*", "frontend*", "scripts*"]
 
 [tool.setuptools.package-data]
-"subtranslate" = ["py.typed", "schemas/*.json", "static/**/*"]
+"backend" = ["py.typed", "schemas/*.json", "static/**/*"]
 
 # UV specific configurations
 [tool.uv]
@@ -206,4 +206,4 @@ exclude_dirs = ["tests", ".venv", "examples"]
 tests = ["B201", "B301"]
 
 [tool.safety]
-ignore = [] 
+ignore = []
