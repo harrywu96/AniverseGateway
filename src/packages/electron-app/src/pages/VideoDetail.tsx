@@ -124,15 +124,61 @@ const VideoDetail: React.FC = () => {
           throw new Error('视频文件路径不存在，无法上传');
         }
 
-        const response = await window.electronAPI.uploadVideo(videoToUpload.filePath);
+        // 注意：我们需要在后端添加对前端ID的支持
+        // 目前先使用简单的上传方式
+
+        // 添加重试机制
+        let retryCount = 0;
+        const maxRetries = 3;
+        let response;
+
+        while (retryCount < maxRetries) {
+          try {
+            // 修复参数传递方式
+            response = await window.electronAPI.uploadVideo(videoToUpload.filePath);
+            break; // 如果成功，跳出循环
+          } catch (uploadErr) {
+            retryCount++;
+            console.warn(`上传视频失败，尝试重试 (${retryCount}/${maxRetries}):`, uploadErr);
+
+            if (retryCount >= maxRetries) {
+              throw uploadErr; // 重试次数用完，抛出错误
+            }
+
+            // 等待一段时间再重试
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        }
+
         console.log('视频上传到后端响应:', response);
 
-        if (response.success && response.data) {
+        if (response && response.success && response.data) {
+          // 保存后端返回的视频ID和前端ID的映射关系
+          const backendId = response.data.id;
+          const frontendId = videoToUpload.id;
+
+          console.log(`保存ID映射: 前端ID ${frontendId} -> 后端ID ${backendId}`);
+
+          // 使用后端返回的数据更新视频信息
           processVideoFromBackend(response.data, videoToUpload);
+
+          // 如果前端ID和后端ID不同，可以在本地存储中保存映射关系
+          if (frontendId !== backendId) {
+            // 这里可以添加本地存储映射的逻辑，例如使用localStorage
+            try {
+              const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
+              idMappings[frontendId] = backendId;
+              localStorage.setItem('videoIdMappings', JSON.stringify(idMappings));
+              console.log('ID映射已保存到本地存储');
+            } catch (storageErr) {
+              console.warn('保存ID映射到本地存储失败:', storageErr);
+            }
+          }
+
           return true;
         } else {
-          console.error('上传视频到后端失败:', response.error || '未知错误');
-          setError('上传视频到后端失败: ' + (response.error || '未知错误'));
+          console.error('上传视频到后端失败:', response?.error || '未知错误');
+          setError('上传视频到后端失败: ' + (response?.error || '未知错误'));
           return false;
         }
       } catch (err: any) {
@@ -154,9 +200,29 @@ const VideoDetail: React.FC = () => {
         const url = `http://localhost:${apiPort}/api/videos/${id}`;
         console.log('从后端获取视频信息:', url);
 
-        const response = await fetch(url);
+        // 添加重试机制
+        let retryCount = 0;
+        const maxRetries = 3;
+        let response;
 
-        if (response.ok) {
+        while (retryCount < maxRetries) {
+          try {
+            response = await fetch(url);
+            break; // 如果成功，跳出循环
+          } catch (fetchErr) {
+            retryCount++;
+            console.warn(`获取视频信息失败，尝试重试 (${retryCount}/${maxRetries}):`, fetchErr);
+
+            if (retryCount >= maxRetries) {
+              throw fetchErr; // 重试次数用完，抛出错误
+            }
+
+            // 等待一段时间再重试
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        }
+
+        if (response && response.ok) {
           // 视频存在于后端，获取信息并更新
           const result = await response.json();
           console.log('从后端获取到视频信息:', result);
@@ -181,6 +247,29 @@ const VideoDetail: React.FC = () => {
           // 视频不存在于后端，检查前端状态
           console.log('后端未找到视频，检查前端状态');
 
+          // 首先尝试使用前端ID查询后端
+          if (id) {
+            try {
+              // 尝试使用前端ID查询后端
+              const mappingUrl = `http://localhost:${apiPort}/api/videos/by-frontend-id/${id}`;
+              console.log('尝试使用前端ID查询后端:', mappingUrl);
+
+              const mappingResponse = await fetch(mappingUrl);
+              if (mappingResponse.ok) {
+                const mappingResult = await mappingResponse.json();
+                if (mappingResult.success && mappingResult.data) {
+                  console.log('通过前端ID找到了后端视频:', mappingResult.data);
+                  processVideoFromBackend(mappingResult.data);
+                  return true;
+                }
+              }
+            } catch (mappingErr) {
+              console.warn('使用前端ID查询后端失败:', mappingErr);
+              // 继续尝试其他方法
+            }
+          }
+
+          // 如果通过ID映射未找到，检查前端状态
           const frontendVideo = state.videos.find(v => v.id === id);
           if (frontendVideo) {
             console.log('前端状态中找到视频信息，尝试上传到后端');
@@ -218,7 +307,8 @@ const VideoDetail: React.FC = () => {
   useEffect(() => {
     if (video && selectedTrack) {
       // 使用视频ID（这是后端生成的ID）和字幕轨道ID（这是轨道索引）
-      loadSubtitleContent(video.id, selectedTrack.id);
+      const videoId = (video as any).backendId || video.id;
+      loadSubtitleContent(videoId, selectedTrack.id);
     }
   }, [video, selectedTrack]);
 
@@ -298,10 +388,30 @@ const VideoDetail: React.FC = () => {
           const checkUrl = `http://localhost:${apiPort}/api/videos/${videoId}`;
 
           try {
-            const checkResponse = await fetch(checkUrl);
+            // 添加重试机制
+            let retryCount = 0;
+            const maxRetries = 3;
+            let checkResponse;
+
+            while (retryCount < maxRetries) {
+              try {
+                checkResponse = await fetch(checkUrl);
+                break; // 如果成功，跳出循环
+              } catch (fetchErr) {
+                retryCount++;
+                console.warn(`检查视频是否存在失败，尝试重试 (${retryCount}/${maxRetries}):`, fetchErr);
+
+                if (retryCount >= maxRetries) {
+                  throw fetchErr; // 重试次数用完，抛出错误
+                }
+
+                // 等待一段时间再重试
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+              }
+            }
 
             // 如果视频不存在于后端，尝试重新上传
-            if (!checkResponse.ok) {
+            if (!checkResponse || !checkResponse.ok) {
               if (!video.filePath) {
                 throw new Error('视频不存在于后端，且本地没有文件路径，无法上传');
               }
@@ -312,10 +422,52 @@ const VideoDetail: React.FC = () => {
                 throw new Error('无法访问electronAPI，无法上传视频');
               }
 
-              const uploadResponse = await window.electronAPI.uploadVideo(video.filePath);
+              // 注意：我们需要在后端添加对前端ID的支持
+              // 目前先使用简单的上传方式
 
-              if (uploadResponse.success && uploadResponse.data) {
+              // 添加重试机制
+              retryCount = 0;
+              let uploadResponse;
+
+              while (retryCount < maxRetries) {
+                try {
+                  // 修复参数传递方式
+                  uploadResponse = await window.electronAPI.uploadVideo(video.filePath);
+                  break; // 如果成功，跳出循环
+                } catch (uploadErr) {
+                  retryCount++;
+                  console.warn(`重新上传视频失败，尝试重试 (${retryCount}/${maxRetries}):`, uploadErr);
+
+                  if (retryCount >= maxRetries) {
+                    throw uploadErr; // 重试次数用完，抛出错误
+                  }
+
+                  // 等待一段时间再重试
+                  await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
+              }
+
+              if (uploadResponse && uploadResponse.success && uploadResponse.data) {
                 console.log('重新上传视频成功，更新视频ID:', uploadResponse.data.id);
+
+                // 保存后端返回的视频ID和前端ID的映射关系
+                const backendId = uploadResponse.data.id;
+                const frontendId = video.id;
+
+                console.log(`保存ID映射: 前端ID ${frontendId} -> 后端ID ${backendId}`);
+
+                // 如果前端ID和后端ID不同，可以在本地存储中保存映射关系
+                if (frontendId !== backendId) {
+                  try {
+                    const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
+                    idMappings[frontendId] = backendId;
+                    localStorage.setItem('videoIdMappings', JSON.stringify(idMappings));
+                    console.log('ID映射已保存到本地存储');
+                  } catch (storageErr) {
+                    console.warn('保存ID映射到本地存储失败:', storageErr);
+                  }
+                }
+
                 // 更新视频ID
                 videoId = uploadResponse.data.id;
 
@@ -328,11 +480,12 @@ const VideoDetail: React.FC = () => {
                 // 更新视频对象
                 const updatedVideo = {
                   ...video,
-                  id: uploadResponse.data.id // 使用后端返回的ID更新视频ID
+                  id: uploadResponse.data.id, // 使用后端返回的ID更新视频ID
+                  backendId: uploadResponse.data.id // 额外保存后端ID
                 };
                 setVideo(updatedVideo);
               } else {
-                throw new Error('重新上传视频失败: ' + (uploadResponse.error || '未知错误'));
+                throw new Error('重新上传视频失败: ' + (uploadResponse?.error || '未知错误'));
               }
             }
           } catch (checkError: any) {

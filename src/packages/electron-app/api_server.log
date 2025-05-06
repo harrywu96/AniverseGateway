@@ -7479,3 +7479,1179 @@ fastapi.exceptions.HTTPException: 404: 视频不存在
 2025-05-06 16:15:59,893 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['dda84548-b4ac-4d61-b1c4-fbbcafc48f8c', 'a6c640b7-83eb-4d0c-93c6-8e74f97c137a']
 2025-05-06 16:15:59,893 - subtranslate.services.video_storage - INFO - 找到视频: a6c640b7-83eb-4d0c-93c6-8e74f97c137a, 文件名: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
 2025-05-06 16:16:00,267 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\a6c640b7-83eb-4d0c-93c6-8e74f97c137a_dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 16:18:39,237 - subtranslate.api.videos - INFO - 获取视频信息，ID: a6c640b7-83eb-4d0c-93c6-8e74f97c137a
+2025-05-06 16:18:39,237 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2728486573616
+2025-05-06 16:18:39,237 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 16:18:39,237 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,237 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: a6c640b7-83eb-4d0c-93c6-8e74f97c137a
+2025-05-06 16:18:39,237 - subtranslate.services.video_storage - INFO - 当前实例ID: 2728486573616, 当前存储的视频数量: 1
+2025-05-06 16:18:39,237 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,238 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: a6c640b7-83eb-4d0c-93c6-8e74f97c137a
+2025-05-06 16:18:39,238 - subtranslate.api.videos - WARNING - 视频不存在，ID: a6c640b7-83eb-4d0c-93c6-8e74f97c137a
+2025-05-06 16:18:39,239 - subtranslate.api.videos - INFO - 获取视频信息，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:39,239 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2728486573616
+2025-05-06 16:18:39,239 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 16:18:39,239 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,239 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:39,239 - subtranslate.services.video_storage - INFO - 当前实例ID: 2728486573616, 当前存储的视频数量: 1
+2025-05-06 16:18:39,239 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,239 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:39,239 - subtranslate.api.videos - WARNING - 视频不存在，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2728486573616
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 16:18:39,344 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 16:18:39,345 - subtranslate.api.videos - INFO - 生成的文件指纹: temp\dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208
+2025-05-06 16:18:39,345 - subtranslate.api.videos - INFO - 现有视频指纹: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208, ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:39,345 - subtranslate.api.videos - INFO - 检测到重复上传的视频: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:39,443 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 16:18:39,444 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:39,444 - subtranslate.services.video_storage - INFO - 当前实例ID: 2728486573616, 当前存储的视频数量: 1
+2025-05-06 16:18:39,444 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,444 - subtranslate.services.video_storage - INFO - 找到视频: 98a8781b-8c6b-46a1-9fe5-34200f581740, 文件名: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:18:39,854 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\98a8781b-8c6b-46a1-9fe5-34200f581740_dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 16:18:39,859 - subtranslate.api.videos - INFO - 获取视频信息，ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:39,859 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2728486573616
+2025-05-06 16:18:39,859 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 16:18:39,859 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,859 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:39,859 - subtranslate.services.video_storage - INFO - 当前实例ID: 2728486573616, 当前存储的视频数量: 1
+2025-05-06 16:18:39,859 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:39,859 - subtranslate.services.video_storage - INFO - 找到视频: 98a8781b-8c6b-46a1-9fe5-34200f581740, 文件名: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:18:39,859 - subtranslate.api.videos - INFO - 成功获取视频信息: 98a8781b-8c6b-46a1-9fe5-34200f581740, 文件名: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:18:40,283 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 98a8781b-8c6b-46a1-9fe5-34200f581740
+2025-05-06 16:18:40,283 - subtranslate.services.video_storage - INFO - 当前实例ID: 2728486573616, 当前存储的视频数量: 1
+2025-05-06 16:18:40,283 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['98a8781b-8c6b-46a1-9fe5-34200f581740']
+2025-05-06 16:18:40,283 - subtranslate.services.video_storage - INFO - 找到视频: 98a8781b-8c6b-46a1-9fe5-34200f581740, 文件名: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:18:40,682 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\98a8781b-8c6b-46a1-9fe5-34200f581740_dda84548-b4ac-4d61-b1c4-fbbcafc48f8c_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 16:18:57,194 - subtranslate.api.videos - INFO - 获取视频信息，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:57,194 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2370644366752
+2025-05-06 16:18:57,194 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:18:57,194 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:18:57,194 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:57,194 - subtranslate.services.video_storage - INFO - 当前实例ID: 2370644366752, 当前存储的视频数量: 0
+2025-05-06 16:18:57,194 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:18:57,194 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:18:57,194 - subtranslate.api.videos - WARNING - 视频不存在，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:32:27,303 - subtranslate.api.videos - INFO - 获取视频信息，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:32:27,303 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1850676598272
+2025-05-06 16:32:27,303 - subtranslate.api.videos - INFO - 当前存储的视频数量: 2
+2025-05-06 16:32:27,303 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['dda84548-b4ac-4d61-b1c4-fbbcafc48f8c', 'a6c640b7-83eb-4d0c-93c6-8e74f97c137a']
+2025-05-06 16:32:27,303 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:32:27,303 - subtranslate.services.video_storage - INFO - 当前实例ID: 1850676598272, 当前存储的视频数量: 2
+2025-05-06 16:32:27,303 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['dda84548-b4ac-4d61-b1c4-fbbcafc48f8c', 'a6c640b7-83eb-4d0c-93c6-8e74f97c137a']
+2025-05-06 16:32:27,303 - subtranslate.services.video_storage - INFO - 找到视频: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:27,303 - subtranslate.api.videos - INFO - 成功获取视频信息: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:49,276 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 16:32:49,276 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 16:32:49,276 - api_server - INFO - 区域设置: cp936
+2025-05-06 16:32:49,276 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 16:32:51,676 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:32:51,677 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:32:51,678 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1582456313392, 临时目录: ./temp
+2025-05-06 16:32:51,678 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1582456313392
+2025-05-06 16:32:51,678 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:32:51,678 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1582456313392
+2025-05-06 16:32:51,678 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:32:51,723 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:32:51,724 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:32:51,725 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2346309588528, 临时目录: ./temp
+2025-05-06 16:32:51,725 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2346309588528
+2025-05-06 16:32:51,725 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:32:51,725 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2346309588528
+2025-05-06 16:32:51,725 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:32:51,757 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:32:51,757 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:32:51,759 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:32:51,760 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2232430564816, 临时目录: ./temp
+2025-05-06 16:32:51,760 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2232430564816
+2025-05-06 16:32:51,760 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:32:51,760 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:32:51,760 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2232430564816
+2025-05-06 16:32:51,760 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:32:51,760 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1903181895120, 临时目录: ./temp
+2025-05-06 16:32:51,760 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1903181895120
+2025-05-06 16:32:51,760 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:32:51,760 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1903181895120
+2025-05-06 16:32:51,760 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1903181895120
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 生成的文件指纹: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 未找到匹配的视频，开始正常加载
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 开始加载视频文件: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1903181895120
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 加载前的视频存储数量: 0
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 文件扩展名: mkv
+2025-05-06 16:32:56,516 - subtranslate.api.videos - INFO - 开始保存视频到存储: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:56,517 - subtranslate.services.video_storage - INFO - 开始保存视频，文件路径: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:56,517 - subtranslate.services.video_storage - INFO - 当前实例ID: 1903181895120, 当前存储的视频数量: 0
+2025-05-06 16:32:56,517 - subtranslate.services.video_storage - INFO - 生成的视频ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:56,517 - subtranslate.services.video_storage - INFO - 目标路径: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:56,980 - subtranslate.services.video_storage - INFO - 文件已复制到临时目录
+2025-05-06 16:32:56,980 - subtranslate.services.video_storage - INFO - 创建的视频信息对象: 40046b23-713c-49cb-b1ae-d11d9ab6f199, 格式: mkv
+2025-05-06 16:32:56,980 - subtranslate.services.video_storage - INFO - 视频已存储到内存，当前视频数量: 1
+2025-05-06 16:32:56,980 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['40046b23-713c-49cb-b1ae-d11d9ab6f199']
+2025-05-06 16:32:56,980 - subtranslate.api.videos - INFO - 视频已保存到存储，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:56,980 - subtranslate.api.videos - INFO - 开始分析视频信息: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:57,346 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-05-06 16:32:57,346 - subtranslate.api.videos - INFO - 视频分析完成: 40046b23-713c-49cb-b1ae-d11d9ab6f199, 时长: 1436.46秒
+2025-05-06 16:32:57,346 - subtranslate.api.videos - INFO - 开始提取字幕轨道: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:57,468 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 16:32:57,468 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 16:32:57,469 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 16:32:57,469 - subtranslate.api.videos - INFO - 字幕轨道提取完成，共 9 个轨道
+2025-05-06 16:32:57,469 - subtranslate.api.videos - INFO - 开始查找外挂字幕: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 外挂字幕查找完成，共 0 个文件
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 更新存储中的视频信息: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 视频信息已更新，当前视频数量: 1
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['40046b23-713c-49cb-b1ae-d11d9ab6f199']
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 视频加载成功，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 加载后的视频存储数量: 1
+2025-05-06 16:32:57,472 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['40046b23-713c-49cb-b1ae-d11d9ab6f199']
+2025-05-06 16:33:00,457 - subtranslate.api.videos - INFO - 获取视频信息，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,457 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1582456313392
+2025-05-06 16:33:00,457 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:00,457 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,457 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,457 - subtranslate.services.video_storage - INFO - 当前实例ID: 1582456313392, 当前存储的视频数量: 0
+2025-05-06 16:33:00,457 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,457 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,457 - subtranslate.api.videos - WARNING - 视频不存在，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,459 - subtranslate.api.videos - INFO - 获取视频信息，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,459 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1582456313392
+2025-05-06 16:33:00,459 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:00,459 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,459 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,459 - subtranslate.services.video_storage - INFO - 当前实例ID: 1582456313392, 当前存储的视频数量: 0
+2025-05-06 16:33:00,459 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,459 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,459 - subtranslate.api.videos - WARNING - 视频不存在，ID: 40046b23-713c-49cb-b1ae-d11d9ab6f199
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1582456313392
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 生成的文件指纹: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 未找到匹配的视频，开始正常加载
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 开始加载视频文件: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1582456313392
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 加载前的视频存储数量: 0
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 文件扩展名: mkv
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 开始保存视频到存储: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,577 - subtranslate.services.video_storage - INFO - 开始保存视频，文件路径: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 文件名: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,577 - subtranslate.services.video_storage - INFO - 当前实例ID: 1582456313392, 当前存储的视频数量: 0
+2025-05-06 16:33:00,577 - subtranslate.services.video_storage - INFO - 生成的视频ID: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:00,578 - subtranslate.services.video_storage - INFO - 目标路径: temp\0fd872f3-335e-4391-aa62-cb0a6291e841_40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,577 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'temp\\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2232430564816
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='temp\\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 生成的文件指纹: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 未找到匹配的视频，开始正常加载
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 开始加载视频文件: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2232430564816
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 加载前的视频存储数量: 0
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 文件扩展名: mkv
+2025-05-06 16:33:00,578 - subtranslate.api.videos - INFO - 开始保存视频到存储: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,578 - subtranslate.services.video_storage - INFO - 开始保存视频，文件路径: temp\40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 文件名: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:00,578 - subtranslate.services.video_storage - INFO - 当前实例ID: 2232430564816, 当前存储的视频数量: 0
+2025-05-06 16:33:00,578 - subtranslate.services.video_storage - INFO - 生成的视频ID: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:00,578 - subtranslate.services.video_storage - INFO - 目标路径: temp\cebed4e0-f99c-4042-bc6c-509c1bd96e4c_40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:01,439 - subtranslate.services.video_storage - INFO - 文件已复制到临时目录
+2025-05-06 16:33:01,440 - subtranslate.services.video_storage - INFO - 创建的视频信息对象: 0fd872f3-335e-4391-aa62-cb0a6291e841, 格式: mkv
+2025-05-06 16:33:01,440 - subtranslate.services.video_storage - INFO - 视频已存储到内存，当前视频数量: 1
+2025-05-06 16:33:01,440 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['0fd872f3-335e-4391-aa62-cb0a6291e841']
+2025-05-06 16:33:01,440 - subtranslate.api.videos - INFO - 视频已保存到存储，ID: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:01,440 - subtranslate.api.videos - INFO - 开始分析视频信息: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:01,476 - subtranslate.services.video_storage - INFO - 文件已复制到临时目录
+2025-05-06 16:33:01,476 - subtranslate.services.video_storage - INFO - 创建的视频信息对象: cebed4e0-f99c-4042-bc6c-509c1bd96e4c, 格式: mkv
+2025-05-06 16:33:01,476 - subtranslate.services.video_storage - INFO - 视频已存储到内存，当前视频数量: 1
+2025-05-06 16:33:01,476 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['cebed4e0-f99c-4042-bc6c-509c1bd96e4c']
+2025-05-06 16:33:01,476 - subtranslate.api.videos - INFO - 视频已保存到存储，ID: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:01,476 - subtranslate.api.videos - INFO - 开始分析视频信息: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:01,804 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-05-06 16:33:01,804 - subtranslate.api.videos - INFO - 视频分析完成: 0fd872f3-335e-4391-aa62-cb0a6291e841, 时长: 1436.46秒
+2025-05-06 16:33:01,804 - subtranslate.api.videos - INFO - 开始提取字幕轨道: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:01,832 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-05-06 16:33:01,832 - subtranslate.api.videos - INFO - 视频分析完成: cebed4e0-f99c-4042-bc6c-509c1bd96e4c, 时长: 1436.46秒
+2025-05-06 16:33:01,832 - subtranslate.api.videos - INFO - 开始提取字幕轨道: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:01,919 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 16:33:01,920 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 16:33:01,920 - subtranslate.api.videos - INFO - 字幕轨道提取完成，共 9 个轨道
+2025-05-06 16:33:01,920 - subtranslate.api.videos - INFO - 开始查找外挂字幕: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 外挂字幕查找完成，共 0 个文件
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 更新存储中的视频信息: 0fd872f3-335e-4391-aa62-cb0a6291e841
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 视频信息已更新，当前视频数量: 1
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['0fd872f3-335e-4391-aa62-cb0a6291e841']
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 视频加载成功，ID: 0fd872f3-335e-4391-aa62-cb0a6291e841, 文件名: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 加载后的视频存储数量: 1
+2025-05-06 16:33:01,924 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['0fd872f3-335e-4391-aa62-cb0a6291e841']
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 16:33:01,947 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 16:33:01,947 - subtranslate.api.videos - INFO - 字幕轨道提取完成，共 9 个轨道
+2025-05-06 16:33:01,947 - subtranslate.api.videos - INFO - 开始查找外挂字幕: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 外挂字幕查找完成，共 0 个文件
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 更新存储中的视频信息: cebed4e0-f99c-4042-bc6c-509c1bd96e4c
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 视频信息已更新，当前视频数量: 1
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['cebed4e0-f99c-4042-bc6c-509c1bd96e4c']
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 视频加载成功，ID: cebed4e0-f99c-4042-bc6c-509c1bd96e4c, 文件名: 40046b23-713c-49cb-b1ae-d11d9ab6f199_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 加载后的视频存储数量: 1
+2025-05-06 16:33:01,952 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['cebed4e0-f99c-4042-bc6c-509c1bd96e4c']
+2025-05-06 16:33:19,133 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 16:33:19,133 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 16:33:19,133 - api_server - INFO - 区域设置: cp936
+2025-05-06 16:33:19,133 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 16:33:21,580 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:33:21,581 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:33:21,581 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2241509283232, 临时目录: ./temp
+2025-05-06 16:33:21,581 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2241509283232
+2025-05-06 16:33:21,581 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:21,581 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2241509283232
+2025-05-06 16:33:21,581 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:33:21,583 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:33:21,585 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:33:21,585 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2719655269888, 临时目录: ./temp
+2025-05-06 16:33:21,585 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2719655269888
+2025-05-06 16:33:21,585 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:21,585 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2719655269888
+2025-05-06 16:33:21,585 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:33:21,607 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:33:21,608 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:33:21,608 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2988777608800, 临时目录: ./temp
+2025-05-06 16:33:21,608 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2988777608800
+2025-05-06 16:33:21,608 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:21,608 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2988777608800
+2025-05-06 16:33:21,608 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:33:21,612 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 16:33:21,613 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 16:33:21,614 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2579833296480, 临时目录: ./temp
+2025-05-06 16:33:21,614 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2579833296480
+2025-05-06 16:33:21,614 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:21,614 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2579833296480
+2025-05-06 16:33:21,614 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 16:33:21,644 - subtranslate.api.videos - INFO - 获取视频信息，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:33:21,644 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2988777608800
+2025-05-06 16:33:21,644 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:21,645 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:21,645 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:33:21,645 - subtranslate.services.video_storage - INFO - 当前实例ID: 2988777608800, 当前存储的视频数量: 0
+2025-05-06 16:33:21,645 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:21,645 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:33:21,645 - subtranslate.api.videos - WARNING - 视频不存在，ID: dda84548-b4ac-4d61-b1c4-fbbcafc48f8c
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2988777608800
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 生成的文件指纹: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_1742218119.6858208
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 未找到匹配的视频，开始正常加载
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 开始加载视频文件: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2988777608800
+2025-05-06 16:33:28,977 - subtranslate.api.videos - INFO - 加载前的视频存储数量: 0
+2025-05-06 16:33:28,978 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:28,978 - subtranslate.api.videos - INFO - 文件扩展名: mkv
+2025-05-06 16:33:28,978 - subtranslate.api.videos - INFO - 开始保存视频到存储: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:28,978 - subtranslate.services.video_storage - INFO - 开始保存视频，文件路径: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:28,978 - subtranslate.services.video_storage - INFO - 当前实例ID: 2988777608800, 当前存储的视频数量: 0
+2025-05-06 16:33:28,978 - subtranslate.services.video_storage - INFO - 生成的视频ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:28,978 - subtranslate.services.video_storage - INFO - 目标路径: temp\25f8502e-73a7-4dab-a495-b5f0412c29bc_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:29,426 - subtranslate.services.video_storage - INFO - 文件已复制到临时目录
+2025-05-06 16:33:29,426 - subtranslate.services.video_storage - INFO - 创建的视频信息对象: 25f8502e-73a7-4dab-a495-b5f0412c29bc, 格式: mkv
+2025-05-06 16:33:29,426 - subtranslate.services.video_storage - INFO - 视频已存储到内存，当前视频数量: 1
+2025-05-06 16:33:29,426 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['25f8502e-73a7-4dab-a495-b5f0412c29bc']
+2025-05-06 16:33:29,426 - subtranslate.api.videos - INFO - 视频已保存到存储，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:29,426 - subtranslate.api.videos - INFO - 开始分析视频信息: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:29,781 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-05-06 16:33:29,781 - subtranslate.api.videos - INFO - 视频分析完成: 25f8502e-73a7-4dab-a495-b5f0412c29bc, 时长: 1436.46秒
+2025-05-06 16:33:29,781 - subtranslate.api.videos - INFO - 开始提取字幕轨道: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 16:33:29,899 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 16:33:29,900 - subtranslate.api.videos - INFO - 字幕轨道提取完成，共 9 个轨道
+2025-05-06 16:33:29,900 - subtranslate.api.videos - INFO - 开始查找外挂字幕: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 外挂字幕查找完成，共 0 个文件
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 更新存储中的视频信息: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 视频信息已更新，当前视频数量: 1
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['25f8502e-73a7-4dab-a495-b5f0412c29bc']
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 视频加载成功，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 加载后的视频存储数量: 1
+2025-05-06 16:33:29,903 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['25f8502e-73a7-4dab-a495-b5f0412c29bc']
+2025-05-06 16:33:37,582 - subtranslate.api.videos - INFO - 获取视频信息，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:37,582 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2579833296480
+2025-05-06 16:33:37,582 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 16:33:37,582 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:37,582 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:37,583 - subtranslate.services.video_storage - INFO - 当前实例ID: 2579833296480, 当前存储的视频数量: 0
+2025-05-06 16:33:37,583 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: []
+2025-05-06 16:33:37,583 - subtranslate.services.video_storage - WARNING - 未找到视频，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 16:33:37,583 - subtranslate.api.videos - WARNING - 视频不存在，ID: 25f8502e-73a7-4dab-a495-b5f0412c29bc
+2025-05-06 17:20:26,918 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 17:20:26,918 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 17:20:26,918 - api_server - INFO - 区域设置: cp936
+2025-05-06 17:20:26,918 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 17:20:29,400 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:20:29,401 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:20:29,401 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1941837670496, 临时目录: ./temp
+2025-05-06 17:20:29,401 - subtranslate.services.video_storage - INFO - 存储文件不存在，跳过加载: temp\video_storage.json
+2025-05-06 17:20:29,401 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1941837670496
+2025-05-06 17:20:29,402 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 17:20:29,402 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1941837670496
+2025-05-06 17:20:29,402 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 17:20:29,404 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:20:29,406 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:20:29,407 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1884352981136, 临时目录: ./temp
+2025-05-06 17:20:29,407 - subtranslate.services.video_storage - INFO - 存储文件不存在，跳过加载: temp\video_storage.json
+2025-05-06 17:20:29,407 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1884352981136
+2025-05-06 17:20:29,407 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 17:20:29,407 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1884352981136
+2025-05-06 17:20:29,407 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 17:20:29,438 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:20:29,439 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:20:29,439 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2948089161776, 临时目录: ./temp
+2025-05-06 17:20:29,439 - subtranslate.services.video_storage - INFO - 存储文件不存在，跳过加载: temp\video_storage.json
+2025-05-06 17:20:29,439 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2948089161776
+2025-05-06 17:20:29,439 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 17:20:29,439 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2948089161776
+2025-05-06 17:20:29,439 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 17:20:29,440 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:20:29,441 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:20:29,442 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2592707684448, 临时目录: ./temp
+2025-05-06 17:20:29,442 - subtranslate.services.video_storage - INFO - 存储文件不存在，跳过加载: temp\video_storage.json
+2025-05-06 17:20:29,442 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2592707684448
+2025-05-06 17:20:29,442 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 0
+2025-05-06 17:20:29,442 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2592707684448
+2025-05-06 17:20:29,442 - subtranslate.api - INFO - 初始视频存储中的视频数量: 0
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2948089161776
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - 当前存储的视频数量: 0
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 17:20:35,510 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 生成的文件指纹: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 指纹详细信息: {'name': '[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'size': 1460361424, 'mtime': 1742218119.6858208, 'content_hash': '010826185b72b5d0633ebe457ce2303353c3cd1b04ad128334cec3799438bc7d'}
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 未找到匹配的视频，开始正常加载
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 开始加载视频文件: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2948089161776
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 加载前的视频存储数量: 0
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: []
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 文件扩展名: mkv
+2025-05-06 17:20:35,512 - subtranslate.api.videos - INFO - 开始保存视频到存储: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:35,512 - subtranslate.services.video_storage - INFO - 开始保存视频，文件路径: E:\ai_study\ai_project\video\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:35,512 - subtranslate.services.video_storage - INFO - 当前实例ID: 2948089161776, 当前存储的视频数量: 0
+2025-05-06 17:20:35,512 - subtranslate.services.video_storage - INFO - 生成的视频ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:35,512 - subtranslate.services.video_storage - INFO - 目标路径: temp\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:35,995 - subtranslate.services.video_storage - INFO - 文件已复制到临时目录
+2025-05-06 17:20:35,995 - subtranslate.services.video_storage - INFO - 创建的视频信息对象: 34da7be1-d408-4ec6-803c-55f358df9e2b, 格式: mkv
+2025-05-06 17:20:35,995 - subtranslate.services.video_storage - INFO - 视频已存储到内存，当前视频数量: 1
+2025-05-06 17:20:35,995 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:20:35,996 - subtranslate.services.video_storage - INFO - 视频信息已保存到磁盘: temp\video_storage.json
+2025-05-06 17:20:35,996 - subtranslate.services.video_storage - INFO - 保存的视频数量: 1
+2025-05-06 17:20:35,996 - subtranslate.services.video_storage - INFO - 保存的ID映射数量: 0
+2025-05-06 17:20:35,996 - subtranslate.services.video_storage - INFO - 视频信息已持久化到磁盘
+2025-05-06 17:20:35,996 - subtranslate.api.videos - INFO - 视频已保存到存储，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:35,996 - subtranslate.api.videos - INFO - 开始分析视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:36,354 - subtranslate.core.subtitle_extractor - INFO - 视频分析完成: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 格式: mkv, 时长: 1436.46, 包含字幕: True
+2025-05-06 17:20:36,354 - subtranslate.api.videos - INFO - 视频分析完成: 34da7be1-d408-4ec6-803c-55f358df9e2b, 时长: 1436.46秒
+2025-05-06 17:20:36,354 - subtranslate.api.videos - INFO - 开始提取字幕轨道: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:36,480 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:20:36,480 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:20:36,480 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:20:36,481 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:20:36,481 - subtranslate.api.videos - INFO - 字幕轨道提取完成，共 9 个轨道
+2025-05-06 17:20:36,481 - subtranslate.api.videos - INFO - 开始查找外挂字幕: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 外挂字幕查找完成，共 0 个文件
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 更新存储中的视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 视频信息已更新，当前视频数量: 1
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 视频加载成功，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 加载后的视频存储数量: 1
+2025-05-06 17:20:36,485 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:20:45,478 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:45,478 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2948089161776
+2025-05-06 17:20:45,478 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:20:45,478 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:20:45,478 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:20:45,478 - subtranslate.services.video_storage - INFO - 当前实例ID: 2948089161776, 当前存储的视频数量: 1
+2025-05-06 17:20:45,478 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:20:45,478 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:20:45,478 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:00,090 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 17:21:00,090 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 17:21:00,092 - api_server - INFO - 区域设置: cp936
+2025-05-06 17:21:00,092 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 17:21:02,451 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:21:02,452 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:21:02,452 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2098279393328, 临时目录: ./temp
+2025-05-06 17:21:02,452 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:21:02,454 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:21:02,454 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:02,454 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:21:02,454 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:02,454 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:02,454 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:02,454 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:21:02,463 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:21:02,464 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:21:02,465 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1810188642448, 临时目录: ./temp
+2025-05-06 17:21:02,465 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:21:02,465 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:21:02,465 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:02,466 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:21:02,466 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1810188642448
+2025-05-06 17:21:02,466 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:02,466 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1810188642448
+2025-05-06 17:21:02,466 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:21:02,472 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:21:02,473 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2618768140336, 临时目录: ./temp
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1899542194272, 临时目录: ./temp
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:02,474 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:21:02,474 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2618768140336
+2025-05-06 17:21:02,474 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1899542194272
+2025-05-06 17:21:02,474 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:02,474 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:02,474 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2618768140336
+2025-05-06 17:21:02,474 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1899542194272
+2025-05-06 17:21:02,474 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:21:02,474 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2618768140336
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 17:21:07,777 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 17:21:07,778 - subtranslate.api.videos - INFO - 生成的文件指纹: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0
+2025-05-06 17:21:07,778 - subtranslate.api.videos - INFO - 指纹详细信息: {'name': '[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'size': 1460361424, 'mtime': 1742218119.6858208, 'content_hash': '010826185b72b5d0633ebe457ce2303353c3cd1b04ad128334cec3799438bc7d'}
+2025-05-06 17:21:07,779 - subtranslate.api.videos - INFO - 现有视频指纹: 34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0, ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:07,779 - subtranslate.api.videos - INFO - 使用退化方案检测到重复上传的视频: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:15,955 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:15,955 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:15,955 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:15,955 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:15,955 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:15,955 - subtranslate.services.video_storage - INFO - 当前实例ID: 2098279393328, 当前存储的视频数量: 1
+2025-05-06 17:21:15,955 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:15,955 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:15,955 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:41,126 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:41,126 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:41,126 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:41,126 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:41,126 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:41,126 - subtranslate.services.video_storage - INFO - 当前实例ID: 2098279393328, 当前存储的视频数量: 1
+2025-05-06 17:21:41,126 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:41,126 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:41,126 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:45,262 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:45,262 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:45,262 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:45,262 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:45,262 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:45,262 - subtranslate.services.video_storage - INFO - 当前实例ID: 2098279393328, 当前存储的视频数量: 1
+2025-05-06 17:21:45,262 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:45,262 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:45,262 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:46,343 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:46,343 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:21:46,343 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:21:46,343 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:46,343 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:21:46,343 - subtranslate.services.video_storage - INFO - 当前实例ID: 2098279393328, 当前存储的视频数量: 1
+2025-05-06 17:21:46,343 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:21:46,343 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:21:46,343 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:30:53,415 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:30:53,415 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1810188642448
+2025-05-06 17:30:53,415 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:30:53,415 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:30:53,415 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:30:53,415 - subtranslate.services.video_storage - INFO - 当前实例ID: 1810188642448, 当前存储的视频数量: 1
+2025-05-06 17:30:53,415 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:30:53,415 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:30:53,415 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:30:53,418 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:30:53,418 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1810188642448
+2025-05-06 17:30:53,418 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:30:53,418 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:30:53,418 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:30:53,418 - subtranslate.services.video_storage - INFO - 当前实例ID: 1810188642448, 当前存储的视频数量: 1
+2025-05-06 17:30:53,418 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:30:53,419 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:30:53,419 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:31:13,275 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:31:13,276 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2098279393328
+2025-05-06 17:31:13,276 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:31:13,276 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:31:13,276 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:31:13,276 - subtranslate.services.video_storage - INFO - 当前实例ID: 2098279393328, 当前存储的视频数量: 1
+2025-05-06 17:31:13,276 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:31:13,276 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:31:13,276 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:24,471 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 17:38:24,471 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 17:38:24,471 - api_server - INFO - 区域设置: cp936
+2025-05-06 17:38:24,471 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 17:38:26,945 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:38:26,946 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2810122661520, 临时目录: ./temp
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:26,947 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:38:26,947 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:38:26,947 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:26,947 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2810122661520
+2025-05-06 17:38:26,947 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:38:26,950 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:38:26,951 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:38:26,951 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1564255448720, 临时目录: ./temp
+2025-05-06 17:38:26,952 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:38:26,952 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:38:26,952 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:38:26,952 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:26,952 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:38:26,952 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:26,952 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:26,952 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:26,952 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:38:26,952 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:38:26,953 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:38:26,953 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 1988391661296, 临时目录: ./temp
+2025-05-06 17:38:26,954 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:38:26,954 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:38:26,954 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:38:26,954 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:26,954 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:38:26,954 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:38:26,954 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:26,954 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 1988391661296
+2025-05-06 17:38:26,954 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:38:26,956 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:38:26,957 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:38:26,958 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2561012248352, 临时目录: ./temp
+2025-05-06 17:38:26,959 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:38:26,959 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:38:26,959 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:38:26,959 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:26,959 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:38:26,959 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2561012248352
+2025-05-06 17:38:26,959 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:26,959 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2561012248352
+2025-05-06 17:38:26,959 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 17:38:30,953 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 17:38:30,954 - subtranslate.api.videos - INFO - 生成的文件指纹: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0
+2025-05-06 17:38:30,954 - subtranslate.api.videos - INFO - 指纹详细信息: {'name': '[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'size': 1460361424, 'mtime': 1742218119.6858208, 'content_hash': '010826185b72b5d0633ebe457ce2303353c3cd1b04ad128334cec3799438bc7d'}
+2025-05-06 17:38:30,956 - subtranslate.api.videos - INFO - 现有视频指纹: 34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0, ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:30,956 - subtranslate.api.videos - INFO - 使用退化方案检测到重复上传的视频: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:30,956 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:38:31,071 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:38:31,071 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:38:31,075 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:38:39,881 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:39,881 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2561012248352
+2025-05-06 17:38:39,881 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:39,881 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:39,881 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:39,881 - subtranslate.services.video_storage - INFO - 当前实例ID: 2561012248352, 当前存储的视频数量: 1
+2025-05-06 17:38:39,881 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:39,881 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:39,881 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:38:39,995 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:38:39,995 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:38:40,000 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:38:40,000 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:45,761 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:45,761 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:45,761 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:45,761 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:45,761 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:45,761 - subtranslate.services.video_storage - INFO - 当前实例ID: 1564255448720, 当前存储的视频数量: 1
+2025-05-06 17:38:45,761 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:45,761 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:45,761 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:38:45,875 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:38:45,875 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:38:45,879 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:38:45,879 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:45,972 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:45,973 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:45,973 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:45,973 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:45,973 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:45,973 - subtranslate.services.video_storage - INFO - 当前实例ID: 1564255448720, 当前存储的视频数量: 1
+2025-05-06 17:38:45,973 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:45,973 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:45,973 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,061 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,061 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:46,061 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:46,061 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,061 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,061 - subtranslate.services.video_storage - INFO - 当前实例ID: 1564255448720, 当前存储的视频数量: 1
+2025-05-06 17:38:46,061 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,061 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,061 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,171 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,171 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1564255448720
+2025-05-06 17:38:46,171 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:46,171 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,171 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,171 - subtranslate.services.video_storage - INFO - 当前实例ID: 1564255448720, 当前存储的视频数量: 1
+2025-05-06 17:38:46,171 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,172 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,172 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,177 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:38:46,178 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,178 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:38:46,178 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,178 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,178 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 字幕轨道不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 661, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="字幕轨道不存在")
+fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
+2025-05-06 17:38:46,275 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:46,275 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:38:46,275 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:46,275 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:46,275 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 字幕轨道不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 661, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="字幕轨道不存在")
+fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
+2025-05-06 17:38:58,551 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:58,551 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:38:58,551 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:38:58,551 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:58,551 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:58,551 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:38:58,551 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:58,551 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:58,551 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:58,645 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:38:58,645 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:38:58,646 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:38:58,646 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:38:58,646 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:38:59,038 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track1.srt
+2025-05-06 17:39:01,286 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:01,286 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:39:01,286 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:01,286 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:01,286 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:01,286 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:01,286 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:01,286 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:01,286 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:01,384 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:01,384 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:01,384 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:01,384 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:01,775 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:39:05,467 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:05,467 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:39:05,467 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:05,467 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:05,467 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:05,467 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:05,467 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:05,467 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:05,467 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:05,557 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:05,557 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:05,557 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:05,557 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:05,948 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track1.srt
+2025-05-06 17:39:07,833 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:07,833 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:39:07,833 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:07,833 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:07,833 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:07,833 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:07,833 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:07,837 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:07,837 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:07,927 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:07,927 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:07,927 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:07,927 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:08,324 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track2.srt
+2025-05-06 17:39:10,088 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:10,088 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 1988391661296
+2025-05-06 17:39:10,088 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:10,088 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:10,088 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:10,088 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:10,088 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:10,088 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:10,088 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:10,179 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:10,179 - subtranslate.services.video_storage - INFO - 当前实例ID: 1988391661296, 当前存储的视频数量: 1
+2025-05-06 17:39:10,179 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:10,180 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:10,571 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:39:21,856 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:21,857 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:21,857 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:21,857 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:21,857 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:21,857 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:21,857 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:21,857 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:21,857 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:39:21,972 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:39:21,972 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:39:21,975 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:39:21,976 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,068 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,068 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:22,068 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:22,068 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,068 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,068 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:22,068 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,068 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,068 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,166 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,166 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:22,166 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:22,166 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,166 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,166 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:22,166 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,166 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,166 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,253 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,253 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:22,253 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:22,253 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,253 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,253 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:22,253 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,253 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,253 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,341 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,341 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:22,341 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,341 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:22,732 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:39:22,824 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:39:22,825 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:22,825 - subtranslate.services.video_storage - INFO - 当前实例ID: 2561012248352, 当前存储的视频数量: 1
+2025-05-06 17:39:22,825 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:22,825 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:23,217 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:39:29,659 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:29,659 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:29,659 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:29,659 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:29,659 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:29,659 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:29,659 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:29,659 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:29,659 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:29,753 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:29,753 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:29,753 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:29,753 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:30,149 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:39:32,397 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:32,397 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2810122661520
+2025-05-06 17:39:32,397 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:32,397 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:32,397 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:32,397 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:32,398 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:32,398 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:32,398 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:32,492 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:32,492 - subtranslate.services.video_storage - INFO - 当前实例ID: 2810122661520, 当前存储的视频数量: 1
+2025-05-06 17:39:32,492 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:32,492 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:32,886 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track1.srt
+2025-05-06 17:39:43,366 - api_server - INFO - 系统默认编码: utf-8
+2025-05-06 17:39:43,366 - api_server - INFO - 文件系统编码: utf-8
+2025-05-06 17:39:43,366 - api_server - INFO - 区域设置: cp936
+2025-05-06 17:39:43,366 - api_server - INFO - 启动API服务器: host=0.0.0.0, port=8000, reload=False, workers=4
+2025-05-06 17:39:45,810 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:39:45,811 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:39:45,811 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2794942557888, 临时目录: ./temp
+2025-05-06 17:39:45,812 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:39:45,812 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:39:45,812 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:39:45,812 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:45,812 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:39:45,812 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2794942557888
+2025-05-06 17:39:45,812 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:45,812 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2794942557888
+2025-05-06 17:39:45,812 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:39:45,819 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:39:45,820 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2466665721440, 临时目录: ./temp
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:45,821 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:39:45,821 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2466665721440
+2025-05-06 17:39:45,822 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:45,822 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2466665721440
+2025-05-06 17:39:45,822 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:39:45,854 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:39:45,854 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:39:45,854 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 3169365520112, 临时目录: ./temp
+2025-05-06 17:39:45,855 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:39:45,855 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:39:45,855 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:39:45,855 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:45,855 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:39:45,855 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 3169365520112
+2025-05-06 17:39:45,855 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:45,855 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 3169365520112
+2025-05-06 17:39:45,855 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:39:45,858 - subtranslate.api - INFO - SubTranslate API服务启动
+2025-05-06 17:39:45,859 - subtranslate.api.dependencies - INFO - 创建新的VideoStorageService实例
+2025-05-06 17:39:45,859 - subtranslate.services.video_storage - INFO - VideoStorageService实例初始化，ID: 2543381049072, 临时目录: ./temp
+2025-05-06 17:39:45,859 - subtranslate.services.video_storage - INFO - 从磁盘加载了 0 个ID映射
+2025-05-06 17:39:45,859 - subtranslate.services.video_storage - WARNING - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，可能需要重新提取
+2025-05-06 17:39:45,859 - subtranslate.services.video_storage - INFO - 从磁盘加载了 1 个视频信息
+2025-05-06 17:39:45,860 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:45,860 - subtranslate.services.video_storage - INFO - 从磁盘加载视频信息完成: temp\video_storage.json
+2025-05-06 17:39:45,860 - subtranslate.api.dependencies - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:45,860 - subtranslate.api.dependencies - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:45,860 - subtranslate.api - INFO - 应用启动时初始化VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:45,860 - subtranslate.api - INFO - 初始视频存储中的视频数量: 1
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - 接收到本地视频加载请求原始数据: {'file_path': 'E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'auto_extract_subtitles': True}
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2466665721440
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - 检测到直接格式请求
+2025-05-06 17:39:49,810 - subtranslate.api.videos - INFO - 处理后的视频加载请求: file_path='E:\\ai_study\\ai_project\\video\\[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv' auto_extract_subtitles=True
+2025-05-06 17:39:49,812 - subtranslate.api.videos - INFO - 生成的文件指纹: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0
+2025-05-06 17:39:49,812 - subtranslate.api.videos - INFO - 指纹详细信息: {'name': '[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv', 'size': 1460361424, 'mtime': 1742218119.6858208, 'content_hash': '010826185b72b5d0633ebe457ce2303353c3cd1b04ad128334cec3799438bc7d'}
+2025-05-06 17:39:49,813 - subtranslate.api.videos - INFO - 现有视频指纹: 34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv_1460361424_010826185b72b5d0, ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:49,813 - subtranslate.api.videos - INFO - 使用退化方案检测到重复上传的视频: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv, 返回现有视频ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:49,813 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:39:49,927 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:39:49,927 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:39:49,931 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:39:57,204 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:57,204 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2466665721440
+2025-05-06 17:39:57,204 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:57,204 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:57,204 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:57,204 - subtranslate.services.video_storage - INFO - 当前实例ID: 2466665721440, 当前存储的视频数量: 1
+2025-05-06 17:39:57,204 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:57,204 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:57,204 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,424 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,425 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:59,425 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:59,425 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,425 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,425 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:39:59,425 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,425 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,425 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:39:59,538 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:39:59,539 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:39:59,539 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:39:59,542 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:39:59,542 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,636 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,637 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:59,637 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:59,637 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,637 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,637 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:39:59,637 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,637 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,637 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,731 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,731 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:59,731 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:59,731 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,731 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,731 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:39:59,731 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,731 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,731 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,848 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:39:59,850 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,850 - subtranslate.services.video_storage - INFO - 当前实例ID: 3169365520112, 当前存储的视频数量: 1
+2025-05-06 17:39:59,850 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,850 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,850 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 字幕轨道不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 661, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="字幕轨道不存在")
+fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
+2025-05-06 17:39:59,851 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,851 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:39:59,851 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:39:59,851 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,851 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,851 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:39:59,851 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,851 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,851 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:39:59,943 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:39:59,943 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:39:59,943 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:39:59,943 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:39:59,943 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:40:00,333 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:41:07,746 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,746 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:07,746 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:07,746 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,746 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,746 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:07,746 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,746 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:07,746 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:07,840 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,841 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:07,841 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:07,841 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,841 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,841 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:07,841 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,841 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:07,841 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:07,932 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,934 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:07,934 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:07,934 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,934 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:07,934 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:07,934 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:07,934 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:07,934 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:08,042 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:08,042 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:08,042 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:08,042 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:08,042 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:08,042 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:08,042 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:08,042 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:08,042 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:08,045 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:08,045 - subtranslate.services.video_storage - INFO - 当前实例ID: 3169365520112, 当前存储的视频数量: 1
+2025-05-06 17:41:08,045 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:08,045 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:08,045 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 字幕轨道不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 661, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="字幕轨道不存在")
+fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
+2025-05-06 17:41:08,132 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:08,132 - subtranslate.services.video_storage - INFO - 当前实例ID: 3169365520112, 当前存储的视频数量: 1
+2025-05-06 17:41:08,132 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:08,132 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:08,132 - subtranslate.api.videos - ERROR - 获取字幕内容失败: 404: 字幕轨道不存在
+Traceback (most recent call last):
+  File "E:\ai_study\ai_project\src\subtranslate\api\routers\videos.py", line 661, in get_video_subtitle_content
+    raise HTTPException(status_code=404, detail="字幕轨道不存在")
+fastapi.exceptions.HTTPException: 404: 字幕轨道不存在
+2025-05-06 17:41:16,874 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:16,874 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2466665721440
+2025-05-06 17:41:16,874 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:16,874 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:16,874 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:16,874 - subtranslate.services.video_storage - INFO - 当前实例ID: 2466665721440, 当前存储的视频数量: 1
+2025-05-06 17:41:16,874 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:16,874 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:16,874 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:16,966 - subtranslate.api.dependencies - INFO - 创建新的SubtitleStorageService实例
+2025-05-06 17:41:16,966 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:16,966 - subtranslate.services.video_storage - INFO - 当前实例ID: 2466665721440, 当前存储的视频数量: 1
+2025-05-06 17:41:16,966 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:16,966 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:17,362 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track1.srt
+2025-05-06 17:41:33,165 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:33,165 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 3169365520112
+2025-05-06 17:41:33,165 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:33,165 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:33,165 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:33,165 - subtranslate.services.video_storage - INFO - 当前实例ID: 3169365520112, 当前存储的视频数量: 1
+2025-05-06 17:41:33,165 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:33,165 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:33,165 - subtranslate.api.videos - INFO - 视频 34da7be1-d408-4ec6-803c-55f358df9e2b 没有字幕轨道信息，尝试提取
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #0: eng, 标题: English, 默认
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #1: spa, 标题: Latin American Spanish
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #2: spa, 标题: European Spanish
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #3: por, 标题: Brazilian Portuguese
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #4: fre, 标题: French
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #5: ger, 标题: German
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #6: ara, 标题: Arabic (Saudi Arabia)
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #7: ita, 标题: Italian
+2025-05-06 17:41:33,282 - subtranslate.core.subtitle_extractor - INFO - 发现字幕轨道: 轨道 #8: rus, 标题: Russian
+2025-05-06 17:41:33,282 - subtranslate.api.videos - INFO - 成功提取到 9 个字幕轨道
+2025-05-06 17:41:33,286 - subtranslate.api.videos - INFO - 已更新视频 34da7be1-d408-4ec6-803c-55f358df9e2b 的字幕轨道信息
+2025-05-06 17:41:33,286 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:33,374 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:33,374 - subtranslate.services.video_storage - INFO - 当前实例ID: 3169365520112, 当前存储的视频数量: 1
+2025-05-06 17:41:33,374 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:33,374 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:33,769 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:41:43,667 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:43,667 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:43,667 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:43,667 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:43,667 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:43,668 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:43,668 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:43,668 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:43,668 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:43,756 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:43,756 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:43,756 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:43,756 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:43,756 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:43,756 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:43,756 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:43,756 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:43,756 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,748 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,748 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:59,748 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:59,748 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,748 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,748 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:59,748 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,748 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,748 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,861 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,861 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:59,861 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:59,861 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,861 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,861 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:59,861 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,861 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,861 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,873 - subtranslate.api.videos - INFO - 获取视频信息，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,873 - subtranslate.api.videos - INFO - VideoStorageService实例ID: 2543381049072
+2025-05-06 17:41:59,873 - subtranslate.api.videos - INFO - 当前存储的视频数量: 1
+2025-05-06 17:41:59,873 - subtranslate.api.videos - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,873 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:41:59,874 - subtranslate.api.videos - INFO - 成功获取视频信息: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 当前实例ID: 2466665721440, 当前存储的视频数量: 1
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:41:59,874 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:42:00,292 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt
+2025-05-06 17:42:00,385 - subtranslate.services.video_storage - INFO - 尝试获取视频，ID: 34da7be1-d408-4ec6-803c-55f358df9e2b
+2025-05-06 17:42:00,385 - subtranslate.services.video_storage - INFO - 当前实例ID: 2543381049072, 当前存储的视频数量: 1
+2025-05-06 17:42:00,385 - subtranslate.services.video_storage - INFO - 当前存储的所有视频ID: ['34da7be1-d408-4ec6-803c-55f358df9e2b']
+2025-05-06 17:42:00,385 - subtranslate.services.video_storage - INFO - 找到视频: 34da7be1-d408-4ec6-803c-55f358df9e2b, 文件名: [Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].mkv
+2025-05-06 17:42:00,790 - subtranslate.core.subtitle_extractor - INFO - 成功从视频提取字幕到: temp\subtitles\34da7be1-d408-4ec6-803c-55f358df9e2b_[Dynamis One] Zenshuu. - 11 (CR 1920x1080 AVC AAC MKV) [6ABB3C56].track0.srt

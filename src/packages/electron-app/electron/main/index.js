@@ -115,7 +115,7 @@ function startPythonBackend() {
         // 监听错误输出
         pythonProcess.stderr.on('data', function (data) {
             console.error(`Python后端错误: ${data}`);
-            
+
             // 检查是否是依赖错误，并发送到前端
             if (data.toString().includes('ImportError') || data.toString().includes('ModuleNotFoundError')) {
                 const errorMsg = data.toString();
@@ -133,10 +133,10 @@ function startPythonBackend() {
             console.log(`Python后端已退出，退出码: ${code}`);
             pythonProcess = null;
             isBackendStarted = false;
-            
+
             // 如果是非正常退出，通知前端
             if (code !== 0 && mainWindow) {
-                mainWindow.webContents.send('backend-stopped', { 
+                mainWindow.webContents.send('backend-stopped', {
                     code: code,
                     error: true,
                     message: '后端服务异常退出，请检查依赖是否正确安装'
@@ -183,21 +183,34 @@ function registerIpcHandlers() {
         });
     }); });
     // 上传本地视频文件
-    ipcMain.handle('upload-video', function (_event, filePath) { return __awaiter(_this, void 0, void 0, function () {
-        var response, responseText, jsonBody, error_1;
+    ipcMain.handle('upload-video', function (_event, filePath, options) { return __awaiter(_this, void 0, void 0, function () {
+        var requestData, jsonBody, response, responseText, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
-                    jsonBody = JSON.stringify({ 
-                        file_path: filePath,  
-                        auto_extract_subtitles: true 
-                    });
+                    // 构建请求数据，包含前端ID
+                    requestData = {
+                        file_path: filePath,
+                        auto_extract_subtitles: true
+                    };
+
+                    // 如果提供了选项，合并到请求数据中
+                    if (options && typeof options === 'object') {
+                        if (options.frontendId) {
+                            requestData.frontend_id = options.frontendId;
+                        }
+                        // 可以添加其他选项
+                    }
+
+                    jsonBody = JSON.stringify(requestData);
+
                     // 打印请求体以便调试
                     console.log('正在发送视频上传请求:', {
                         url: 'http://127.0.0.1:8000/api/videos/upload-local',
                         body: jsonBody,
-                        filePath: filePath
+                        filePath: filePath,
+                        options: options
                     });
                     return [4 /*yield*/, fetch('http://127.0.0.1:8000/api/videos/upload-local', {
                             method: 'POST',
@@ -213,8 +226,8 @@ function registerIpcHandlers() {
                 case 2:
                     responseText = _a.sent();
                     console.error('上传视频请求失败:', response.status, responseText);
-                    return [2 /*return*/, { 
-                        success: false, 
+                    return [2 /*return*/, {
+                        success: false,
                         error: "请求失败: " + response.status + " " + response.statusText,
                         details: responseText
                     }];

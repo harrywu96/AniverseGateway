@@ -6,7 +6,8 @@
 import os
 import logging
 import shutil
-from typing import Optional, Dict, Any
+import hashlib
+from typing import Optional, Dict, Any, Tuple
 from pathlib import Path
 from uuid import uuid4
 
@@ -40,6 +41,59 @@ logger = logging.getLogger("subtranslate.api.videos")
 
 # 创建路由器
 router = APIRouter()
+
+
+def _generate_file_fingerprint(
+    file_path: str, sample_size: int = 1024 * 1024
+) -> Tuple[str, Dict[str, Any]]:
+    """生成文件指纹
+
+    使用文件的元数据和部分内容哈希值生成唯一指纹，用于识别重复上传的视频文件。
+
+    Args:
+        file_path: 文件路径
+        sample_size: 用于计算哈希值的文件头部大小（字节），默认1MB
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: 指纹字符串和指纹详细信息字典
+    """
+    try:
+        path = Path(file_path)
+        if not path.exists():
+            return "", {}
+
+        # 获取文件元数据
+        stat = path.stat()
+        file_size = stat.st_size
+        file_mtime = stat.st_mtime
+        file_name = path.name
+
+        # 计算文件头部的哈希值
+        content_hash = ""
+        try:
+            with open(file_path, "rb") as f:
+                # 读取文件头部
+                content = f.read(min(sample_size, file_size))
+                # 计算SHA-256哈希值
+                content_hash = hashlib.sha256(content).hexdigest()
+        except Exception as e:
+            logger.warning(f"计算文件哈希值失败: {e}")
+
+        # 构建指纹信息
+        fingerprint_info = {
+            "name": file_name,
+            "size": file_size,
+            "mtime": file_mtime,
+            "content_hash": content_hash,
+        }
+
+        # 生成指纹字符串
+        fingerprint = f"{file_name}_{file_size}_{content_hash[:16]}"
+
+        return fingerprint, fingerprint_info
+    except Exception as e:
+        logger.error(f"生成文件指纹失败: {e}")
+        return "", {}
 
 
 # 视频列表响应模型
@@ -338,6 +392,7 @@ async def get_video_info(
     video_id: str,
     config: SystemConfig = Depends(get_system_config),
     video_storage: VideoStorageService = Depends(get_video_storage),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
 ):
     """获取视频信息
 
@@ -347,6 +402,7 @@ async def get_video_info(
         video_id: 视频ID
         config: 系统配置
         video_storage: 视频存储服务
+        extractor: 字幕提取器
 
     Returns:
         VideoDetailResponse: 视频详情响应
@@ -361,8 +417,113 @@ async def get_video_info(
         logger.warning(f"视频不存在，ID: {video_id}")
         raise HTTPException(status_code=404, detail="视频不存在")
 
+    # 检查视频是否包含字幕轨道信息，如果没有则提取
+    if not video_info.subtitle_tracks or len(video_info.subtitle_tracks) == 0:
+        logger.info(f"视频 {video_id} 没有字幕轨道信息，尝试提取")
+        try:
+            # 提取字幕轨道信息
+            subtitle_tracks = await extractor.list_subtitle_tracks(video_info)
+            if subtitle_tracks and len(subtitle_tracks) > 0:
+                video_info.subtitle_tracks = subtitle_tracks
+                logger.info(f"成功提取到 {len(subtitle_tracks)} 个字幕轨道")
+
+                # 查找外挂字幕
+                external_subtitles = await extractor.find_external_subtitles(
+                    video_info
+                )
+                if external_subtitles:
+                    video_info.external_subtitles = external_subtitles
+                    logger.info(
+                        f"成功找到 {len(external_subtitles)} 个外挂字幕"
+                    )
+
+                # 更新存储中的视频信息
+                video_storage.videos[video_id] = video_info
+                logger.info(f"已更新视频 {video_id} 的字幕轨道信息")
+            else:
+                logger.warning(f"未能提取到字幕轨道信息")
+        except Exception as e:
+            logger.error(f"提取字幕轨道信息失败: {e}")
+            # 继续返回视频信息，即使没有字幕轨道
+
     logger.info(
         f"成功获取视频信息: {video_info.id}, 文件名: {video_info.filename}"
+    )
+    return VideoDetailResponse(
+        success=True, message="获取视频信息成功", data=video_info
+    )
+
+
+@router.get(
+    "/by-frontend-id/{frontend_id}",
+    response_model=VideoDetailResponse,
+    tags=["视频管理"],
+)
+async def get_video_by_frontend_id(
+    frontend_id: str,
+    config: SystemConfig = Depends(get_system_config),
+    video_storage: VideoStorageService = Depends(get_video_storage),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
+):
+    """通过前端ID获取视频信息
+
+    使用前端生成的ID查询视频信息，通过ID映射表查找对应的后端ID。
+
+    Args:
+        frontend_id: 前端生成的视频ID
+        config: 系统配置
+        video_storage: 视频存储服务
+        extractor: 字幕提取器
+
+    Returns:
+        VideoDetailResponse: 视频详情响应
+    """
+    logger.info(f"通过前端ID获取视频信息，前端ID: {frontend_id}")
+
+    # 检查VideoStorageService是否支持通过前端ID查询
+    if not hasattr(video_storage, "get_by_frontend_id") or not callable(
+        getattr(video_storage, "get_by_frontend_id")
+    ):
+        logger.warning("VideoStorageService不支持通过前端ID查询")
+        raise HTTPException(status_code=501, detail="不支持通过前端ID查询")
+
+    # 通过前端ID查询视频
+    video_info = video_storage.get_by_frontend_id(frontend_id)
+    if not video_info:
+        logger.warning(f"未找到前端ID对应的视频，前端ID: {frontend_id}")
+        raise HTTPException(status_code=404, detail="未找到前端ID对应的视频")
+
+    # 检查视频是否包含字幕轨道信息，如果没有则提取
+    if not video_info.subtitle_tracks or len(video_info.subtitle_tracks) == 0:
+        logger.info(f"视频 {video_info.id} 没有字幕轨道信息，尝试提取")
+        try:
+            # 提取字幕轨道信息
+            subtitle_tracks = await extractor.list_subtitle_tracks(video_info)
+            if subtitle_tracks and len(subtitle_tracks) > 0:
+                video_info.subtitle_tracks = subtitle_tracks
+                logger.info(f"成功提取到 {len(subtitle_tracks)} 个字幕轨道")
+
+                # 查找外挂字幕
+                external_subtitles = await extractor.find_external_subtitles(
+                    video_info
+                )
+                if external_subtitles:
+                    video_info.external_subtitles = external_subtitles
+                    logger.info(
+                        f"成功找到 {len(external_subtitles)} 个外挂字幕"
+                    )
+
+                # 更新存储中的视频信息
+                video_storage.videos[video_info.id] = video_info
+                logger.info(f"已更新视频 {video_info.id} 的字幕轨道信息")
+            else:
+                logger.warning(f"未能提取到字幕轨道信息")
+        except Exception as e:
+            logger.error(f"提取字幕轨道信息失败: {e}")
+            # 继续返回视频信息，即使没有字幕轨道
+
+    logger.info(
+        f"通过前端ID成功获取视频信息: {video_info.id}, 文件名: {video_info.filename}"
     )
     return VideoDetailResponse(
         success=True, message="获取视频信息成功", data=video_info
@@ -676,38 +837,195 @@ async def upload_local_video(
 
         # 生成文件指纹，用于检测重复上传
         file_path = Path(video_request.file_path)
-        file_size = file_path.stat().st_size
-        file_mtime = file_path.stat().st_mtime
-        file_fingerprint = f"{file_path}_{file_size}_{file_mtime}"
-        logger.info(f"生成的文件指纹: {file_fingerprint}")
+        if not file_path.exists():
+            logger.error(f"文件不存在: {file_path}")
+            raise HTTPException(
+                status_code=404, detail=f"文件不存在: {file_path}"
+            )
+
+        # 使用新的指纹生成函数
+        file_fingerprint, fingerprint_info = _generate_file_fingerprint(
+            str(file_path)
+        )
+        if not file_fingerprint:
+            logger.warning(f"无法生成文件指纹，将继续上传: {file_path}")
+        else:
+            logger.info(f"生成的文件指纹: {file_fingerprint}")
+            logger.info(f"指纹详细信息: {fingerprint_info}")
 
         # 检查是否已经上传过该文件
         for video_id, video in video_storage.videos.items():
             # 生成已存在视频的指纹
             existing_path = Path(video.path)
             if existing_path.exists():
-                existing_size = existing_path.stat().st_size
-                existing_mtime = existing_path.stat().st_mtime
-                existing_fingerprint = (
-                    f"{video.filename}_{existing_size}_{existing_mtime}"
-                )
-                logger.info(
-                    f"现有视频指纹: {existing_fingerprint}, ID: {video_id}"
+                existing_fingerprint, existing_info = (
+                    _generate_file_fingerprint(str(existing_path))
                 )
 
-                # 如果指纹匹配，说明是同一个文件
-                if (
-                    file_path.name == video.filename
-                    and abs(file_size - existing_size) < 1024
-                ):  # 允许1KB的误差
+                if existing_fingerprint:
                     logger.info(
-                        f"检测到重复上传的视频: {file_path.name}, 返回现有视频ID: {video_id}"
+                        f"现有视频指纹: {existing_fingerprint}, ID: {video_id}"
                     )
-                    return VideoDetailResponse(
-                        success=True,
-                        message="视频已存在，返回现有信息",
-                        data=video,
-                    )
+
+                    # 如果文件名相同且内容哈希匹配，认为是同一个文件
+                    if (
+                        file_fingerprint
+                        and existing_fingerprint
+                        and fingerprint_info.get("name")
+                        == existing_info.get("name")
+                        and fingerprint_info.get("content_hash")
+                        == existing_info.get("content_hash")
+                    ):
+
+                        logger.info(
+                            f"检测到重复上传的视频: {file_path.name}, 返回现有视频ID: {video_id}"
+                        )
+
+                        # 如果请求中包含前端ID，添加到映射
+                        if "frontend_id" in video_request_data:
+                            frontend_id = video_request_data["frontend_id"]
+                            if hasattr(
+                                video_storage, "add_id_mapping"
+                            ) and callable(
+                                getattr(video_storage, "add_id_mapping")
+                            ):
+                                video_storage.add_id_mapping(
+                                    frontend_id, video_id
+                                )
+                                logger.info(
+                                    f"添加ID映射: 前端ID {frontend_id} -> 后端ID {video_id}"
+                                )
+
+                        # 检查视频是否包含字幕轨道信息，如果没有则提取
+                        if (
+                            not video.subtitle_tracks
+                            or len(video.subtitle_tracks) == 0
+                        ):
+                            logger.info(
+                                f"视频 {video_id} 没有字幕轨道信息，尝试提取"
+                            )
+                            try:
+                                # 提取字幕轨道信息
+                                subtitle_tracks = (
+                                    await extractor.list_subtitle_tracks(video)
+                                )
+                                if (
+                                    subtitle_tracks
+                                    and len(subtitle_tracks) > 0
+                                ):
+                                    video.subtitle_tracks = subtitle_tracks
+                                    logger.info(
+                                        f"成功提取到 {len(subtitle_tracks)} 个字幕轨道"
+                                    )
+
+                                    # 查找外挂字幕
+                                    external_subtitles = await extractor.find_external_subtitles(
+                                        video
+                                    )
+                                    if external_subtitles:
+                                        video.external_subtitles = (
+                                            external_subtitles
+                                        )
+                                        logger.info(
+                                            f"成功找到 {len(external_subtitles)} 个外挂字幕"
+                                        )
+
+                                    # 更新存储中的视频信息
+                                    video_storage.videos[video_id] = video
+                                    logger.info(
+                                        f"已更新视频 {video_id} 的字幕轨道信息"
+                                    )
+                                else:
+                                    logger.warning(f"未能提取到字幕轨道信息")
+                            except Exception as e:
+                                logger.error(f"提取字幕轨道信息失败: {e}")
+                                # 继续返回视频信息，即使没有字幕轨道
+
+                        return VideoDetailResponse(
+                            success=True,
+                            message="视频已存在，返回现有信息",
+                            data=video,
+                        )
+
+                    # 退化方案：如果内容哈希不可用，使用文件名和大小进行匹配
+                    elif (
+                        file_path.name == video.filename
+                        and abs(
+                            fingerprint_info.get("size", 0)
+                            - existing_info.get("size", 0)
+                        )
+                        < 1024
+                    ):  # 允许1KB的误差
+
+                        logger.info(
+                            f"使用退化方案检测到重复上传的视频: {file_path.name}, 返回现有视频ID: {video_id}"
+                        )
+
+                        # 如果请求中包含前端ID，添加到映射
+                        if "frontend_id" in video_request_data:
+                            frontend_id = video_request_data["frontend_id"]
+                            if hasattr(
+                                video_storage, "add_id_mapping"
+                            ) and callable(
+                                getattr(video_storage, "add_id_mapping")
+                            ):
+                                video_storage.add_id_mapping(
+                                    frontend_id, video_id
+                                )
+                                logger.info(
+                                    f"添加ID映射: 前端ID {frontend_id} -> 后端ID {video_id}"
+                                )
+
+                        # 检查视频是否包含字幕轨道信息，如果没有则提取
+                        if (
+                            not video.subtitle_tracks
+                            or len(video.subtitle_tracks) == 0
+                        ):
+                            logger.info(
+                                f"视频 {video_id} 没有字幕轨道信息，尝试提取"
+                            )
+                            try:
+                                # 提取字幕轨道信息
+                                subtitle_tracks = (
+                                    await extractor.list_subtitle_tracks(video)
+                                )
+                                if (
+                                    subtitle_tracks
+                                    and len(subtitle_tracks) > 0
+                                ):
+                                    video.subtitle_tracks = subtitle_tracks
+                                    logger.info(
+                                        f"成功提取到 {len(subtitle_tracks)} 个字幕轨道"
+                                    )
+
+                                    # 查找外挂字幕
+                                    external_subtitles = await extractor.find_external_subtitles(
+                                        video
+                                    )
+                                    if external_subtitles:
+                                        video.external_subtitles = (
+                                            external_subtitles
+                                        )
+                                        logger.info(
+                                            f"成功找到 {len(external_subtitles)} 个外挂字幕"
+                                        )
+
+                                    # 更新存储中的视频信息
+                                    video_storage.videos[video_id] = video
+                                    logger.info(
+                                        f"已更新视频 {video_id} 的字幕轨道信息"
+                                    )
+                                else:
+                                    logger.warning(f"未能提取到字幕轨道信息")
+                            except Exception as e:
+                                logger.error(f"提取字幕轨道信息失败: {e}")
+                                # 继续返回视频信息，即使没有字幕轨道
+
+                        return VideoDetailResponse(
+                            success=True,
+                            message="视频已存在，返回现有信息",
+                            data=video,
+                        )
 
         # 如果没有找到匹配的视频，正常加载
         logger.info("未找到匹配的视频，开始正常加载")

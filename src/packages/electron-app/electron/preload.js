@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 选择视频文件
     selectVideo: function () { return ipcRenderer.invoke('select-video'); },
     // 上传本地视频文件
-    uploadVideo: function (filePath) { return ipcRenderer.invoke('upload-video', filePath); },
+    uploadVideo: function (filePath, options) { return ipcRenderer.invoke('upload-video', filePath, options); },
     // 监听后端启动事件
     onBackendStarted: function (callback) {
         ipcRenderer.on('backend-started', callback);
