@@ -212,6 +212,15 @@ async def startup_event():
     if config.output_dir:
         os.makedirs(config.output_dir, exist_ok=True)
 
+    # 初始化视频存储服务，确保只有一个实例
+    from .dependencies import get_video_storage
+
+    video_storage = get_video_storage(config)
+    logger.info(
+        f"应用启动时初始化VideoStorageService实例ID: {id(video_storage)}"
+    )
+    logger.info(f"初始视频存储中的视频数量: {len(video_storage.videos)}")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():

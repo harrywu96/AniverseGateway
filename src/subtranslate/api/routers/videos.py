@@ -255,41 +255,70 @@ async def load_video(
         VideoDetailResponse: 视频详情响应
     """
     try:
+        logger.info(f"开始加载视频文件: {request.file_path}")
+        logger.info(f"VideoStorageService实例ID: {id(video_storage)}")
+        logger.info(f"加载前的视频存储数量: {len(video_storage.videos)}")
+        logger.info(
+            f"当前存储的所有视频ID: {list(video_storage.videos.keys())}"
+        )
+
         # 检查文件是否存在
         if not os.path.exists(request.file_path):
+            logger.error(f"视频文件不存在: {request.file_path}")
             raise HTTPException(status_code=404, detail="视频文件不存在")
 
         # 获取文件信息
         file_path = Path(request.file_path)
         file_extension = file_path.suffix.lower().lstrip(".")
+        logger.info(f"文件扩展名: {file_extension}")
 
         # 检查文件格式
         if file_extension not in config.allowed_formats:
+            logger.error(f"不支持的视频格式: {file_extension}")
             raise HTTPException(
                 status_code=400,
                 detail=f"不支持的视频格式: {file_extension}，支持的格式: {config.allowed_formats}",
             )
 
         # 保存到视频存储
+        logger.info(f"开始保存视频到存储: {file_path}")
         video_info = video_storage.save_video(str(file_path), file_path.name)
+        logger.info(f"视频已保存到存储，ID: {video_info.id}")
 
         # 分析视频信息
+        logger.info(f"开始分析视频信息: {video_info.id}")
         video_info = await extractor.analyze_video(video_info)
+        logger.info(
+            f"视频分析完成: {video_info.id}, 时长: {video_info.duration}秒"
+        )
 
         # 如果需要自动提取字幕
         if request.auto_extract_subtitles:
+            logger.info(f"开始提取字幕轨道: {video_info.id}")
             # 提取字幕轨道信息
             subtitle_tracks = await extractor.list_subtitle_tracks(video_info)
             video_info.subtitle_tracks = subtitle_tracks
+            logger.info(f"字幕轨道提取完成，共 {len(subtitle_tracks)} 个轨道")
 
             # 查找外挂字幕
+            logger.info(f"开始查找外挂字幕: {video_info.id}")
             external_subtitles = await extractor.find_external_subtitles(
                 video_info
             )
             video_info.external_subtitles = external_subtitles
+            logger.info(
+                f"外挂字幕查找完成，共 {len(external_subtitles)} 个文件"
+            )
 
         # 更新存储中的视频信息
+        logger.info(f"更新存储中的视频信息: {video_info.id}")
         video_storage.videos[video_info.id] = video_info
+        logger.info(
+            f"视频信息已更新，当前视频数量: {len(video_storage.videos)}"
+        )
+        logger.info(
+            f"当前存储的所有视频ID: {list(video_storage.videos.keys())}"
+        )
 
         return VideoDetailResponse(
             success=True, message="视频加载成功", data=video_info
@@ -322,10 +351,19 @@ async def get_video_info(
     Returns:
         VideoDetailResponse: 视频详情响应
     """
+    logger.info(f"获取视频信息，ID: {video_id}")
+    logger.info(f"VideoStorageService实例ID: {id(video_storage)}")
+    logger.info(f"当前存储的视频数量: {len(video_storage.videos)}")
+    logger.info(f"当前存储的所有视频ID: {list(video_storage.videos.keys())}")
+
     video_info = video_storage.get_video(video_id)
     if not video_info:
+        logger.warning(f"视频不存在，ID: {video_id}")
         raise HTTPException(status_code=404, detail="视频不存在")
 
+    logger.info(
+        f"成功获取视频信息: {video_info.id}, 文件名: {video_info.filename}"
+    )
     return VideoDetailResponse(
         success=True, message="获取视频信息成功", data=video_info
     )
@@ -612,13 +650,20 @@ async def upload_local_video(
     try:
         # 处理请求格式，支持直接和嵌套格式
         logger.info(f"接收到本地视频加载请求原始数据: {request}")
+        logger.info(f"VideoStorageService实例ID: {id(video_storage)}")
+        logger.info(f"当前存储的视频数量: {len(video_storage.videos)}")
+        logger.info(
+            f"当前存储的所有视频ID: {list(video_storage.videos.keys())}"
+        )
 
         if "request" in request:
             # 嵌套格式
             video_request_data = request["request"]
+            logger.info("检测到嵌套格式请求")
         else:
             # 直接格式
             video_request_data = request
+            logger.info("检测到直接格式请求")
 
         # 转换为VideoLoadRequest对象
         video_request = VideoLoadRequest(**video_request_data)
@@ -634,6 +679,7 @@ async def upload_local_video(
         file_size = file_path.stat().st_size
         file_mtime = file_path.stat().st_mtime
         file_fingerprint = f"{file_path}_{file_size}_{file_mtime}"
+        logger.info(f"生成的文件指纹: {file_fingerprint}")
 
         # 检查是否已经上传过该文件
         for video_id, video in video_storage.videos.items():
@@ -644,6 +690,9 @@ async def upload_local_video(
                 existing_mtime = existing_path.stat().st_mtime
                 existing_fingerprint = (
                     f"{video.filename}_{existing_size}_{existing_mtime}"
+                )
+                logger.info(
+                    f"现有视频指纹: {existing_fingerprint}, ID: {video_id}"
                 )
 
                 # 如果指纹匹配，说明是同一个文件
@@ -661,9 +710,24 @@ async def upload_local_video(
                     )
 
         # 如果没有找到匹配的视频，正常加载
-        return await load_video(
+        logger.info("未找到匹配的视频，开始正常加载")
+        response = await load_video(
             video_request, config, extractor, video_storage
         )
+
+        # 记录加载结果
+        if response.success and response.data:
+            logger.info(
+                f"视频加载成功，ID: {response.data.id}, 文件名: {response.data.filename}"
+            )
+            logger.info(f"加载后的视频存储数量: {len(video_storage.videos)}")
+            logger.info(
+                f"当前存储的所有视频ID: {list(video_storage.videos.keys())}"
+            )
+        else:
+            logger.warning(f"视频加载失败: {response.message}")
+
+        return response
     except Exception as e:
         logger.error(f"本地视频加载失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):

@@ -151,6 +151,11 @@ def get_video_storage(
     logger.info("创建新的VideoStorageService实例")
     service = VideoStorageService(config.temp_dir)
     _service_instances["video_storage"] = service
+
+    # 记录实例ID，用于调试
+    logger.info(f"VideoStorageService实例ID: {id(service)}")
+    logger.info(f"当前存储的视频数量: {len(service.videos)}")
+
     return service
 
 
