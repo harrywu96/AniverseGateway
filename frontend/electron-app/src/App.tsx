@@ -27,6 +27,9 @@ import Videos from './pages/Videos';
 import VideoDetail from './pages/VideoDetail';
 import Settings from './pages/Settings';
 
+// 导入Electron API类型定义
+import './electron.d.ts';
+
 // 启动步骤组件
 interface StartupStepProps {
   label: string;
@@ -35,8 +38,8 @@ interface StartupStepProps {
 }
 
 const StartupStep: React.FC<StartupStepProps> = ({ label, status, message }) => {
-  let statusIcon;
-  let statusColor;
+  let statusIcon: React.ReactNode;
+  let statusColor: string;
 
   switch (status) {
     case 'pending':
@@ -106,7 +109,7 @@ const App: React.FC = () => {
         // 设置Python进程启动状态
         setStartupSteps(prev => ({ ...prev, python: 'loading' }));
 
-        const isRunning = await window.electronAPI.checkBackendStatus();
+        const isRunning = await window.electronAPI!.checkBackendStatus();
         if (isRunning) {
           // 后端已启动
           setStartupSteps(prev => ({
@@ -119,7 +122,7 @@ const App: React.FC = () => {
           setLoading(false);
         } else {
           // 等待后端启动消息 - Python进程启动成功
-          const removeListener = window.electronAPI.onBackendStarted(() => {
+          const removeListener = window.electronAPI!.onBackendStarted(() => {
             setStartupSteps(prev => ({
               ...prev,
               python: 'success',
