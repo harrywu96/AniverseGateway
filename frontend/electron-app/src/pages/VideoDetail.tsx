@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -565,24 +565,24 @@ const VideoDetail: React.FC = () => {
   };
 
   // 处理轨道选择变化
-  const handleTrackChange = (event: SelectChangeEvent) => {
+  const handleTrackChange = useCallback((event: SelectChangeEvent) => {
     const trackId = event.target.value;
     const track = video?.subtitleTracks?.find(t => t.id === trackId) || null;
     setSelectedTrack(track);
-  };
+  }, [video]);
 
   // 处理视频时间更新
-  const handleTimeUpdate = (time: number) => {
+  const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
-  };
+  }, []);
 
   // 返回上一页
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigate(-1);
-  };
+  }, [navigate]);
 
   // 格式化时间为 HH:MM:SS.mmm
-  const formatTime = (seconds: number): string => {
+  const formatTime = useCallback((seconds: number): string => {
     const date = new Date(0);
     date.setSeconds(seconds);
     const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
@@ -590,7 +590,133 @@ const VideoDetail: React.FC = () => {
     const secs = String(Math.floor(seconds % 60)).padStart(2, '0');
     const ms = String(Math.floor((seconds % 1) * 1000)).padStart(3, '0');
     return `${hours}:${minutes}:${secs}.${ms}`;
-  };
+  }, []);
+
+  // 保存字幕回调函数
+  const handleSaveSubtitle = useCallback(async (subtitle: SubtitleItem) => {
+    try {
+      if (!video || !selectedTrack) return;
+
+      // 尝试调用后端 API 保存字幕
+      const apiPort = '8000';
+      const videoId = (video as any).backendId || video.id;
+      // 使用轨道的后端索引
+      let trackIndex = 0;
+
+      // 如果轨道有backendIndex属性，直接使用
+      if ((selectedTrack as any).backendIndex !== undefined) {
+        trackIndex = (selectedTrack as any).backendIndex;
+        console.log('使用轨道的backendIndex:', trackIndex);
+      } else {
+        // 否则尝试将轨道ID转换为数字
+        try {
+          const parsedIndex = parseInt(selectedTrack.id);
+          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+            trackIndex = parsedIndex;
+          }
+        } catch (e) {
+          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+        }
+      }
+
+      const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/edit`;
+
+      // 将前端数据转换为后端需要的格式
+      const payload = {
+        index: parseInt(subtitle.id),
+        start_ms: Math.round(subtitle.startTime * 1000),
+        end_ms: Math.round(subtitle.endTime * 1000),
+        text: subtitle.text
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // 更新字幕列表
+          setSubtitles(prev =>
+            prev.map(item => item.id === subtitle.id ? subtitle : item)
+          );
+          return;
+        }
+      }
+
+      // 如果 API 调用失败，回退到模拟保存
+      console.warn('调用保存字幕API失败，使用模拟保存');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSubtitles(prev =>
+        prev.map(item => item.id === subtitle.id ? subtitle : item)
+      );
+    } catch (error) {
+      console.error('保存字幕失败:', error);
+      // 模拟保存成功
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSubtitles(prev =>
+        prev.map(item => item.id === subtitle.id ? subtitle : item)
+      );
+    }
+  }, [video, selectedTrack]);
+
+  // 删除字幕回调函数
+  const handleDeleteSubtitle = useCallback(async (id: string) => {
+    try {
+      if (!video || !selectedTrack) return;
+
+      // 尝试调用后端 API 删除字幕
+      const apiPort = '8000';
+      const videoId = (video as any).backendId || video.id;
+      // 使用轨道的后端索引
+      let trackIndex = 0;
+
+      // 如果轨道有backendIndex属性，直接使用
+      if ((selectedTrack as any).backendIndex !== undefined) {
+        trackIndex = (selectedTrack as any).backendIndex;
+        console.log('使用轨道的backendIndex:', trackIndex);
+      } else {
+        // 否则尝试将轨道ID转换为数字
+        try {
+          const parsedIndex = parseInt(selectedTrack.id);
+          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+            trackIndex = parsedIndex;
+          }
+        } catch (e) {
+          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+        }
+      }
+
+      const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/delete/${id}`;
+
+      const response = await fetch(url, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // 更新字幕列表
+          setSubtitles(prev => prev.filter(item => item.id !== id));
+          return;
+        }
+      }
+
+      // 如果 API 调用失败，回退到模拟删除
+      console.warn('调用删除字幕API失败，使用模拟删除');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSubtitles(prev => prev.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('删除字幕失败:', error);
+      // 模拟删除成功
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSubtitles(prev => prev.filter(item => item.id !== id));
+    }
+  }, [video, selectedTrack]);
 
   if (!video) {
     return (
@@ -691,128 +817,8 @@ const VideoDetail: React.FC = () => {
                 currentTime={currentTime}
                 loading={loading}
                 error={error}
-                onSave={async (subtitle) => {
-                  try {
-                    if (!video || !selectedTrack) return;
-
-                    // 尝试调用后端 API 保存字幕
-                    const apiPort = '8000';
-                    const videoId = (video as any).backendId || video.id;
-                    // 使用轨道的后端索引
-                    let trackIndex = 0;
-
-                    // 如果轨道有backendIndex属性，直接使用
-                    if ((selectedTrack as any).backendIndex !== undefined) {
-                      trackIndex = (selectedTrack as any).backendIndex;
-                      console.log('使用轨道的backendIndex:', trackIndex);
-                    } else {
-                      // 否则尝试将轨道ID转换为数字
-                      try {
-                        const parsedIndex = parseInt(selectedTrack.id);
-                        if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                          trackIndex = parsedIndex;
-                        }
-                      } catch (e) {
-                        console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                      }
-                    }
-
-                    const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/edit`;
-
-                    // 将前端数据转换为后端需要的格式
-                    const payload = {
-                      index: parseInt(subtitle.id),
-                      start_ms: Math.round(subtitle.startTime * 1000),
-                      end_ms: Math.round(subtitle.endTime * 1000),
-                      text: subtitle.text
-                    };
-
-                    const response = await fetch(url, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      if (result.success) {
-                        // 更新字幕列表
-                        setSubtitles(prev =>
-                          prev.map(item => item.id === subtitle.id ? subtitle : item)
-                        );
-                        return;
-                      }
-                    }
-
-                    // 如果 API 调用失败，回退到模拟保存
-                    console.warn('调用保存字幕API失败，使用模拟保存');
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    setSubtitles(prev =>
-                      prev.map(item => item.id === subtitle.id ? subtitle : item)
-                    );
-                  } catch (error) {
-                    console.error('保存字幕失败:', error);
-                    // 模拟保存成功
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    setSubtitles(prev =>
-                      prev.map(item => item.id === subtitle.id ? subtitle : item)
-                    );
-                  }
-                }}
-                onDelete={async (id) => {
-                  try {
-                    if (!video || !selectedTrack) return;
-
-                    // 尝试调用后端 API 删除字幕
-                    const apiPort = '8000';
-                    const videoId = (video as any).backendId || video.id;
-                    // 使用轨道的后端索引
-                    let trackIndex = 0;
-
-                    // 如果轨道有backendIndex属性，直接使用
-                    if ((selectedTrack as any).backendIndex !== undefined) {
-                      trackIndex = (selectedTrack as any).backendIndex;
-                      console.log('使用轨道的backendIndex:', trackIndex);
-                    } else {
-                      // 否则尝试将轨道ID转换为数字
-                      try {
-                        const parsedIndex = parseInt(selectedTrack.id);
-                        if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                          trackIndex = parsedIndex;
-                        }
-                      } catch (e) {
-                        console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                      }
-                    }
-
-                    const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/delete/${id}`;
-
-                    const response = await fetch(url, {
-                      method: 'DELETE'
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      if (result.success) {
-                        // 更新字幕列表
-                        setSubtitles(prev => prev.filter(item => item.id !== id));
-                        return;
-                      }
-                    }
-
-                    // 如果 API 调用失败，回退到模拟删除
-                    console.warn('调用删除字幕API失败，使用模拟删除');
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    setSubtitles(prev => prev.filter(item => item.id !== id));
-                  } catch (error) {
-                    console.error('删除字幕失败:', error);
-                    // 模拟删除成功
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    setSubtitles(prev => prev.filter(item => item.id !== id));
-                  }
-                }}
+                onSave={handleSaveSubtitle}
+                onDelete={handleDeleteSubtitle}
               />
             </Box>
 

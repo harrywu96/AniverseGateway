@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Box,
   Paper,
@@ -18,6 +18,7 @@ import {
   Delete as DeleteIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
+import { binarySearch } from '../utils/performanceUtils';
 
 // 字幕项接口
 export interface SubtitleItem {
@@ -36,6 +37,105 @@ interface SubtitleEditorProps {
   onDelete?: (id: string) => Promise<void>;
 }
 
+// 单独的字幕项组件，使用memo优化渲染性能
+interface SubtitleItemProps {
+  subtitle: SubtitleItem;
+  isActive: boolean;
+  onEdit: (subtitle: SubtitleItem) => void;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+  isSaving: boolean;
+  formatTime: (seconds: number) => string;
+}
+
+const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
+  subtitle,
+  isActive,
+  onEdit,
+  onDelete,
+  isDeleting,
+  isSaving,
+  formatTime
+}) => {
+  return (
+    <Paper
+      sx={{
+        p: 2,
+        mb: 1,
+        position: 'relative',
+        bgcolor: isActive
+          ? 'rgba(144, 202, 249, 0.2)'
+          : 'background.paper'
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="caption">
+          {formatTime(subtitle.startTime)} - {formatTime(subtitle.endTime)}
+        </Typography>
+        <Box>
+          <IconButton
+            size="small"
+            onClick={() => onEdit(subtitle)}
+            disabled={isSaving || isDeleting}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => onDelete(subtitle.id)}
+            disabled={isSaving || isDeleting || isDeleting}
+          >
+            {isDeleting ? (
+              <CircularProgress size={20} />
+            ) : (
+              <DeleteIcon fontSize="small" />
+            )}
+          </IconButton>
+        </Box>
+      </Box>
+      <Typography variant="body1">{subtitle.text}</Typography>
+    </Paper>
+  );
+});
+
+// 字幕列表组件，使用memo优化渲染性能
+interface SubtitleListProps {
+  subtitles: SubtitleItem[];
+  activeSubtitles: Map<string, boolean>;
+  onEdit: (subtitle: SubtitleItem) => void;
+  onDelete: (id: string) => void;
+  deletingId: string | null;
+  savingId: string | null;
+  formatTime: (seconds: number) => string;
+}
+
+const SubtitleList: React.FC<SubtitleListProps> = memo(({
+  subtitles,
+  activeSubtitles,
+  onEdit,
+  onDelete,
+  deletingId,
+  savingId,
+  formatTime
+}) => {
+  return (
+    <>
+      {subtitles.map((subtitle) => (
+        <SubtitleItemComponent
+          key={subtitle.id}
+          subtitle={subtitle}
+          isActive={!!activeSubtitles.get(subtitle.id)}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isDeleting={deletingId === subtitle.id}
+          isSaving={!!savingId}
+          formatTime={formatTime}
+        />
+      ))}
+    </>
+  );
+});
+
 const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   subtitles,
   currentTime,
@@ -50,19 +150,19 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // 打开编辑对话框
-  const handleEdit = (subtitle: SubtitleItem) => {
+  const handleEdit = useCallback((subtitle: SubtitleItem) => {
     setEditingSubtitle({ ...subtitle });
     setDialogOpen(true);
-  };
+  }, []);
 
   // 关闭编辑对话框
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
     setEditingSubtitle(null);
-  };
+  }, []);
 
   // 保存编辑的字幕
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!editingSubtitle || !onSave) return;
 
     try {
@@ -75,10 +175,10 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
     } finally {
       setSavingId(null);
     }
-  };
+  }, [editingSubtitle, onSave]);
 
   // 删除字幕
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!onDelete) return;
 
     try {
@@ -89,7 +189,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
     } finally {
       setDeletingId(null);
     }
-  };
+  }, [onDelete]);
 
   // 更新编辑中的字幕文本
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,14 +234,35 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   };
 
   // 将秒数格式化为时间字符串 (HH:MM:SS.mmm)
-  const formatTime = (seconds: number): string => {
+  const formatTime = useCallback((seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
     const ms = Math.floor((seconds % 1) * 1000);
 
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-  };
+  }, []);
+
+  // 使用二分查找快速找到当前时间对应的字幕
+  const activeSubtitles = useMemo(() => {
+    // 创建一个映射，记录每个字幕是否处于活动状态
+    const activeMap = new Map<string, boolean>();
+
+    // 使用二分查找找到第一个结束时间大于当前时间的字幕
+    const index = binarySearch(subtitles, (item) => item.endTime >= currentTime);
+
+    if (index !== -1) {
+      // 从找到的位置开始，向后检查几个字幕
+      for (let i = index; i < subtitles.length && i < index + 5; i++) {
+        const subtitle = subtitles[i];
+        if (currentTime >= subtitle.startTime && currentTime <= subtitle.endTime) {
+          activeMap.set(subtitle.id, true);
+        }
+      }
+    }
+
+    return activeMap;
+  }, [subtitles, currentTime]);
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -160,46 +281,15 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
             没有可用的字幕
           </Typography>
         ) : (
-          subtitles.map((subtitle) => (
-            <Paper
-              key={subtitle.id}
-              sx={{
-                p: 2,
-                mb: 1,
-                position: 'relative',
-                bgcolor: currentTime >= subtitle.startTime && currentTime <= subtitle.endTime
-                  ? 'rgba(144, 202, 249, 0.2)'
-                  : 'background.paper'
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="caption">
-                  {formatTime(subtitle.startTime)} - {formatTime(subtitle.endTime)}
-                </Typography>
-                <Box>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(subtitle)}
-                    disabled={!!savingId || !!deletingId}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(subtitle.id)}
-                    disabled={!!savingId || !!deletingId || deletingId === subtitle.id}
-                  >
-                    {deletingId === subtitle.id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <DeleteIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </Box>
-              </Box>
-              <Typography variant="body1">{subtitle.text}</Typography>
-            </Paper>
-          ))
+          <SubtitleList
+            subtitles={subtitles}
+            activeSubtitles={activeSubtitles}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            deletingId={deletingId}
+            savingId={savingId}
+            formatTime={formatTime}
+          />
         )}
       </Box>
 
@@ -265,4 +355,5 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   );
 };
 
-export default SubtitleEditor;
+// 使用React.memo包装组件，避免不必要的重新渲染
+export default memo(SubtitleEditor);

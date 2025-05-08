@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Box, Slider, IconButton, Typography, Paper } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -7,6 +7,7 @@ import {
   VolumeOff as VolumeOffIcon,
   Fullscreen as FullscreenIcon
 } from '@mui/icons-material';
+import { throttle } from '../utils/performanceUtils';
 
 interface VideoPlayerProps {
   src: string;
@@ -87,6 +88,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
     };
   }, [src]);
 
+  // 创建节流版本的时间更新处理函数
+  const throttledTimeUpdate = useCallback(
+    throttle((time: number) => {
+      setCurrentTime(time);
+      onTimeUpdate && onTimeUpdate(time);
+    }, 100), // 100ms的节流时间，可以根据需要调整
+    [onTimeUpdate]
+  );
+
   // 监听视频时间更新
   useEffect(() => {
     const video = videoRef.current;
@@ -94,8 +104,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
 
     const handleTimeUpdate = () => {
       if (!seeking) {
-        setCurrentTime(video.currentTime);
-        onTimeUpdate && onTimeUpdate(video.currentTime);
+        throttledTimeUpdate(video.currentTime);
       }
     };
 
@@ -103,7 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
-  }, [seeking, onTimeUpdate]);
+  }, [seeking, throttledTimeUpdate]);
 
   // 播放/暂停切换
   const handlePlayPause = () => {
@@ -119,25 +128,32 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
   };
 
   // 进度条拖动
-  const handleSeek = (_event: Event, newValue: number | number[]) => {
+  const handleSeek = useCallback((_event: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
 
     const seekTime = typeof newValue === 'number' ? newValue : newValue[0];
     video.currentTime = seekTime;
+
+    // 在拖动过程中只更新本地状态，不触发外部更新
     setCurrentTime(seekTime);
-    onTimeUpdate && onTimeUpdate(seekTime);
-  };
+  }, []);
 
   // 开始拖动
-  const handleSeekStart = () => {
+  const handleSeekStart = useCallback(() => {
     setSeeking(true);
-  };
+  }, []);
 
   // 结束拖动
-  const handleSeekEnd = () => {
+  const handleSeekEnd = useCallback(() => {
     setSeeking(false);
-  };
+
+    // 拖动结束后，手动触发一次时间更新，确保外部状态同步
+    const video = videoRef.current;
+    if (video && onTimeUpdate) {
+      onTimeUpdate(video.currentTime);
+    }
+  }, [onTimeUpdate]);
 
   // 音量调节
   const handleVolumeChange = (_event: Event, newValue: number | number[]) => {
@@ -264,4 +280,5 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
   );
 };
 
-export default VideoPlayer;
+// 使用React.memo包装组件，避免不必要的重新渲染
+export default memo(VideoPlayer);
