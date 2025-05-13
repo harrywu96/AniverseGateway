@@ -50,9 +50,8 @@ class LineTranslateRequest(BaseModel):
         None, description="上下文内容"
     )
     glossary: Optional[Dict[str, str]] = Field(None, description="术语表")
-    ai_provider: Optional[AIProviderType] = Field(
-        None, description="AI服务提供商"
-    )
+    provider: Optional[str] = Field(None, description="AI服务提供商")
+    model: Optional[str] = Field(None, description="使用的模型")
     template_name: Optional[str] = Field(None, description="提示模板名称")
 
 
@@ -63,6 +62,15 @@ class SectionTranslateRequest(BaseModel):
     lines: List[Dict[str, Any]] = Field(..., description="字幕行列表")
     source_language: str = Field(default="en", description="源语言")
     target_language: str = Field(default="zh", description="目标语言")
+    style: TranslationStyle = Field(
+        default=TranslationStyle.NATURAL, description="翻译风格"
+    )
+    provider: Optional[str] = Field(None, description="AI服务提供商")
+    model: Optional[str] = Field(None, description="使用的模型")
+    context_preservation: bool = Field(
+        default=True, description="保持上下文一致性"
+    )
+    preserve_formatting: bool = Field(default=True, description="保留原格式")
     config: Optional[TranslationConfig] = Field(None, description="翻译配置")
 
 
@@ -171,8 +179,32 @@ async def translate_line(
 
         # 使用用户指定的AI提供商或默认配置
         ai_service_config = config.ai_service
-        if request.ai_provider:
-            ai_service_config.provider = request.ai_provider
+
+        # 处理提供商选择
+        if request.provider:
+            try:
+                # 尝试将字符串转换为枚举类型
+                provider_enum = AIProviderType(request.provider)
+                ai_service_config.provider = provider_enum
+            except ValueError:
+                # 如果不是标准提供商，可能是自定义提供商
+                logger.warning(
+                    f"未知的提供商类型: {request.provider}，使用默认提供商"
+                )
+
+        # 处理模型选择
+        if request.model:
+            # 根据当前提供商类型更新模型
+            if (
+                ai_service_config.provider == AIProviderType.OLLAMA
+                and ai_service_config.ollama
+            ):
+                ai_service_config.ollama.model = request.model
+            elif (
+                ai_service_config.provider == AIProviderType.LOCAL
+                and ai_service_config.local
+            ):
+                ai_service_config.local.model = request.model
 
         # 获取模板
         template = None
@@ -263,9 +295,158 @@ async def translate_section(
         TranslateResponse: 翻译响应
     """
     try:
-        # 这是一个更复杂的功能，需要处理多行字幕和上下文
-        # 由于实现复杂，目前返回未实现错误
-        raise HTTPException(status_code=501, detail="功能未实现")
+        # 准备翻译服务
+        service_translator = translator.service_translator
+
+        # 使用用户指定的AI提供商或默认配置
+        ai_service_config = config.ai_service
+
+        # 处理提供商选择
+        if request.provider:
+            try:
+                # 尝试将字符串转换为枚举类型
+                provider_enum = AIProviderType(request.provider)
+                ai_service_config.provider = provider_enum
+            except ValueError:
+                # 如果不是标准提供商，可能是自定义提供商
+                logger.warning(
+                    f"未知的提供商类型: {request.provider}，使用默认提供商"
+                )
+
+        # 处理模型选择
+        if request.model:
+            # 根据当前提供商类型更新模型
+            if (
+                ai_service_config.provider == AIProviderType.OLLAMA
+                and ai_service_config.ollama
+            ):
+                ai_service_config.ollama.model = request.model
+            elif (
+                ai_service_config.provider == AIProviderType.LOCAL
+                and ai_service_config.local
+            ):
+                ai_service_config.local.model = request.model
+
+        # 提取字幕文本和元数据
+        subtitles = []
+        for line in request.lines:
+            subtitle_id = line.get("id", "")
+            text = line.get("text", "")
+            start_time = line.get("start_time", "")
+            end_time = line.get("end_time", "")
+
+            if not text:
+                continue
+
+            subtitles.append(
+                {
+                    "id": subtitle_id,
+                    "text": text,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }
+            )
+
+        if not subtitles:
+            return TranslateResponse(
+                success=False,
+                message="没有有效的字幕行需要翻译",
+                data=None,
+            )
+
+        # 准备翻译配置
+        translation_config = TranslationConfig(
+            source_language=request.source_language,
+            target_language=request.target_language,
+            style=request.style,
+            context_preservation=request.context_preservation,
+            preserve_formatting=request.preserve_formatting,
+        )
+
+        # 如果使用配置中的设置
+        if request.config:
+            translation_config = request.config
+
+        # 构建上下文
+        context_texts = []
+        for subtitle in subtitles:
+            context_texts.append(subtitle["text"])
+
+        combined_text = "\n".join(context_texts)
+
+        # 优化文本以减少token使用量（如果包含HTML标签或格式标记）
+        clean_text, format_tokens = SRTOptimizer.extract_text_and_format(
+            combined_text
+        )
+
+        # 仅当文本存在格式标记时才使用优化版本
+        has_formatting = any(
+            token_type == "tag" for token_type, _ in format_tokens
+        )
+        text_to_translate = clean_text if has_formatting else combined_text
+
+        # 执行翻译
+        result = await service_translator.translate_text(
+            text=text_to_translate,
+            source_language=request.source_language,
+            target_language=request.target_language,
+            style=request.style,
+            with_details=True,
+        )
+
+        translated_text = result.get("translated_text", "")
+
+        # 如果原文有格式，恢复格式
+        if has_formatting:
+            translated_text = SRTOptimizer.apply_translation_to_tokens(
+                format_tokens, translated_text
+            )
+
+        # 将翻译结果拆分回多行
+        translated_lines = translated_text.split("\n")
+
+        # 确保翻译行数与原始行数匹配
+        if len(translated_lines) != len(subtitles):
+            logger.warning(
+                f"翻译行数({len(translated_lines)})与原始行数({len(subtitles)})不匹配，尝试调整"
+            )
+
+            # 如果翻译行数少于原始行数，补充空行
+            while len(translated_lines) < len(subtitles):
+                translated_lines.append("")
+
+            # 如果翻译行数多于原始行数，截断多余行
+            if len(translated_lines) > len(subtitles):
+                translated_lines = translated_lines[: len(subtitles)]
+
+        # 构建翻译结果
+        translated_subtitles = []
+        for i, subtitle in enumerate(subtitles):
+            if i < len(translated_lines):
+                translated_subtitles.append(
+                    {
+                        "id": subtitle["id"],
+                        "original_text": subtitle["text"],
+                        "translated_text": translated_lines[i],
+                        "start_time": subtitle["start_time"],
+                        "end_time": subtitle["end_time"],
+                    }
+                )
+
+        # 返回翻译结果
+        return TranslateResponse(
+            success=True,
+            message="翻译成功",
+            data={
+                "translated_subtitles": translated_subtitles,
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "style": request.style,
+                "model_used": result.get("model_used", ""),
+                "provider": str(ai_service_config.provider),
+                "details": result.get("details", {}),
+            },
+        )
 
     except Exception as e:
         logger.error(f"翻译字幕片段失败: {e}", exc_info=True)

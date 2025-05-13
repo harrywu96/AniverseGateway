@@ -95,6 +95,103 @@ class SubtitleChunk(BaseModel):
     context_after: List[SubtitleLine] = []
 
 
+class ServiceTranslator:
+    """服务翻译器，负责与AI服务通信进行翻译"""
+
+    def __init__(self, ai_service):
+        """初始化服务翻译器
+
+        Args:
+            ai_service: AI服务实例
+        """
+        self.ai_service = ai_service
+
+    async def translate_text(
+        self,
+        text: str,
+        source_language: str,
+        target_language: str,
+        style: TranslationStyle = TranslationStyle.NATURAL,
+        context: Optional[List[Dict[str, str]]] = None,
+        glossary: Optional[Dict[str, str]] = None,
+        template: Optional[PromptTemplate] = None,
+        with_details: bool = False,
+    ) -> Dict[str, Any]:
+        """翻译文本
+
+        Args:
+            text: 待翻译文本
+            source_language: 源语言
+            target_language: 目标语言
+            style: 翻译风格
+            context: 上下文
+            glossary: 术语表
+            template: 提示模板
+            with_details: 是否返回详细信息
+
+        Returns:
+            Dict[str, Any]: 翻译结果
+        """
+        # 获取提供商类型
+        provider_type = self.ai_service.config.provider.value
+
+        # 准备系统提示
+        system_prompt = (
+            "你是一个专业的翻译助手，精通多种语言。"
+            f"请将以下{get_language_name(source_language)}文本翻译成{get_language_name(target_language)}。"
+            "翻译应该准确、自然，符合目标语言的表达习惯。"
+        )
+
+        # 准备用户提示
+        user_prompt = f"请将以下文本从{get_language_name(source_language)}翻译成{get_language_name(target_language)}：\n\n{text}"
+
+        # 如果有术语表，添加到提示中
+        if glossary and len(glossary) > 0:
+            glossary_text = "\n".join(
+                [
+                    f"{term} -> {translation}"
+                    for term, translation in glossary.items()
+                ]
+            )
+            user_prompt = f"请将以下文本从{get_language_name(source_language)}翻译成{get_language_name(target_language)}。\n\n请使用以下术语表进行翻译：\n{glossary_text}\n\n文本：\n{text}"
+
+        # 如果有上下文，添加到提示中
+        if context and len(context) > 0:
+            context_text = "\n".join(
+                [f"- {item.get('text', '')}" for item in context]
+            )
+            user_prompt = f"请将以下文本从{get_language_name(source_language)}翻译成{get_language_name(target_language)}。\n\n上下文信息：\n{context_text}\n\n文本：\n{text}"
+
+        # 调用AI服务进行翻译
+        try:
+            response = await self.ai_service.chat_completion(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+            )
+
+            # 构建结果
+            result = {
+                "translated_text": response.strip(),
+                "model_used": getattr(self.ai_service, "model", "unknown"),
+                "provider": provider_type,
+            }
+
+            # 如果需要详细信息
+            if with_details:
+                result["details"] = {
+                    "source_language": source_language,
+                    "target_language": target_language,
+                    "style": style.value,
+                    "token_count": await self.ai_service.get_token_count(text),
+                }
+
+            return result
+
+        except Exception as e:
+            logger.error(f"翻译失败: {e}")
+            raise
+
+
 class SubtitleTranslator:
     """字幕翻译器，负责将SRT字幕翻译为目标语言"""
 
@@ -110,6 +207,7 @@ class SubtitleTranslator:
             template_dir: 提示模板目录，默认为None
         """
         self.ai_service = AIServiceFactory.create_service(ai_service_config)
+        self.service_translator = ServiceTranslator(self.ai_service)
         self.template_dir = template_dir
         self.default_templates: Dict[str, PromptTemplate] = (
             self._load_default_templates()
@@ -135,16 +233,15 @@ class SubtitleTranslator:
                 description="适用于一般场景的字幕翻译",
                 system_prompt=(
                     "你是一个专业的视频字幕翻译助手，"
-                    "精通{source_language}和{target_language}，并且非常了解日本动漫。"
-                    "你的任务是考虑日本动漫的表达方式，"
-                    "将字幕从{source_language}翻译成带有二次元风格的{target_language}。"
-                    "请参考日本动漫中的日常交流，翻译结果自然、生动、符合中文的语言习惯。"
-                    "尽可能的忠于原文，保留原文的表达方式。"
+                    "精通{source_language}和{target_language}。"
+                    "你的任务是将字幕从{source_language}翻译成{target_language}。"
+                    "翻译结果应自然、生动、符合{target_language}的语言习惯。"
+                    "尽可能的忠于原文，保留原文的表达方式和情感。"
                 ),
                 user_prompt=(
                     "请将以下字幕从{source_language}翻译成{target_language}，"
                     "保持{style}风格。\n\n"
-                    # "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
+                    "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请严格保留字幕的格式，只翻译字幕内容，不要翻译序号、字幕开始时间帧、字幕结束时间帧，这对我非常重要。"
                     "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
                     "请不要翻译，这是字幕的格式控制手段。"
@@ -160,6 +257,28 @@ class SubtitleTranslator:
                     "现在请翻译这段字幕：\n{subtitle_text}"
                 ),
                 is_default=True,
+            ),
+            "ollama": PromptTemplate(
+                name="Ollama模型翻译",
+                description="适用于Ollama本地模型的字幕翻译",
+                system_prompt=(
+                    "你是一个专业的视频字幕翻译助手，"
+                    "精通{source_language}和{target_language}。"
+                    "你的任务是将字幕从{source_language}翻译成{target_language}。"
+                    "翻译结果应自然、生动、符合{target_language}的语言习惯。"
+                ),
+                user_prompt=(
+                    "请将以下字幕从{source_language}翻译成{target_language}，保持{style}风格。\n\n"
+                    "请严格按照以下格式输出翻译结果：\n"
+                    "序号. 翻译内容\n\n"
+                    "例如输入：\n"
+                    "1. hello everyone\n\n"
+                    "2. today is a good day\n\n"
+                    "输出：\n"
+                    "1. 大家好\n\n"
+                    "2. 今天是个好日子\n\n"
+                    "现在请翻译这段字幕：\n{subtitle_text}"
+                ),
             ),
             "literal": PromptTemplate(
                 name="直译风格",
@@ -448,17 +567,24 @@ class SubtitleTranslator:
             except ValueError:
                 template = self.get_template()
         else:
-            # 根据风格选择内置模板
-            style_template_map = {
-                TranslationStyle.LITERAL: "literal",
-                TranslationStyle.NATURAL: "standard",
-                TranslationStyle.COLLOQUIAL: "colloquial",
-                TranslationStyle.FORMAL: "formal",
-            }
-            template_name = style_template_map.get(
-                task.config.style, "standard"
-            )
-            template = self.get_template(template_name)
+            # 根据提供商和风格选择内置模板
+            provider_type = self.ai_service.config.provider.value
+
+            # 如果是Ollama提供商，使用Ollama专用模板
+            if provider_type == "ollama":
+                template = self.get_template("ollama")
+            else:
+                # 根据风格选择内置模板
+                style_template_map = {
+                    TranslationStyle.LITERAL: "literal",
+                    TranslationStyle.NATURAL: "standard",
+                    TranslationStyle.COLLOQUIAL: "colloquial",
+                    TranslationStyle.FORMAL: "formal",
+                }
+                template_name = style_template_map.get(
+                    task.config.style, "standard"
+                )
+                template = self.get_template(template_name)
 
         print("!!!!!template:", template)
 
@@ -733,3 +859,54 @@ class SubtitleTranslator:
             f.write("\n".join(lines))
 
         return output_path
+
+    def get_available_templates(self) -> Dict[str, PromptTemplate]:
+        """获取所有可用的提示模板
+
+        Returns:
+            Dict[str, PromptTemplate]: 所有可用的提示模板字典
+        """
+        # 合并默认模板和自定义模板
+        templates = {**self.default_templates, **self.custom_templates}
+        return templates
+
+    async def translate_line(
+        self,
+        text: str,
+        config,
+        provider=None,
+    ) -> str:
+        """翻译单行文本
+
+        Args:
+            text: 待翻译文本
+            config: 翻译配置
+            provider: AI服务提供商
+
+        Returns:
+            str: 翻译后的文本
+        """
+        # 如果指定了提供商，创建新的服务实例
+        if provider and provider != self.ai_service.config.provider:
+            from ..schemas.config import AIServiceConfig
+
+            temp_config = AIServiceConfig(provider=provider)
+            temp_service = AIServiceFactory.create_service(
+                provider.value, temp_config
+            )
+            translator = ServiceTranslator(temp_service)
+        else:
+            translator = self.service_translator
+
+        # 执行翻译
+        result = await translator.translate_text(
+            text=text,
+            source_language=config.source_language,
+            target_language=config.target_language,
+            style=config.style,
+            context=config.context,
+            glossary=config.glossary,
+            with_details=False,
+        )
+
+        return result.get("translated_text", "")

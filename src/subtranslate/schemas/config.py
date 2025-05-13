@@ -50,6 +50,7 @@ class ModelCapability(str, Enum):
     IMAGE = "image"  # 图像生成能力
     AUDIO = "audio"  # 音频处理能力
     VISION = "vision"  # 图像理解能力
+    TRANSLATION = "translation"  # 翻译能力
 
 
 class BaseAIConfig(BaseModel):
@@ -252,8 +253,12 @@ class LocalModelConfig(BaseAIConfig):
     api_key: Optional[SecretStr] = Field(None, description="API密钥（可选）")
     base_url: str = Field(..., description="API基础URL")
     model: str = Field(default="default", description="使用的模型")
+    model_path: Optional[str] = Field(None, description="模型文件路径")
+    model_type: str = Field(default="gguf", description="模型类型")
     max_tokens: int = Field(default=4096, description="最大token数")
     temperature: float = Field(default=0.3, description="温度参数")
+    top_p: Optional[float] = Field(default=0.7, description="Top P参数")
+    top_k: Optional[int] = Field(default=40, description="Top K参数")
     format_type: FormatType = Field(
         default=FormatType.OPENAI, description="API请求/响应格式"
     )
@@ -540,8 +545,12 @@ class SystemConfig(BaseModel):
                 ),
                 base_url=os.getenv("LOCAL_BASE_URL", ""),
                 model=os.getenv("LOCAL_MODEL", "default"),
+                model_path=os.getenv("LOCAL_MODEL_PATH"),
+                model_type=os.getenv("LOCAL_MODEL_TYPE", "gguf"),
                 max_tokens=int(os.getenv("LOCAL_MAX_TOKENS", "4096")),
                 temperature=float(os.getenv("LOCAL_TEMPERATURE", "0.3")),
+                top_p=float(os.getenv("LOCAL_TOP_P", "0.7")),
+                top_k=int(os.getenv("LOCAL_TOP_K", "40")),
                 format_type=FormatType(
                     os.getenv("LOCAL_FORMAT_TYPE", "openai")
                 ),

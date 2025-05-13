@@ -1136,10 +1136,12 @@ class AIServiceFactory:
         elif provider_type == AIProviderType.GEMINI.value:
             return GeminiService(config)
         elif provider_type == AIProviderType.OLLAMA.value:
-            # 这里需要实现Ollama服务，但暂时不实现
-            raise ValueError(f"暂不支持的服务提供商: {provider_type}")
+            from .ollama_service import OllamaService
+
+            return OllamaService(config)
         elif provider_type == AIProviderType.LOCAL.value:
-            # 这里需要实现Local服务，但暂时不实现
-            raise ValueError(f"暂不支持的服务提供商: {provider_type}")
+            from .local_model_service import LocalModelService
+
+            return LocalModelService(config)
         else:
             raise ValueError(f"不支持的服务提供商: {provider_type}")

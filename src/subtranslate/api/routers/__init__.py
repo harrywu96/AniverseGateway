@@ -11,3 +11,4 @@ from . import export
 from . import templates
 from . import config
 from . import providers  # 添加新的providers路由
+from . import models  # 添加新的models路由
