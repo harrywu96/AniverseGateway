@@ -25,6 +25,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Videos from './pages/Videos';
 import VideoDetail from './pages/VideoDetail';
+import VideoDetailWithTranslation from './pages/VideoDetailWithTranslation';
 import Settings from './pages/Settings';
 
 // 导入Electron API类型定义
@@ -403,6 +404,7 @@ const App: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/videos" element={<Videos />} />
         <Route path="/videos/:id" element={<VideoDetail />} />
+        <Route path="/videos/:id/translate" element={<VideoDetailWithTranslation />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

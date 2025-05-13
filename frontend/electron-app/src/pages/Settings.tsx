@@ -21,11 +21,21 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Tabs,
+  Tab,
 } from '@mui/material';
-import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import { LANGUAGE_OPTIONS, TRANSLATION_STYLES, AIProvider, AIModel } from '@subtranslate/shared';
-import { getProviders, getProviderModels } from '../services/api';
+import { Add as AddIcon, Refresh as RefreshIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import {
+  LANGUAGE_OPTIONS,
+  TRANSLATION_STYLES,
+  DEFAULT_PROVIDERS,
+  AIProvider,
+  AIModel
+} from '../shared';
+import { getProviders, getProviderModels, getLocalModels, getOllamaConfig } from '../services/api';
 import CustomProviderDialog from '../components/CustomProviderDialog';
+import LocalModelDialog from '../components/LocalModelDialog';
+import OllamaDialog from '../components/OllamaDialog';
 import ProviderList from '../components/ProviderList';
 import ProviderDetail from '../components/ProviderDetail';
 
@@ -53,6 +63,17 @@ const Settings: React.FC = () => {
   const [loadingModels, setLoadingModels] = useState(false);
   const [customProviderDialogOpen, setCustomProviderDialogOpen] = useState(false);
   const [customProviderToEdit, setCustomProviderToEdit] = useState<any>(null);
+
+  // 本地模型设置
+  const [localModels, setLocalModels] = useState<any[]>([]);
+  const [localModelDialogOpen, setLocalModelDialogOpen] = useState(false);
+  const [localModelToEdit, setLocalModelToEdit] = useState<any>(null);
+  const [loadingLocalModels, setLoadingLocalModels] = useState(false);
+
+  // Ollama设置
+  const [ollamaConfig, setOllamaConfig] = useState<any>(null);
+  const [ollamaDialogOpen, setOllamaDialogOpen] = useState(false);
+  const [loadingOllamaConfig, setLoadingOllamaConfig] = useState(false);
 
   // Faster-Whisper 设置
   const [modelPath, setModelPath] = useState('');
@@ -205,6 +226,10 @@ const Settings: React.FC = () => {
     };
 
     loadSettings();
+
+    // 加载本地模型和Ollama配置
+    fetchLocalModels();
+    fetchOllamaConfig();
   }, []);
 
   const handleSave = async () => {
@@ -308,6 +333,59 @@ const Settings: React.FC = () => {
     }
   };
 
+  // 加载本地模型列表
+  const fetchLocalModels = async () => {
+    setLoadingLocalModels(true);
+    try {
+      const response = await getLocalModels();
+      if (response.success && response.data) {
+        setLocalModels(response.data.models || []);
+      } else {
+        setStatusMessage({
+          message: response.message || '获取本地模型列表失败',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setStatusMessage({
+        message: `获取本地模型列表出错: ${errorMessage}`,
+        type: 'error'
+      });
+    } finally {
+      setLoadingLocalModels(false);
+    }
+  };
+
+  // 加载Ollama配置
+  const fetchOllamaConfig = async () => {
+    setLoadingOllamaConfig(true);
+    try {
+      const response = await getOllamaConfig();
+      if (response.success && response.data) {
+        setOllamaConfig(response.data);
+      } else {
+        // 如果没有配置，设置默认值
+        setOllamaConfig({
+          base_url: 'http://localhost:11434',
+          model: '',
+          api_key: ''
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('获取Ollama配置出错:', errorMessage);
+      // 设置默认值
+      setOllamaConfig({
+        base_url: 'http://localhost:11434',
+        model: '',
+        api_key: ''
+      });
+    } finally {
+      setLoadingOllamaConfig(false);
+    }
+  };
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
@@ -336,6 +414,13 @@ const Settings: React.FC = () => {
               onAddProvider={() => {
                 setCustomProviderToEdit(null);
                 setCustomProviderDialogOpen(true);
+              }}
+              onAddLocalModel={() => {
+                setLocalModelToEdit(null);
+                setLocalModelDialogOpen(true);
+              }}
+              onConfigureOllama={() => {
+                setOllamaDialogOpen(true);
               }}
               onRefreshProviders={fetchProviders}
               loading={loadingProviders}
@@ -388,6 +473,34 @@ const Settings: React.FC = () => {
           setCustomProviderToEdit(null);
         }}
         editProvider={customProviderToEdit || (selectedProvider === 'custom' ? providers.find(p => p.id === 'custom') : undefined)}
+      />
+
+      {/* 本地模型对话框 */}
+      <LocalModelDialog
+        open={localModelDialogOpen}
+        onClose={() => {
+          setLocalModelDialogOpen(false);
+          setLocalModelToEdit(null);
+        }}
+        onSave={() => {
+          fetchLocalModels();
+          setLocalModelDialogOpen(false);
+          setLocalModelToEdit(null);
+        }}
+        editModel={localModelToEdit}
+      />
+
+      {/* Ollama配置对话框 */}
+      <OllamaDialog
+        open={ollamaDialogOpen}
+        onClose={() => {
+          setOllamaDialogOpen(false);
+        }}
+        onSave={() => {
+          fetchOllamaConfig();
+          setOllamaDialogOpen(false);
+        }}
+        initialConfig={ollamaConfig}
       />
 
       <Paper sx={{ p: 3, mb: 4 }}>

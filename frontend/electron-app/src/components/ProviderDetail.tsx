@@ -33,7 +33,7 @@ import {
   Close as CloseIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { AIProvider, AIModel } from '@subtranslate/shared';
+import { AIProvider, AIModel } from '../shared';
 import { testProvider, updateProvider, getProviderModels, deleteCustomModel, getProviderDetails, deleteCustomProvider } from '../services/api';
 import { maskApiKey } from '../utils/apiUtils';
 

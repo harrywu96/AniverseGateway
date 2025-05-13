@@ -500,3 +500,239 @@ export async function getProviderDetails(providerId: string): Promise<ApiRespons
     throw error;
   }
 }
+
+/**
+ * 获取本地模型列表
+ */
+export async function getLocalModels() {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/models/local`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`获取本地模型列表失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('获取本地模型列表失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误',
+      data: { models: [] }
+    };
+  }
+}
+
+/**
+ * 测试本地模型连接
+ */
+export async function testLocalModel(serviceUrl: string, modelName?: string) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/models/local/test`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        service_url: serviceUrl,
+        model: modelName
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`测试本地模型连接失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('测试本地模型连接失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 保存本地模型配置
+ */
+export async function saveLocalModel(modelConfig: any) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/models/local`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(modelConfig)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`保存本地模型配置失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('保存本地模型配置失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 获取Ollama配置
+ */
+export async function getOllamaConfig() {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/config/ollama`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`获取Ollama配置失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('获取Ollama配置失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误',
+      data: null
+    };
+  }
+}
+
+/**
+ * 保存Ollama配置
+ */
+export async function saveOllamaConfig(config: any) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/config/ollama`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(config)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`保存Ollama配置失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('保存Ollama配置失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 翻译单行字幕
+ */
+export async function translateSubtitleLine(request: any) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/translate/line`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`翻译失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('翻译单行字幕失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 翻译字幕文件
+ */
+export async function translateSubtitleFile(request: any) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/translate/file`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`翻译失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('翻译字幕文件失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 获取所有模型列表
+ */
+export async function getAllModels() {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/models`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`获取模型列表失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('获取模型列表失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误',
+      data: { models: [] }
+    };
+  }
+}

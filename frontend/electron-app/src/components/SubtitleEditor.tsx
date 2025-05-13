@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import {
   Box,
   Paper,
@@ -16,7 +16,8 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Delete as DeleteIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Translate as TranslateIcon
 } from '@mui/icons-material';
 import { binarySearch } from '../utils/performanceUtils';
 
@@ -26,6 +27,8 @@ export interface SubtitleItem {
   startTime: number;
   endTime: number;
   text: string;
+  translated?: string; // 添加翻译结果字段
+  translating?: boolean; // 添加翻译中状态字段
 }
 
 interface SubtitleEditorProps {
@@ -35,6 +38,8 @@ interface SubtitleEditorProps {
   error?: string | null;
   onSave?: (subtitle: SubtitleItem) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onTranslate?: (id: string, config: any) => Promise<void>; // 添加翻译回调
+  translationConfig?: any; // 添加翻译配置
 }
 
 // 单独的字幕项组件，使用memo优化渲染性能
@@ -42,6 +47,7 @@ interface SubtitleItemProps {
   subtitle: SubtitleItem;
   isActive: boolean;
   onEdit: (subtitle: SubtitleItem) => void;
+  onTranslate?: (subtitle: SubtitleItem) => void; // 添加翻译回调
   onDelete: (id: string) => void;
   isDeleting: boolean;
   isSaving: boolean;
@@ -53,6 +59,7 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
   isActive,
   onEdit,
   onDelete,
+  onTranslate,
   isDeleting,
   isSaving,
   formatTime
@@ -76,14 +83,14 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
           <IconButton
             size="small"
             onClick={() => onEdit(subtitle)}
-            disabled={isSaving || isDeleting}
+            disabled={isSaving || isDeleting || subtitle.translating}
           >
             <EditIcon fontSize="small" />
           </IconButton>
           <IconButton
             size="small"
             onClick={() => onDelete(subtitle.id)}
-            disabled={isSaving || isDeleting || isDeleting}
+            disabled={isSaving || isDeleting || subtitle.translating}
           >
             {isDeleting ? (
               <CircularProgress size={20} />
@@ -91,9 +98,43 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
               <DeleteIcon fontSize="small" />
             )}
           </IconButton>
+          {/* 添加翻译按钮 */}
+          {onTranslate && (
+            <IconButton
+              size="small"
+              onClick={() => onTranslate(subtitle)}
+              disabled={subtitle.translating}
+              color={subtitle.translated ? "primary" : "default"}
+            >
+              {subtitle.translating ? (
+                <CircularProgress size={20} />
+              ) : (
+                <TranslateIcon fontSize="small" />
+              )}
+            </IconButton>
+          )}
         </Box>
       </Box>
       <Typography variant="body1">{subtitle.text}</Typography>
+
+      {/* 显示翻译结果 */}
+      {subtitle.translated && (
+        <Box sx={{
+          width: '100%',
+          mt: 1,
+          p: 1,
+          bgcolor: 'action.hover',
+          borderRadius: 1,
+          borderLeft: '3px solid #1976d2'
+        }}>
+          <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            翻译:
+          </Typography>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+            {subtitle.translated}
+          </Typography>
+        </Box>
+      )}
     </Paper>
   );
 });
@@ -104,6 +145,7 @@ interface SubtitleListProps {
   activeSubtitles: Map<string, boolean>;
   onEdit: (subtitle: SubtitleItem) => void;
   onDelete: (id: string) => void;
+  onTranslate?: (subtitle: SubtitleItem) => void; // 添加翻译回调
   deletingId: string | null;
   savingId: string | null;
   formatTime: (seconds: number) => string;
@@ -114,6 +156,7 @@ const SubtitleList: React.FC<SubtitleListProps> = memo(({
   activeSubtitles,
   onEdit,
   onDelete,
+  onTranslate,
   deletingId,
   savingId,
   formatTime
@@ -127,6 +170,7 @@ const SubtitleList: React.FC<SubtitleListProps> = memo(({
           isActive={!!activeSubtitles.get(subtitle.id)}
           onEdit={onEdit}
           onDelete={onDelete}
+          onTranslate={onTranslate}
           isDeleting={deletingId === subtitle.id}
           isSaving={!!savingId}
           formatTime={formatTime}
@@ -142,8 +186,22 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   loading = false,
   error = null,
   onSave,
-  onDelete
+  onDelete,
+  onTranslate,
+  translationConfig
 }) => {
+  // 添加翻译处理函数
+  const handleTranslate = useCallback(async (subtitle: SubtitleItem) => {
+    if (!translationConfig || !onTranslate) return;
+
+    try {
+      // 直接调用翻译API，状态更新由父组件处理
+      await onTranslate(subtitle.id, translationConfig);
+    } catch (error) {
+      console.error('翻译失败:', error);
+      // 错误处理由父组件完成
+    }
+  }, [onTranslate, translationConfig]);
   const [editingSubtitle, setEditingSubtitle] = useState<SubtitleItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -286,6 +344,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
             activeSubtitles={activeSubtitles}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onTranslate={onTranslate ? handleTranslate : undefined}
             deletingId={deletingId}
             savingId={savingId}
             formatTime={formatTime}

@@ -14,8 +14,13 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import { AIProvider } from '@subtranslate/shared';
+import {
+  Add as AddIcon,
+  Refresh as RefreshIcon,
+  Computer as ComputerIcon,
+  Terminal as TerminalIcon
+} from '@mui/icons-material';
+import { AIProvider } from '../shared';
 
 interface ProviderListProps {
   providers: AIProvider[];
@@ -23,6 +28,8 @@ interface ProviderListProps {
   onSelectProvider: (providerId: string) => void;
   onAddProvider: () => void;
   onRefreshProviders: () => void;
+  onAddLocalModel?: () => void;
+  onConfigureOllama?: () => void;
   loading: boolean;
 }
 
@@ -32,6 +39,8 @@ const ProviderList: React.FC<ProviderListProps> = ({
   onSelectProvider,
   onAddProvider,
   onRefreshProviders,
+  onAddLocalModel,
+  onConfigureOllama,
   loading,
 }) => {
   // 获取提供商头像
@@ -39,7 +48,18 @@ const ProviderList: React.FC<ProviderListProps> = ({
     if (provider.logo_url) {
       return <Avatar src={provider.logo_url} alt={provider.name} />;
     }
-    
+
+    // 根据提供商类型设置不同的颜色
+    let bgColor = '#1976d2'; // 默认蓝色
+
+    if (provider.id === 'custom' || provider.id.startsWith('custom-')) {
+      bgColor = '#f50057'; // 自定义提供商使用粉色
+    } else if (provider.id === 'local') {
+      bgColor = '#4caf50'; // 本地模型使用绿色
+    } else if (provider.id === 'ollama') {
+      bgColor = '#ff9800'; // Ollama使用橙色
+    }
+
     // 如果没有logo，使用首字母作为头像
     const initials = provider.name
       .split(' ')
@@ -47,9 +67,9 @@ const ProviderList: React.FC<ProviderListProps> = ({
       .join('')
       .toUpperCase()
       .substring(0, 2);
-    
+
     return (
-      <Avatar sx={{ bgcolor: provider.id === 'custom' ? '#f50057' : '#1976d2' }}>
+      <Avatar sx={{ bgcolor: bgColor }}>
         {initials}
       </Avatar>
     );
@@ -68,7 +88,7 @@ const ProviderList: React.FC<ProviderListProps> = ({
         </Box>
       </Box>
       <Divider />
-      
+
       <List sx={{ flexGrow: 1, overflow: 'auto', p: 1 }}>
         {providers.map((provider) => (
           <ListItem
@@ -113,9 +133,9 @@ const ProviderList: React.FC<ProviderListProps> = ({
           </ListItem>
         ))}
       </List>
-      
+
       <Divider />
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Button
           fullWidth
           variant="outlined"
@@ -125,6 +145,32 @@ const ProviderList: React.FC<ProviderListProps> = ({
         >
           添加提供商
         </Button>
+
+        {onAddLocalModel && (
+          <Button
+            fullWidth
+            variant="outlined"
+            color="success"
+            startIcon={<ComputerIcon />}
+            onClick={onAddLocalModel}
+            disabled={loading}
+          >
+            添加本地模型
+          </Button>
+        )}
+
+        {onConfigureOllama && (
+          <Button
+            fullWidth
+            variant="outlined"
+            color="warning"
+            startIcon={<TerminalIcon />}
+            onClick={onConfigureOllama}
+            disabled={loading}
+          >
+            配置Ollama
+          </Button>
+        )}
       </Box>
     </Paper>
   );

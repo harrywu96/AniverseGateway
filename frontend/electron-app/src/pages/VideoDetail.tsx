@@ -17,6 +17,7 @@ import {
   SelectChangeEvent
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import TranslateIcon from '@mui/icons-material/Translate';
 import { useAppContext } from '../context/AppContext';
 import { VideoInfo, SubtitleTrack } from '@subtranslate/shared';
 import VideoPlayer from '../components/VideoPlayer';
@@ -847,6 +848,21 @@ const VideoDetail: React.FC = () => {
                   sx={{ mr: 1 }}
                 >
                   导出字幕
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  disabled={!selectedTrack}
+                  sx={{ mr: 1 }}
+                  startIcon={<TranslateIcon />}
+                  onClick={() => {
+                    if (video && id) {
+                      navigate(`/videos/${id}/translate`);
+                    }
+                  }}
+                >
+                  翻译字幕
                 </Button>
 
                 <Button
