@@ -28,6 +28,7 @@ import { Add as AddIcon, Refresh as RefreshIcon, Delete as DeleteIcon } from '@m
 import {
   LANGUAGE_OPTIONS,
   TRANSLATION_STYLES,
+  TRANSLATION_SERVICE_TYPES,
   DEFAULT_PROVIDERS,
   AIProvider,
   AIModel
@@ -50,6 +51,7 @@ const Settings: React.FC = () => {
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('zh');
   const [defaultStyle, setDefaultStyle] = useState('natural');
+  const [translationServiceType, setTranslationServiceType] = useState('network_provider');
   const [darkMode, setDarkMode] = useState(true);
 
   // AI 服务设置
@@ -209,6 +211,7 @@ const Settings: React.FC = () => {
             if (settings.sourceLanguage) setSourceLanguage(settings.sourceLanguage);
             if (settings.targetLanguage) setTargetLanguage(settings.targetLanguage);
             if (settings.defaultStyle) setDefaultStyle(settings.defaultStyle);
+            if (settings.translationServiceType) setTranslationServiceType(settings.translationServiceType);
             if (settings.darkMode !== undefined) setDarkMode(settings.darkMode);
             if (settings.apiKey) setApiKey(settings.apiKey);
             if (settings.baseUrl) setBaseUrl(settings.baseUrl);
@@ -244,6 +247,7 @@ const Settings: React.FC = () => {
           sourceLanguage,
           targetLanguage,
           defaultStyle,
+          translationServiceType,
           darkMode,
           apiKey,
           baseUrl,
@@ -608,6 +612,29 @@ const Settings: React.FC = () => {
         <Divider sx={{ mb: 3 }} />
 
         <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <FormControl component="fieldset" sx={{ mb: 2 }}>
+              <FormLabel component="legend">翻译服务选择</FormLabel>
+              <RadioGroup
+                value={translationServiceType}
+                onChange={(e) => setTranslationServiceType(e.target.value)}
+                row
+              >
+                {TRANSLATION_SERVICE_TYPES.map((type) => (
+                  <FormControlLabel
+                    key={type.id}
+                    value={type.id}
+                    control={<Radio />}
+                    label={type.name}
+                  />
+                ))}
+              </RadioGroup>
+              <Typography variant="caption" color="text.secondary">
+                {TRANSLATION_SERVICE_TYPES.find(t => t.id === translationServiceType)?.description}
+              </Typography>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="source-lang-label">源语言</InputLabel>

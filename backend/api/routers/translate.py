@@ -58,6 +58,10 @@ class LineTranslateRequest(BaseModel):
         None, description="AI服务提供商"
     )
     template_name: Optional[str] = Field(None, description="提示模板名称")
+    service_type: Optional[str] = Field(
+        default="network_provider",
+        description="翻译服务类型，可选值：network_provider, local_ollama",
+    )
 
 
 # 片段翻译请求模型
@@ -86,6 +90,10 @@ class FileTranslateRequest(BaseModel):
     chunk_size: int = Field(default=30, description="字幕分块大小（单位：条）")
     context_window: int = Field(
         default=3, description="上下文窗口大小（单位：条）"
+    )
+    service_type: Optional[str] = Field(
+        default="network_provider",
+        description="翻译服务类型，可选值：network_provider, local_ollama",
     )
 
 
@@ -175,8 +183,19 @@ async def translate_line(
 
         # 使用用户指定的AI提供商或默认配置
         ai_service_config = config.ai_service
-        if request.ai_provider:
-            ai_service_config.provider = request.ai_provider
+
+        # 根据service_type选择不同的翻译服务
+        if request.service_type == "local_ollama":
+            # 使用Ollama服务
+            ai_service_config.provider = AIProviderType.OLLAMA
+            logger.info("使用本地Ollama模型进行翻译")
+        elif request.service_type == "network_provider":
+            # 使用网络翻译服务
+            if request.ai_provider:
+                ai_service_config.provider = request.ai_provider
+            logger.info(
+                f"使用网络翻译服务进行翻译: {ai_service_config.provider}"
+            )
 
         # 获取模板
         template = None
@@ -336,6 +355,17 @@ async def translate_file(
             f.write(content)
 
         logger.info(f"字幕文件已保存: {temp_file_path}")
+
+        # 根据service_type选择不同的翻译服务
+        if request_data.service_type == "local_ollama":
+            # 使用Ollama服务
+            config.ai_service.provider = AIProviderType.OLLAMA
+            logger.info("使用本地Ollama模型进行翻译")
+        elif request_data.service_type == "network_provider":
+            # 使用网络翻译服务
+            logger.info(
+                f"使用网络翻译服务进行翻译: {config.ai_service.provider}"
+            )
 
         # 创建任务
         task = SubtitleTranslator.create_task(

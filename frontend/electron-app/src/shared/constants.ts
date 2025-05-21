@@ -83,9 +83,18 @@ export const DEFAULT_PROVIDERS = [
 ];
 
 /**
+ * 翻译服务类型
+ */
+export const TRANSLATION_SERVICE_TYPES = [
+  { id: 'network_provider', name: '网络翻译服务', description: '使用在线AI服务进行翻译' },
+  { id: 'local_ollama', name: '本地Ollama模型', description: '使用本地Ollama模型进行翻译' },
+];
+
+/**
  * 默认的翻译配置
  */
 export const DEFAULT_TRANSLATION_CONFIG = {
+  serviceType: 'network_provider',  // 添加默认服务类型
   provider: 'siliconflow',
   model: '',
   sourceLanguage: 'en',

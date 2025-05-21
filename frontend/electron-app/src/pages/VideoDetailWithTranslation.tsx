@@ -17,12 +17,15 @@ import {
   DialogContent,
   DialogActions,
   LinearProgress,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Radio,
+  RadioGroup,
+  FormControlLabel
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import TranslateIcon from '@mui/icons-material/Translate';
 import { useAppContext } from '../context/AppContext';
-import { VideoInfo, SubtitleTrack } from '../shared';
+import { VideoInfo, SubtitleTrack, TRANSLATION_SERVICE_TYPES } from '../shared';
 import VideoPlayer from '../components/VideoPlayer';
 import SubtitleEditor, { SubtitleItem } from '../components/SubtitleEditor';
 import TranslationConfig from '../components/TranslationConfig';
@@ -44,6 +47,7 @@ const VideoDetailWithTranslation: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
 
   // 翻译相关状态
+  const [translationServiceType, setTranslationServiceType] = useState('network_provider');
   const [translationConfig, setTranslationConfig] = useState<any>({
     provider: 'siliconflow',
     model: '',
@@ -58,6 +62,24 @@ const VideoDetailWithTranslation: React.FC = () => {
   // 错误提示状态
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusSeverity, setStatusSeverity] = useState<'error' | 'success' | 'info' | 'warning'>('error');
+
+  // 加载设置
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        if (window.electronAPI) {
+          const settings = await window.electronAPI.getSettings();
+          if (settings && settings.translationServiceType) {
+            setTranslationServiceType(settings.translationServiceType);
+          }
+        }
+      } catch (error) {
+        console.error('加载翻译服务设置出错:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // 加载视频信息
   useEffect(() => {
@@ -211,7 +233,8 @@ const VideoDetailWithTranslation: React.FC = () => {
         target_language: config.targetLanguage,
         style: config.style,
         preserve_formatting: true,
-        context_preservation: true
+        context_preservation: true,
+        service_type: translationServiceType // 添加服务类型
       };
 
       // 添加重试逻辑
@@ -305,7 +328,8 @@ const VideoDetailWithTranslation: React.FC = () => {
         target_language: translationConfig.targetLanguage,
         style: translationConfig.style,
         preserve_formatting: true,
-        context_preservation: true
+        context_preservation: true,
+        service_type: translationServiceType // 添加服务类型
       };
 
       // 添加重试逻辑
@@ -501,6 +525,29 @@ const VideoDetailWithTranslation: React.FC = () => {
               ))}
             </Select>
           </FormControl>
+
+          {/* 翻译服务类型选择 */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ mr: 2 }}>
+              当前翻译服务：
+            </Typography>
+            <FormControl component="fieldset" size="small">
+              <RadioGroup
+                value={translationServiceType}
+                onChange={(e) => setTranslationServiceType(e.target.value)}
+                row
+              >
+                {TRANSLATION_SERVICE_TYPES.map((type) => (
+                  <FormControlLabel
+                    key={type.id}
+                    value={type.id}
+                    control={<Radio size="small" />}
+                    label={type.name}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </Box>
         </Box>
 
         <Divider />

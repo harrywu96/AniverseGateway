@@ -654,12 +654,18 @@ export async function translateSubtitleLine(request: any) {
     const apiPort = '8000';
     const url = `http://localhost:${apiPort}/api/translate/line`;
 
+    // 确保请求中包含服务类型
+    const requestWithServiceType = {
+      ...request,
+      service_type: request.service_type || 'network_provider'
+    };
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(requestWithServiceType)
     });
 
     if (!response.ok) {
@@ -685,12 +691,18 @@ export async function translateSubtitleFile(request: any) {
     const apiPort = '8000';
     const url = `http://localhost:${apiPort}/api/translate/file`;
 
+    // 确保请求中包含服务类型
+    const requestWithServiceType = {
+      ...request,
+      service_type: request.service_type || 'network_provider'
+    };
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(requestWithServiceType)
     });
 
     if (!response.ok) {
