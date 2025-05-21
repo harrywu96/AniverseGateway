@@ -37,6 +37,7 @@ from .routers import (
     config as config_router,
     providers,  # 添加新的providers路由
     speech_to_text,  # 添加speech_to_text路由
+    models,  # 添加models路由
 )
 
 
@@ -131,6 +132,11 @@ def get_app() -> FastAPI:
     app.include_router(
         providers.router,
         prefix="/api/providers",
+        dependencies=[Depends(verify_api_key)],
+    )
+    app.include_router(
+        models.router,
+        prefix="/api/models",
         dependencies=[Depends(verify_api_key)],
     )
     app.include_router(speech_to_text.router)  # 注册speech_to_text路由

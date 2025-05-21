@@ -40,6 +40,8 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
   const [modelLoading, setModelLoading] = useState(false);
   const [error, setError] = useState('');
   const [testResult, setTestResult] = useState<any>(null);
+  const [customModelName, setCustomModelName] = useState('');
+  const [serviceAvailable, setServiceAvailable] = useState(false);
 
   // 当对话框打开时，加载配置
   useEffect(() => {
@@ -79,7 +81,96 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
   const fetchOllamaModels = async () => {
     try {
       setModelLoading(true);
-      // 这里我们使用testProvider来获取模型列表
+      setError('');
+
+      // 首先检查Ollama服务是否可用
+      try {
+        // 简单的服务可用性检查
+        const checkResponse = await fetch(`${baseUrl}/api/tags`, {
+          method: 'GET',
+          headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {},
+          // 设置较短的超时时间，以便快速检测服务是否可用
+          signal: AbortSignal.timeout(3000)
+        });
+
+        if (!checkResponse.ok) {
+          throw new Error(`服务返回错误: ${checkResponse.status}`);
+        }
+
+        // 如果服务可用，获取模型列表
+        const data = await checkResponse.json();
+
+        if (data && data.models) {
+          // 直接从Ollama API获取模型列表
+          const modelList = data.models.map((model: any) => ({
+            id: model.name,
+            name: model.name
+          }));
+
+          setModels(modelList);
+
+          // 如果没有选择模型且有可用模型，选择第一个
+          if (!selectedModel && modelList.length > 0) {
+            setSelectedModel(modelList[0].id);
+          }
+
+          // 清除错误信息
+          setError('');
+          // 更新服务可用性状态
+          setServiceAvailable(true);
+          return;
+        }
+      } catch (checkError: any) {
+        // 如果服务不可用，显示错误信息
+        console.error('Ollama服务检查失败:', checkError);
+        setError(`本地Ollama服务未启动或无法访问: ${checkError.message || '未知错误'}。请确保Ollama服务已启动并可访问。`);
+
+        // 更新服务可用性状态
+        setServiceAvailable(false);
+
+        // 尝试通过后端API获取模型列表
+        try {
+          // 使用新实现的API端点
+          const apiPort = '8000';
+          const url = `http://localhost:${apiPort}/api/models`;
+          const response = await fetch(url);
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data && result.data.models) {
+              const modelList = result.data.models.map((model: any) => ({
+                id: model.id || model.name,
+                name: model.name
+              }));
+
+              setModels(modelList);
+
+              // 如果没有选择模型且有可用模型，选择第一个
+              if (!selectedModel && modelList.length > 0) {
+                setSelectedModel(modelList[0].id);
+              }
+
+              // 更新错误信息，但仍然保持服务不可用状态
+              setError('已从后端获取模型列表，但Ollama服务仍然不可访问。请确保Ollama服务已启动。');
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.error('通过后端API获取模型列表失败:', apiError);
+          // 继续使用默认模型列表
+        }
+
+        // 使用默认模型列表
+        setModels([
+          { id: 'llama3', name: 'Llama 3' },
+          { id: 'llama2', name: 'Llama 2' },
+          { id: 'mistral', name: 'Mistral' },
+          { id: 'gemma', name: 'Gemma' }
+        ]);
+        return;
+      }
+
+      // 如果直接获取失败，尝试通过后端API获取
       const response = await testProvider('ollama', apiKey, baseUrl);
       if (response.success && response.data && response.data.models_tested) {
         // 从测试结果中提取模型列表
@@ -87,16 +178,29 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
           .filter((model: any) => model.success)
           .map((model: any) => ({
             id: model.model_id,
-            name: model.model_id // 使用模型ID作为名称，可以根据需要修改
+            name: model.model_id // 使用模型ID作为名称
           }));
         setModels(modelList);
-        
+
         // 如果没有选择模型且有可用模型，选择第一个
         if (!selectedModel && modelList.length > 0) {
           setSelectedModel(modelList[0].id);
         }
+
+        // 清除错误信息
+        setError('');
+        // 更新服务可用性状态
+        setServiceAvailable(true);
       } else {
-        // 如果测试失败，尝试使用默认模型列表
+        // 如果测试失败，显示错误信息
+        if (response.message) {
+          setError(`获取模型列表失败: ${response.message}`);
+        }
+
+        // 更新服务可用性状态
+        setServiceAvailable(false);
+
+        // 使用默认模型列表
         setModels([
           { id: 'llama3', name: 'Llama 3' },
           { id: 'llama2', name: 'Llama 2' },
@@ -106,6 +210,11 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
       }
     } catch (error: any) {
       console.error('获取Ollama模型列表失败:', error);
+      setError(`获取模型列表失败: ${error.message || '未知错误'}`);
+
+      // 更新服务可用性状态
+      setServiceAvailable(false);
+
       // 使用默认模型列表
       setModels([
         { id: 'llama3', name: 'Llama 3' },
@@ -136,14 +245,52 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
         setTestResult(response.data);
         // 如果测试成功，更新模型列表
         fetchOllamaModels();
+        // 更新服务可用性状态
+        setServiceAvailable(true);
       } else {
         setError(response.message || '测试连接失败');
+        // 更新服务可用性状态
+        setServiceAvailable(false);
       }
     } catch (error: any) {
       setError(`测试连接出错: ${error.message || '未知错误'}`);
+      // 更新服务可用性状态
+      setServiceAvailable(false);
     } finally {
       setLoading(false);
     }
+  };
+
+  // 添加自定义模型
+  const handleAddCustomModel = () => {
+    if (!customModelName.trim()) {
+      setError('模型名称不能为空');
+      return;
+    }
+
+    // 检查是否已存在相同名称的模型
+    const exists = models.some(model => model.id === customModelName.trim());
+    if (exists) {
+      setError(`模型 "${customModelName.trim()}" 已存在`);
+      return;
+    }
+
+    // 添加新模型到列表
+    const newModel = {
+      id: customModelName.trim(),
+      name: customModelName.trim()
+    };
+
+    setModels([...models, newModel]);
+
+    // 选择新添加的模型
+    setSelectedModel(newModel.id);
+
+    // 清空输入框
+    setCustomModelName('');
+
+    // 清除错误信息
+    setError('');
   };
 
   // 保存配置
@@ -236,6 +383,34 @@ const OllamaDialog: React.FC<OllamaDialogProps> = ({
               ))}
             </Select>
           </FormControl>
+
+          {/* 自定义模型输入 */}
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+            <TextField
+              label="添加自定义模型"
+              value={customModelName}
+              onChange={(e) => setCustomModelName(e.target.value)}
+              placeholder="输入模型名称"
+              size="small"
+              sx={{ flexGrow: 1, mr: 1 }}
+              disabled={!serviceAvailable}
+            />
+            <Button
+              variant="outlined"
+              onClick={handleAddCustomModel}
+              disabled={!serviceAvailable || !customModelName.trim()}
+              size="small"
+            >
+              添加
+            </Button>
+          </Box>
+
+          {/* 服务状态提示 */}
+          {!serviceAvailable && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              Ollama服务未启动或无法访问。请确保Ollama服务已启动并可访问，然后点击"测试连接"按钮重试。
+            </Alert>
+          )}
 
           <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
             注意：Ollama模型需要预先在本地安装并启动Ollama服务。

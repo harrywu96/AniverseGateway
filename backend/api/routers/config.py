@@ -12,7 +12,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, SecretStr
 
 from backend.schemas.api import APIResponse
-from backend.schemas.config import SystemConfig, AIProviderType, BaseAIConfig
+from backend.schemas.config import (
+    SystemConfig,
+    AIProviderType,
+    BaseAIConfig,
+    OllamaConfig,
+)
 from backend.api.dependencies import get_system_config
 
 
@@ -51,6 +56,21 @@ class ProviderTestRequest(BaseModel):
     model: Optional[str] = Field(None, description="模型名称")
     base_url: Optional[str] = Field(None, description="API基础URL")
     parameters: Optional[Dict[str, Any]] = Field(None, description="附加参数")
+
+
+# Ollama配置请求模型
+class OllamaConfigRequest(BaseModel):
+    """Ollama配置请求模型"""
+
+    base_url: str = Field(
+        default="http://localhost:11434", description="API基础URL"
+    )
+    model: str = Field(..., description="使用的模型")
+    api_key: Optional[str] = Field(None, description="API密钥（可选）")
+    max_tokens: Optional[int] = Field(None, description="最大token数")
+    temperature: Optional[float] = Field(None, description="温度参数")
+    top_p: Optional[float] = Field(None, description="Top P参数")
+    top_k: Optional[int] = Field(None, description="Top K参数")
 
 
 @router.get("", response_model=APIResponse, tags=["配置管理"])
@@ -217,4 +237,142 @@ async def test_provider(request: ProviderTestRequest):
             success=False,
             message=f"测试失败: {str(e)}",
             data={"error": str(e)},
+        )
+
+
+@router.get("/ollama", response_model=APIResponse, tags=["配置管理"])
+async def get_ollama_config(
+    config: SystemConfig = Depends(get_system_config),
+):
+    """获取Ollama配置
+
+    获取当前系统的Ollama配置。
+
+    Args:
+        config: 系统配置
+
+    Returns:
+        APIResponse: Ollama配置响应
+    """
+    try:
+        # 检查是否有Ollama配置
+        if not config.ai_service.ollama:
+            # 返回默认配置
+            return APIResponse(
+                success=True,
+                message="获取Ollama配置成功（使用默认值）",
+                data={
+                    "base_url": "http://localhost:11434",
+                    "model": "llama3",
+                    "api_key": "",
+                    "max_tokens": 4096,
+                    "temperature": 0.3,
+                    "top_p": 0.8,
+                    "top_k": 40,
+                },
+            )
+
+        # 获取Ollama配置
+        ollama_config = config.ai_service.ollama
+
+        # 转换为字典
+        config_dict = {
+            "base_url": ollama_config.base_url,
+            "model": ollama_config.model,
+            "api_key": (
+                ollama_config.api_key.get_secret_value()
+                if ollama_config.api_key
+                else ""
+            ),
+            "max_tokens": ollama_config.max_tokens,
+            "temperature": ollama_config.temperature,
+            "top_p": ollama_config.top_p,
+            "top_k": ollama_config.top_k,
+        }
+
+        return APIResponse(
+            success=True,
+            message="获取Ollama配置成功",
+            data=config_dict,
+        )
+    except Exception as e:
+        logger.error(f"获取Ollama配置失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"获取Ollama配置失败: {str(e)}"
+        )
+
+
+@router.post("/ollama", response_model=APIResponse, tags=["配置管理"])
+async def save_ollama_config(
+    request: OllamaConfigRequest,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """保存Ollama配置
+
+    更新系统的Ollama配置。
+
+    Args:
+        request: Ollama配置请求
+        config: 系统配置
+
+    Returns:
+        APIResponse: 保存结果响应
+    """
+    try:
+        # 创建或更新Ollama配置
+        if not config.ai_service.ollama:
+            from backend.schemas.config import OllamaConfig
+
+            # 创建新的Ollama配置
+            config.ai_service.ollama = OllamaConfig(
+                api_key=(
+                    SecretStr(request.api_key) if request.api_key else None
+                ),
+                base_url=request.base_url,
+                model=request.model,
+                max_tokens=request.max_tokens or 4096,
+                temperature=request.temperature or 0.3,
+                top_p=request.top_p or 0.8,
+                top_k=request.top_k or 40,
+            )
+        else:
+            # 更新现有配置
+            if request.api_key is not None:
+                config.ai_service.ollama.api_key = (
+                    SecretStr(request.api_key) if request.api_key else None
+                )
+            if request.base_url:
+                config.ai_service.ollama.base_url = request.base_url
+            if request.model:
+                config.ai_service.ollama.model = request.model
+            if request.max_tokens is not None:
+                config.ai_service.ollama.max_tokens = request.max_tokens
+            if request.temperature is not None:
+                config.ai_service.ollama.temperature = request.temperature
+            if request.top_p is not None:
+                config.ai_service.ollama.top_p = request.top_p
+            if request.top_k is not None:
+                config.ai_service.ollama.top_k = request.top_k
+
+        # 保存配置到环境变量（这样下次启动时会加载这些配置）
+        os.environ["OLLAMA_BASE_URL"] = request.base_url
+        os.environ["OLLAMA_MODEL"] = request.model
+        if request.api_key:
+            os.environ["OLLAMA_API_KEY"] = request.api_key
+        if request.max_tokens is not None:
+            os.environ["OLLAMA_MAX_TOKENS"] = str(request.max_tokens)
+        if request.temperature is not None:
+            os.environ["OLLAMA_TEMPERATURE"] = str(request.temperature)
+        if request.top_p is not None:
+            os.environ["OLLAMA_TOP_P"] = str(request.top_p)
+        if request.top_k is not None:
+            os.environ["OLLAMA_TOP_K"] = str(request.top_k)
+
+        return APIResponse(
+            success=True, message="保存Ollama配置成功", data=None
+        )
+    except Exception as e:
+        logger.error(f"保存Ollama配置失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"保存Ollama配置失败: {str(e)}"
         )

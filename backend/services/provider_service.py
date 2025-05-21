@@ -581,7 +581,7 @@ class ProviderService:
             self.provider_info_cache[AIProviderType.SILICONFLOW],
         )
 
-    def get_provider_models(
+    async def get_provider_models(
         self, provider_id: str
     ) -> ProviderModelListResponse:
         """获取指定提供商的模型列表
@@ -598,6 +598,54 @@ class ProviderService:
             return ProviderModelListResponse(
                 provider=provider_id, models=models
             )
+
+        # 如果是Ollama提供商，尝试从Ollama服务获取模型列表
+        if provider_id == AIProviderType.OLLAMA:
+            try:
+                # 检查Ollama配置是否存在
+                if not self.config.ai_service.ollama:
+                    return ProviderModelListResponse(
+                        provider=provider_id, models=[]
+                    )
+
+                # 创建Ollama服务实例
+                from backend.services.ollama_service import OllamaService
+
+                ollama_service = OllamaService(self.config.ai_service)
+
+                # 获取Ollama模型列表
+                ollama_models_data = await ollama_service.get_models()
+
+                # 转换为ModelInfo列表
+                ollama_models = []
+                default_model = self.config.ai_service.ollama.model
+
+                for model_data in ollama_models_data:
+                    model_id = model_data.get("id")
+                    ollama_models.append(
+                        ModelInfo(
+                            id=model_id,
+                            name=model_id,  # 使用模型ID作为名称
+                            provider=AIProviderType.OLLAMA,
+                            context_window=8192,  # 默认上下文窗口大小
+                            capabilities=[ModelCapability.CHAT],
+                            is_default=model_id == default_model,
+                            description=f"Ollama模型: {model_id}",
+                        )
+                    )
+
+                # 更新模型缓存
+                self.models_cache[AIProviderType.OLLAMA] = ollama_models
+
+                return ProviderModelListResponse(
+                    provider=provider_id, models=ollama_models
+                )
+            except Exception as e:
+                logger.error(f"获取Ollama模型列表失败: {e}", exc_info=True)
+                # 如果获取失败，返回空列表
+                return ProviderModelListResponse(
+                    provider=provider_id, models=[]
+                )
 
         # 如果是自定义提供商，格式为 custom-{provider_id}
         if provider_id.startswith("custom-"):
@@ -698,6 +746,18 @@ class ProviderService:
                 temp_config = OpenAIConfig(
                     api_key=SecretStr(api_key),
                     base_url=base_url,
+                    model=test_model,
+                )
+            elif provider_id == AIProviderType.OLLAMA:
+                from backend.schemas.config import OllamaConfig
+
+                # 使用默认模型或提供的模型
+                test_model = model or "llama3"
+
+                # 创建Ollama配置
+                temp_config = OllamaConfig(
+                    api_key=SecretStr(api_key) if api_key else None,
+                    base_url=base_url or "http://localhost:11434",
                     model=test_model,
                 )
             # TODO: 为其他提供商添加测试配置
