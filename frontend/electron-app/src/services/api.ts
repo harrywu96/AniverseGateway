@@ -1,4 +1,5 @@
 import { API_PATHS, DEFAULT_API_BASE_URL, ApiResponse, AIProvider, AIModel } from '@subtranslate/shared';
+import '../electron.d.ts';
 
 interface ProviderDetails {
   id: string;
@@ -34,7 +35,25 @@ export async function getProviders(): Promise<ApiResponse<{ providers: AIProvide
  */
 export async function getProviderModels(providerId: string): Promise<ApiResponse<{ provider: string, models: AIModel[] }>> {
   try {
-    // 使用后端API获取模型列表，无论是否在Electron环境中
+    // 使用Electron IPC接口获取模型列表
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.getProviderModels(providerId);
+        return {
+          success: result.success,
+          message: '获取模型列表成功',
+          data: {
+            provider: providerId,
+            models: result.models || []
+          }
+        };
+      } catch (electronError) {
+        console.error(`通过Electron获取提供商 ${providerId} 的模型列表出错:`, electronError);
+        // 如果Electron接口失败，尝试使用后端API
+      }
+    }
+
+    // 使用后端API获取模型列表
     const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.MODELS(providerId)}`);
     if (!response.ok) {
       throw new Error(`获取模型列表失败: ${response.status} ${response.statusText}`);
@@ -180,7 +199,8 @@ export async function createCustomProvider(
   try {
     // 使用Electron IPC接口创建自定义提供商
     if (window.electronAPI) {
-      const result = await window.electronAPI.createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models);
+      // 由于Electron接口只接受5个参数，我们不能直接传递models
+      const result = await window.electronAPI.createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType);
       return {
         success: result.success,
         message: result.message || '创建自定义提供商成功',

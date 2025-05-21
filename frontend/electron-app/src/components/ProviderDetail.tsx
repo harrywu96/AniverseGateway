@@ -312,9 +312,11 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           {isEditing ? (
             <>
               <Tooltip title="保存">
-                <IconButton size="small" onClick={handleSave} disabled={isSaving}>
-                  {isSaving ? <CircularProgress size={20} /> : <CheckIcon />}
-                </IconButton>
+                <span>
+                  <IconButton size="small" onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? <CircularProgress size={20} /> : <CheckIcon />}
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="取消">
                 <IconButton size="small" onClick={() => setIsEditing(false)}>
@@ -391,9 +393,11 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             模型列表
           </Typography>
           <Tooltip title="刷新模型列表">
-            <IconButton size="small" onClick={onRefreshModels} disabled={loadingModels}>
-              {loadingModels ? <CircularProgress size={20} /> : <RefreshIcon />}
-            </IconButton>
+            <span>
+              <IconButton size="small" onClick={onRefreshModels} disabled={loadingModels}>
+                {loadingModels ? <CircularProgress size={20} /> : <RefreshIcon />}
+              </IconButton>
+            </span>
           </Tooltip>
         </Box>
 

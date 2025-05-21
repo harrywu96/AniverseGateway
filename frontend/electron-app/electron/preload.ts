@@ -40,6 +40,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 模型相关
   validateModel: (modelPath: string) => ipcRenderer.invoke('validate-model', modelPath),
+
+  // AI提供商相关
+  getProviders: () => ipcRenderer.invoke('get-providers'),
+  getProviderDetails: (providerId: string) => ipcRenderer.invoke('get-provider-details', providerId),
+  getProviderModels: (providerId: string) => ipcRenderer.invoke('get-provider-models', providerId),
+  updateProvider: (providerId: string, apiKey: string, defaultModel: string, baseUrl?: string) =>
+    ipcRenderer.invoke('update-provider', providerId, apiKey, defaultModel, baseUrl),
+  testProvider: (providerId: string, apiKey: string, baseUrl?: string, model?: string, formatType?: string) =>
+    ipcRenderer.invoke('test-provider', providerId, apiKey, baseUrl, model, formatType),
+  createCustomProvider: (name: string, apiKey: string, baseUrl: string, defaultModel?: string, formatType?: string, models?: any[]) =>
+    ipcRenderer.invoke('create-custom-provider', name, apiKey, baseUrl, defaultModel, formatType, models),
+  deleteCustomProvider: (providerId: string) =>
+    ipcRenderer.invoke('delete-custom-provider', providerId),
+  activateProvider: (providerId: string) =>
+    ipcRenderer.invoke('activate-provider', providerId),
 });
 
 // 打印预加载脚本已加载的消息
