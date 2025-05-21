@@ -15,22 +15,12 @@ interface ProviderDetails {
  */
 export async function getProviders(): Promise<ApiResponse<{ providers: AIProvider[], current_provider: string }>> {
   try {
-    // 使用Electron IPC接口获取提供商列表
-    if (window.electronAPI) {
-      const result = await window.electronAPI.getProviders();
-      return {
-        success: true,
-        message: '获取提供商列表成功',
-        data: result
-      };
-    } else {
-      // 如果不在Electron环境中，使用原来的API调用
-      const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.PROVIDERS}`);
-      if (!response.ok) {
-        throw new Error(`获取提供商列表失败: ${response.status} ${response.statusText}`);
-      }
-      return await response.json();
+    // 使用后端API获取提供商列表，无论是否在Electron环境中
+    const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.PROVIDERS}`);
+    if (!response.ok) {
+      throw new Error(`获取提供商列表失败: ${response.status} ${response.statusText}`);
     }
+    return await response.json();
   } catch (error) {
     console.error('获取提供商列表出错:', error);
     throw error;
@@ -44,25 +34,12 @@ export async function getProviders(): Promise<ApiResponse<{ providers: AIProvide
  */
 export async function getProviderModels(providerId: string): Promise<ApiResponse<{ provider: string, models: AIModel[] }>> {
   try {
-    // 使用Electron IPC接口获取模型列表
-    if (window.electronAPI) {
-      const result = await window.electronAPI.getProviderModels(providerId);
-      return {
-        success: true,
-        message: '获取模型列表成功',
-        data: {
-          provider: providerId,
-          models: result.models || []
-        }
-      };
-    } else {
-      // 如果不在Electron环境中，使用原来的API调用
-      const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.MODELS(providerId)}`);
-      if (!response.ok) {
-        throw new Error(`获取模型列表失败: ${response.status} ${response.statusText}`);
-      }
-      return await response.json();
+    // 使用后端API获取模型列表，无论是否在Electron环境中
+    const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.MODELS(providerId)}`);
+    if (!response.ok) {
+      throw new Error(`获取模型列表失败: ${response.status} ${response.statusText}`);
     }
+    return await response.json();
   } catch (error) {
     console.error(`获取提供商 ${providerId} 的模型列表出错:`, error);
     throw error;
