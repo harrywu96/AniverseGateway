@@ -39,8 +39,18 @@ interface ElectronAPI {
   getProviders: () => Promise<{ providers: any[]; current_provider: string }>;
   getProviderDetails: (providerId: string) => Promise<{ success: boolean; message?: string; data: any }>;
   getProviderModels: (providerId: string) => Promise<{ success: boolean; models: any[] }>;
-  updateProvider: (providerId: string, apiKey: string, defaultModel: string, baseUrl?: string) =>
-    Promise<{ success: boolean; message?: string }>;
+  updateProvider: (
+    providerId: string,
+    apiKey: string,
+    defaultModel: string,
+    baseUrl?: string,
+    modelParams?: {
+      temperature?: number;
+      top_p?: number;
+      max_tokens?: number;
+      message_limit_enabled?: boolean;
+    }
+  ) => Promise<{ success: boolean; message?: string }>;
   testProvider: (providerId: string, apiKey: string, baseUrl?: string, model?: string, formatType?: string) =>
     Promise<{ success: boolean; message: string; data?: any }>;
   createCustomProvider: (name: string, apiKey: string, baseUrl: string, defaultModel?: string, formatType?: string) =>

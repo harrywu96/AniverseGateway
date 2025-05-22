@@ -134,18 +134,31 @@ export async function testProvider(
  * @param apiKey API密钥
  * @param defaultModel 默认模型
  * @param baseUrl 可选的API基础URL
+ * @param modelParams 可选的模型参数
  * @returns 更新结果
  */
 export async function updateProvider(
   providerId: string,
   apiKey: string,
   defaultModel: string,
-  baseUrl?: string
+  baseUrl?: string,
+  modelParams?: {
+    temperature?: number;
+    top_p?: number;
+    max_tokens?: number;
+    message_limit_enabled?: boolean;
+  }
 ): Promise<ApiResponse<any>> {
   try {
     // 使用Electron IPC接口更新提供商配置
     if (window.electronAPI) {
-      const result = await window.electronAPI.updateProvider(providerId, apiKey, defaultModel, baseUrl);
+      const result = await window.electronAPI.updateProvider(
+        providerId,
+        apiKey,
+        defaultModel,
+        baseUrl,
+        modelParams
+      );
       return {
         success: result.success,
         message: result.message || '更新提供商配置成功',
@@ -163,6 +176,7 @@ export async function updateProvider(
           api_key: apiKey,
           default_model: defaultModel,
           base_url: baseUrl,
+          model_params: modelParams
         }),
       });
 

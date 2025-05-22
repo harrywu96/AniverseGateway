@@ -22,6 +22,11 @@ export interface AIModel {
   is_default?: boolean;
   provider_id: string;
   capabilities?: string[];
+  // 新增高级模型参数
+  temperature?: number;
+  top_p?: number;
+  max_tokens?: number;
+  message_limit_enabled?: boolean;
 }
 
 /**
@@ -136,16 +141,16 @@ export interface AppSettings {
   sourceLanguage: string;
   targetLanguage: string;
   defaultStyle: string;
-  
+
   // 主题设置
   darkMode: boolean;
-  
+
   // AI服务设置
   selectedProvider: string;
   selectedModel: string;
   apiKey?: string;
   baseUrl?: string;
-  
+
   // Faster-Whisper设置
   modelPath?: string;
   configPath?: string;

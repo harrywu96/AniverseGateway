@@ -23,6 +23,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Slider,
+  FormControlLabel,
+  Switch,
+  InputAdornment,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -32,6 +36,7 @@ import {
   Check as CheckIcon,
   Close as CloseIcon,
   Settings as SettingsIcon,
+  HelpOutline as HelpOutlineIcon,
 } from '@mui/icons-material';
 import { AIProvider, AIModel } from '../shared';
 import { testProvider, updateProvider, getProviderModels, deleteCustomModel, getProviderDetails, deleteCustomProvider } from '../services/api';
@@ -71,12 +76,24 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
   const [deleteProviderDialogOpen, setDeleteProviderDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // 高级模型参数状态
+  const [temperature, setTemperature] = useState<number>(0.7);
+  const [topP, setTopP] = useState<number>(0.9);
+  const [maxTokens, setMaxTokens] = useState<number>(4);
+  const [messageLimitEnabled, setMessageLimitEnabled] = useState<boolean>(false);
+
   // 当提供商变化时，获取提供商详细信息并更新表单
   useEffect(() => {
     if (provider) {
       // 清空当前表单状态，防止显示上一个提供商的信息
       setApiKey('');
       setBaseUrl('');
+
+      // 重置高级模型参数为默认值
+      setTemperature(0.7);
+      setTopP(0.9);
+      setMaxTokens(4);
+      setMessageLimitEnabled(false);
 
       // 获取提供商详细信息
       const fetchProviderDetails = async () => {
@@ -116,6 +133,20 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
     }
   }, [provider]);
 
+  // 当选择的模型变化时，加载模型参数
+  useEffect(() => {
+    if (selectedModel && models.length > 0) {
+      const currentModel = models.find(m => m.id === selectedModel);
+      if (currentModel) {
+        // 加载模型参数
+        setTemperature(currentModel.temperature !== undefined ? currentModel.temperature : 0.7);
+        setTopP(currentModel.top_p !== undefined ? currentModel.top_p : 0.9);
+        setMaxTokens(currentModel.max_tokens !== undefined ? currentModel.max_tokens / 1000 : 4);
+        setMessageLimitEnabled(currentModel.message_limit_enabled !== undefined ? currentModel.message_limit_enabled : false);
+      }
+    }
+  }, [selectedModel, models]);
+
   if (!provider) {
     return (
       <Paper sx={{ flexGrow: 1, p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -151,12 +182,23 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
       console.log(`基础URL: ${saveBaseUrl}`);
       console.log(`选中模型: ${selectedModel}`);
 
+      // 准备模型参数
+      const modelParams = {
+        temperature,
+        top_p: topP,
+        max_tokens: messageLimitEnabled ? maxTokens * 1000 : undefined, // 转换为实际token数
+        message_limit_enabled: messageLimitEnabled
+      };
+
+      console.log('模型参数:', modelParams);
+
       // 更新提供商配置
       await updateProvider(
         saveProviderId,
         keyToSend, // 如果是掩码形式，则传空字符串，表示不修改
         selectedModel,
-        saveBaseUrl
+        saveBaseUrl,
+        modelParams
       );
 
       setIsEditing(false);
@@ -481,6 +523,130 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             </ListItem>
           ))}
         </List>
+
+        {/* 高级模型设置部分 */}
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle1" gutterBottom>
+          高级模型设置
+        </Typography>
+
+        {/* 消息长度限制开关 */}
+        <Box sx={{ mb: 2 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={messageLimitEnabled}
+                onChange={(e) => setMessageLimitEnabled(e.target.checked)}
+                disabled={!isEditing}
+              />
+            }
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography>启用消息长度限制</Typography>
+                <Tooltip title="启用后，可以限制发送给模型的消息长度。这有助于控制API调用的成本和响应时间。禁用后，将使用模型的默认最大长度。">
+                  <HelpOutlineIcon fontSize="small" sx={{ ml: 1 }} />
+                </Tooltip>
+              </Box>
+            }
+          />
+
+          {messageLimitEnabled && (
+            <TextField
+              fullWidth
+              margin="normal"
+              label="上下文窗口大小"
+              type="number"
+              value={maxTokens * 1000}
+              onChange={(e) => setMaxTokens(parseInt(e.target.value) / 1000)}
+              disabled={!isEditing}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">tokens</InputAdornment>,
+              }}
+            />
+          )}
+        </Box>
+
+        {/* 温度滑块 */}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography>温度</Typography>
+            <Tooltip title="控制生成文本的随机性。较低的值（如0.2）使输出更确定和集中，适合需要准确性的任务。较高的值（如0.8）使输出更多样化和创造性，适合头脑风暴或创意写作。推荐范围：0.0-1.0">
+              <HelpOutlineIcon fontSize="small" sx={{ ml: 1 }} />
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography variant="body2" sx={{ mr: 1 }}>0.0</Typography>
+            <Slider
+              value={temperature}
+              onChange={(_, newValue) => setTemperature(newValue as number)}
+              min={0}
+              max={2}
+              step={0.1}
+              disabled={!isEditing}
+              valueLabelDisplay="auto"
+              sx={{ mx: 2 }}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>2.0</Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
+            当前值: {temperature.toFixed(1)}
+          </Typography>
+        </Box>
+
+        {/* Top-P滑块 */}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography>Top-P</Typography>
+            <Tooltip title="控制生成文本的多样性。模型只考虑累积概率达到top_p值的词汇。较低的值（如0.1）使输出更确定，较高的值（如0.9）使输出更多样化。通常与温度一起使用，但建议主要调整其中一个参数。推荐范围：0.1-1.0">
+              <HelpOutlineIcon fontSize="small" sx={{ ml: 1 }} />
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography variant="body2" sx={{ mr: 1 }}>0.0</Typography>
+            <Slider
+              value={topP}
+              onChange={(_, newValue) => setTopP(newValue as number)}
+              min={0}
+              max={1}
+              step={0.05}
+              disabled={!isEditing}
+              valueLabelDisplay="auto"
+              sx={{ mx: 2 }}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>1.0</Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
+            当前值: {topP.toFixed(2)}
+          </Typography>
+        </Box>
+
+        {/* 最大上下文Token数滑块 */}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography>上下文长度</Typography>
+            <Tooltip title="控制模型可以处理的最大token数量。较大的值允许模型处理更长的文本，但会增加API调用的成本和响应时间。根据您的模型和需求选择适当的值。">
+              <HelpOutlineIcon fontSize="small" sx={{ ml: 1 }} />
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography variant="body2" sx={{ mr: 1 }}>0</Typography>
+            <Slider
+              value={maxTokens}
+              onChange={(_, newValue) => setMaxTokens(newValue as number)}
+              min={0}
+              max={20}
+              step={1}
+              disabled={!isEditing || !messageLimitEnabled}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(value) => `${value}k`}
+              sx={{ mx: 2 }}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>20k</Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
+            当前值: {maxTokens}k tokens ({maxTokens * 1000})
+          </Typography>
+        </Box>
       </Box>
 
       {/* 删除模型确认对话框 */}
