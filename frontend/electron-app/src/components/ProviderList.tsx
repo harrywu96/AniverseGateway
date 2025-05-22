@@ -22,7 +22,7 @@ import {
   Computer as ComputerIcon,
   Terminal as TerminalIcon
 } from '@mui/icons-material';
-import { AIProvider } from '../shared';
+import { Provider as AIProvider } from '../store/providerSlice';
 
 interface ProviderListProps {
   providers: AIProvider[];

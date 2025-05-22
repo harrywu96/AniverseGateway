@@ -539,9 +539,13 @@ const Settings: React.FC = () => {
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);
         }}
-        onSave={(providerData) => {
-          if (customProviderToEdit) {
-            dispatch(updateProviderAction({ ...customProviderToEdit, ...providerData, id: customProviderToEdit.id, is_configured: !!providerData.apiKey }));
+        onSave={(providerData, isEditing) => {
+          if (isEditing && customProviderToEdit) {
+            dispatch(updateProviderAction({ 
+              ...providerData, 
+              id: customProviderToEdit.id,
+              is_configured: !!providerData.apiKey 
+            }));
           } else {
             const newId = providerData.id || `custom-${Date.now()}`;
             const newProvider: Provider = {
@@ -549,14 +553,16 @@ const Settings: React.FC = () => {
               name: providerData.name || '自定义提供商',
               apiKey: providerData.apiKey || '',
               apiHost: providerData.apiHost || '',
-              models: providerData.models || [],
+              models: (providerData.models || []).map(model => ({
+                ...model,
+                provider_id: newId
+              })),
               is_active: providerData.is_active !== undefined ? providerData.is_active : true,
               isSystem: false,
               description: providerData.description || '',
               logo_url: providerData.logo_url || '',
               model_count: providerData.models ? providerData.models.length : 0,
-              is_configured: !!providerData.apiKey,
-              provider_id: newId,
+              is_configured: !!providerData.apiKey
             } as Provider;
             dispatch(addProviderAction(newProvider));
           }

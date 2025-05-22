@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { testProvider, createCustomProvider, createCustomModel, activateCustomProvider } from '../services/api';
-import { AIProvider } from '@subtranslate/shared';
+import { Provider as AIProvider, AIModel } from '../store/providerSlice';
 
 // 格式类型选项
 const FORMAT_TYPES = [
@@ -43,8 +43,8 @@ const CAPABILITIES = [
 interface CustomProviderDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (newlyActivatedProviderId: string) => void;
-  editProvider?: AIProvider;
+  onSave: (providerData: Partial<AIProvider>, isEditing: boolean) => void;
+  editProvider?: AIProvider | null;
 }
 
 interface CustomModel {
@@ -76,24 +76,34 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
   // 当编辑提供商时，加载提供商信息
   useEffect(() => {
     if (open && editProvider) {
-      setName(editProvider.name);
-      // API密钥通常不会从后端返回，所以这里不设置
-      // 如果是自定义提供商，可能需要设置baseUrl
-      if (editProvider.id === 'custom') {
-        // 这里可能需要从设置中获取baseUrl
-      }
-      // 设置格式类型，如果有的话
-      // 这里可能需要从后端获取格式类型
-
+      // 设置提供商基本信息
+      setName(editProvider.name || '');
+      
+      // API密钥通常不会从后端返回，所以这里保持空白
+      // 如果需要编辑已保存的API密钥，需要从安全存储中获取
+      setApiKey('');
+      
+      // 设置API基础URL (apiHost)
+      setBaseUrl(editProvider.apiHost || '');
+      
+      // 设置格式类型，这需要根据实际存储位置来获取
+      // 因为Provider接口没有formatType字段，可能需要从其他地方获取或默认为'openai'
+      setFormatType('openai'); // 默认值，实际应根据存储位置获取
+      
       // 如果提供商有模型，加载模型
       if (editProvider.models && editProvider.models.length > 0) {
         const loadedModels = editProvider.models.map(model => ({
           id: model.id,
           name: model.name,
-          contextWindow: model.context_window || 4096,
-          capabilities: model.capabilities,
+          // 处理不同字段名的兼容性问题
+          contextWindow: (model as any).context_window || 4096,
+          // 确保capabilities是数组
+          capabilities: Array.isArray(model.capabilities) ? model.capabilities : ['chat'],
         }));
         setModels(loadedModels);
+      } else {
+        // 如果没有模型，设置为空数组
+        setModels([]);
       }
     } else if (open) {
       // 如果是新建提供商，重置表单
@@ -215,48 +225,33 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         capabilities: model.capabilities,
       }));
 
-      console.log('准备创建自定义提供商:', { name, apiKey, baseUrl, defaultModel, formatType, models: modelData });
-
-      let response;
-
-      // 创建新的自定义提供商
-      response = await createCustomProvider(
+      // 构建要传递给父组件的提供商数据
+      const providerData: Partial<AIProvider> = {
         name,
         apiKey,
-        baseUrl,
-        defaultModel,
-        formatType,
-        modelData
-      );
+        apiHost: baseUrl,
+        // 当创建新提供商时，id 将由后端生成
+        // 当编辑现有提供商时，使用现有的 id
+        id: editProvider?.id,
+        // 假设新的/编辑的提供商默认是激活的
+        is_active: true,
+        // 对于自定义提供商，isSystem 应为 false
+        isSystem: false,
+        // 将模型数据添加到提供商数据中
+        models: modelData.map(model => ({
+          ...model,
+          // 如果是编辑现有提供商，使用其 id 作为 provider_id
+          provider_id: editProvider?.id || '',
+          // 将第一个模型设为默认
+          isDefault: model.id === defaultModel
+        })),
+      };
 
-      console.log('创建自定义提供商响应:', response);
-
-      if (response.success && response.data) {
-        // 获取新创建的提供商ID
-        const providerId = response.data.provider_id;
-        console.log('获取到的提供商ID:', providerId);
-
-        // 激活新创建的提供商
-        if (providerId) {
-          // 添加custom-前缀到提供商ID
-          const prefixedProviderId = `custom-${providerId}`;
-          console.log('添加前缀后的提供商ID:', prefixedProviderId);
-
-          // 激活自定义提供商
-          const activateResponse = await activateCustomProvider(prefixedProviderId);
-          console.log('激活提供商响应:', activateResponse);
-
-          // 刷新提供商列表，这将显示新添加的提供商
-          onSave(prefixedProviderId);
-
-          // 关闭对话框
-          onClose();
-        } else {
-          setError('创建提供商成功，但未返回提供商ID');
-        }
-      } else {
-        setError(response.message || '创建自定义提供商失败');
-      }
+      // 调用父组件的 onSave 回调，传递提供商数据和编辑状态
+      onSave(providerData, !!editProvider);
+      
+      // 关闭对话框
+      onClose();
     } catch (error) {
       console.error('保存自定义提供商出错:', error);
       setError(error instanceof Error ? error.message : '保存时出错');

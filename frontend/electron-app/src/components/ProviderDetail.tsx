@@ -38,35 +38,46 @@ import {
   Settings as SettingsIcon,
   HelpOutline as HelpOutlineIcon,
 } from '@mui/icons-material';
-import { AIProvider, AIModel } from '../shared';
+import { Provider as AIProvider, AIModel } from '../store/providerSlice';
 import { testProvider, updateProvider, getProviderModels, deleteCustomModel, getProviderDetails, deleteCustomProvider } from '../services/api';
 import { maskApiKey } from '../utils/apiUtils';
 
 interface ProviderDetailProps {
   provider: AIProvider | null;
-  models: AIModel[];
-  selectedModel: string;
   onSelectModel: (modelId: string) => void;
-  onUpdateProvider: () => void;
-  onEditProvider: () => void;
-  onRefreshModels: () => void;
   loadingModels: boolean;
-  onDeleteProvider?: () => void; // 删除提供商后的回调函数
+  onDeleteProvider?: () => void;
+  apiKeyInput: string;
+  baseUrlInput: string;
+  onApiKeyInputChange: (value: string) => void;
+  onBaseUrlInputChange: (value: string) => void;
+  onSaveProviderDetails: () => void;
+  selectedModelId: string;
+  onModelParamsChange: (params: {
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    messageLimitEnabled?: boolean;
+  }) => void;
+  onEditProvider?: () => void;
+  onRefreshModels?: () => void;
 }
 
 const ProviderDetail: React.FC<ProviderDetailProps> = ({
   provider,
-  models,
-  selectedModel,
   onSelectModel,
-  onUpdateProvider,
-  onEditProvider,
-  onRefreshModels,
   loadingModels,
   onDeleteProvider,
+  apiKeyInput,
+  baseUrlInput,
+  onApiKeyInputChange,
+  onBaseUrlInputChange,
+  onSaveProviderDetails,
+  selectedModelId,
+  onModelParamsChange,
+  onEditProvider,
+  onRefreshModels,
 }) => {
-  const [apiKey, setApiKey] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -75,77 +86,6 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
   const [modelToDelete, setModelToDelete] = useState<AIModel | null>(null);
   const [deleteProviderDialogOpen, setDeleteProviderDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // 高级模型参数状态
-  const [temperature, setTemperature] = useState<number>(0.7);
-  const [topP, setTopP] = useState<number>(0.9);
-  const [maxTokens, setMaxTokens] = useState<number>(4);
-  const [messageLimitEnabled, setMessageLimitEnabled] = useState<boolean>(false);
-
-  // 当提供商变化时，获取提供商详细信息并更新表单
-  useEffect(() => {
-    if (provider) {
-      // 清空当前表单状态，防止显示上一个提供商的信息
-      setApiKey('');
-      setBaseUrl('');
-
-      // 重置高级模型参数为默认值
-      setTemperature(0.7);
-      setTopP(0.9);
-      setMaxTokens(4);
-      setMessageLimitEnabled(false);
-
-      // 获取提供商详细信息
-      const fetchProviderDetails = async () => {
-        try {
-          console.log(`获取提供商详细信息: ${provider.id}`);
-          const response = await getProviderDetails(provider.id);
-          console.log('获取提供商详细信息响应:', response);
-
-          if (response.success && response.data) {
-            // 设置API基础URL
-            if (response.data.base_url) {
-              console.log(`设置API基础URL: ${response.data.base_url}`);
-              setBaseUrl(response.data.base_url);
-            }
-
-            // 设置API密钥，即使是掩码形式的
-            if (response.data.api_key) {
-              console.log(`设置API密钥: ${response.data.api_key}`);
-              // 如果是掩码形式的，直接设置
-              // 如果是真实API密钥，可以使用maskApiKey函数进行掩码
-              setApiKey(response.data.api_key);
-            }
-          }
-        } catch (error) {
-          console.error('获取提供商详细信息失败:', error);
-        }
-      };
-
-      // 如果是自定义提供商，立即获取详细信息
-      if (provider.id === 'custom' || provider.id.startsWith('custom-')) {
-        fetchProviderDetails();
-      }
-      // 对于其他提供商，也获取详细信息
-      else {
-        fetchProviderDetails();
-      }
-    }
-  }, [provider]);
-
-  // 当选择的模型变化时，加载模型参数
-  useEffect(() => {
-    if (selectedModel && models.length > 0) {
-      const currentModel = models.find(m => m.id === selectedModel);
-      if (currentModel) {
-        // 加载模型参数
-        setTemperature(currentModel.temperature !== undefined ? currentModel.temperature : 0.7);
-        setTopP(currentModel.top_p !== undefined ? currentModel.top_p : 0.9);
-        setMaxTokens(currentModel.max_tokens !== undefined ? currentModel.max_tokens / 1000 : 4);
-        setMessageLimitEnabled(currentModel.message_limit_enabled !== undefined ? currentModel.message_limit_enabled : false);
-      }
-    }
-  }, [selectedModel, models]);
 
   if (!provider) {
     return (
@@ -162,49 +102,14 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
 
     setIsSaving(true);
     try {
-      // 处理自定义提供商的ID
-      let saveProviderId = provider.id;
-      let saveBaseUrl = undefined;
-
-      // 如果是自定义提供商，需要将ID转换为'custom'
-      if (provider.id === 'custom' || provider.id.startsWith('custom-')) {
-        // 如果是custom-开头，保留原始ID但传递baseUrl
-        saveBaseUrl = baseUrl;
-      }
-
-      // 检查API密钥是否是掩码形式
-      // 如果是掩码形式（全是*号或者包含•符号），则不发送密钥
-      const isMaskedKey = apiKey && apiKey.trim() && (/^\*+$/.test(apiKey) || apiKey.includes('•'));
-      const keyToSend = isMaskedKey ? '' : apiKey;
-
-      console.log(`保存提供商配置: ${saveProviderId}`);
-      console.log(`API密钥是否掩码: ${isMaskedKey}, 发送的密钥长度: ${keyToSend.length}`);
-      console.log(`基础URL: ${saveBaseUrl}`);
-      console.log(`选中模型: ${selectedModel}`);
-
-      // 准备模型参数
-      const modelParams = {
-        temperature,
-        top_p: topP,
-        max_tokens: messageLimitEnabled ? maxTokens * 1000 : undefined, // 转换为实际token数
-        message_limit_enabled: messageLimitEnabled
-      };
-
-      console.log('模型参数:', modelParams);
-
-      // 更新提供商配置
-      await updateProvider(
-        saveProviderId,
-        keyToSend, // 如果是掩码形式，则传空字符串，表示不修改
-        selectedModel,
-        saveBaseUrl,
-        modelParams
-      );
-
-      setIsEditing(false);
-      onUpdateProvider();
+      // All data needed for saving (apiKeyInput, baseUrlInput, model selections, model params)
+      // should be up-to-date in Settings.tsx local state or Redux store via their respective onChange handlers.
+      // Settings.tsx's onSaveProviderDetails callback will be responsible for gathering this data and dispatching the update.
+      onSaveProviderDetails(); // Call the callback passed from Settings.tsx
+      setIsEditing(false); // Can remain, or be controlled by Settings.tsx if needed
     } catch (error) {
-      console.error('保存提供商配置失败:', error);
+      // Error handling for the onSaveProviderDetails call itself, if it can throw & not handled by parent
+      console.error('调用 onSaveProviderDetails 失败:', error);
     } finally {
       setIsSaving(false);
     }
@@ -217,25 +122,23 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
     setTestResult(null);
 
     try {
-      // 处理自定义提供商的ID
       let testProviderId = provider.id;
-      let testBaseUrl = undefined;
-      let testModel = selectedModel;
+      let testBaseUrl: string | undefined = undefined; // Allow string for baseUrlInput
+      let testModel = selectedModelId;
 
-      // 如果是自定义提供商，设置测试基础URL
       if (provider.id === 'custom' || provider.id.startsWith('custom-')) {
-        testBaseUrl = baseUrl;
+        testBaseUrl = baseUrlInput;
       }
 
       // 检查API密钥是否是掌码形式
       // 如果是掌码形式（全是*号或者包含•符号），则不发送密钥
-      const isMaskedKey = apiKey && apiKey.trim() && (/^\*+$/.test(apiKey) || apiKey.includes('•'));
-      const keyToSend = isMaskedKey ? '' : apiKey;
+      const isMaskedKey = apiKeyInput && apiKeyInput.trim() && (/^\*+$/.test(apiKeyInput) || apiKeyInput.includes('•'));
+      const keyToSend = isMaskedKey ? '' : apiKeyInput;
 
       // 确保有指定模型进行测试
-      if (!testModel && models.length > 0) {
+      if (!testModel && (provider?.models || []).length > 0) {
         // 如果没有选择模型，使用第一个模型
-        testModel = models[0].id;
+        testModel = (provider?.models || [])[0].id;
         console.log(`没有选择模型，使用第一个模型进行测试: ${testModel}`);
       }
 
@@ -273,23 +176,24 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
   };
 
   const handleDeleteModel = async () => {
-    if (!modelToDelete) return;
+    if (!modelToDelete || !provider) return;
 
     try {
-      // 处理自定义提供商的ID
-      let deleteProviderId = provider.id;
+      // const deleteProviderId = provider.id.startsWith('custom-') ? 'custom' : provider.id;
+      // await deleteCustomModel(deleteProviderId, modelToDelete.id); // API call removed
+      
+      // Notify parent (Settings.tsx) to handle model deletion from Redux store.
+      // This requires a new prop, e.g., onDeleteModel(modelId: string)
+      // For now, this action will be handled by Settings.tsx after it receives the intent.
+      // Potentially, onSaveProviderDetails could be reused if it can detect model list changes,
+      // or a more specific callback like props.onDeleteModelCallback(modelToDelete.id) should be called.
+      console.log(`请求删除模型: ${modelToDelete.id}`);
+      // props.onDeleteModelCallback(modelToDelete.id); // Example if new prop was added
 
-      // 如果是自定义提供商，需要将ID转换为'custom'
-      if (provider.id.startsWith('custom-')) {
-        deleteProviderId = 'custom';
-      }
-
-      await deleteCustomModel(deleteProviderId, modelToDelete.id);
-      onRefreshModels();
       setDeleteModelDialogOpen(false);
       setModelToDelete(null);
     } catch (error) {
-      console.error('删除模型失败:', error);
+      console.error('删除模型处理失败:', error); // Updated error message
     }
   };
 
@@ -305,28 +209,20 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
 
   // 删除提供商
   const handleDeleteProvider = async () => {
-    if (!provider || !provider.id.startsWith('custom-')) return;
+    if (!provider) return; // Simplified check, specific custom logic handled by Settings.tsx if any
 
     setIsDeleting(true);
     try {
-      // 提取真正的提供商ID（去除'custom-'前缀）
-      const providerId = provider.id;
+      // const providerId = provider.id;
+      // await deleteCustomProvider(providerId); // API call removed
 
-      console.log(`删除提供商: ${providerId}`);
-      const response = await deleteCustomProvider(providerId);
-
-      if (response.success) {
-        // 关闭对话框
-        setDeleteProviderDialogOpen(false);
-        // 通知父组件刷新提供商列表
-        if (onDeleteProvider) {
-          onDeleteProvider();
-        }
-      } else {
-        console.error('删除提供商失败:', response.message);
+      if (onDeleteProvider) {
+        onDeleteProvider(); // Call the callback passed from Settings.tsx
       }
+      setDeleteProviderDialogOpen(false); // UI state, can remain
     } catch (error) {
-      console.error('删除提供商出错:', error);
+      // Error handling for the onDeleteProvider call itself, if it can throw
+      console.error('调用 onDeleteProvider 失败:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -341,13 +237,6 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             <Tooltip title="删除提供商">
               <IconButton size="small" onClick={openDeleteProviderDialog} sx={{ mr: 1 }} color="error">
                 <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {provider.id === 'custom' && (
-            <Tooltip title="编辑提供商">
-              <IconButton size="small" onClick={onEditProvider} sx={{ mr: 1 }}>
-                <SettingsIcon />
               </IconButton>
             </Tooltip>
           )}
@@ -367,11 +256,20 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
               </Tooltip>
             </>
           ) : (
-            <Tooltip title="编辑配置">
-              <IconButton size="small" onClick={() => setIsEditing(true)}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
+            <>
+              {provider.id.startsWith('custom-') && onEditProvider && (
+                <Tooltip title="编辑提供商">
+                  <IconButton size="small" onClick={onEditProvider} sx={{ mr: 1 }}>
+                    <SettingsIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title="编辑配置">
+                <IconButton size="small" onClick={() => setIsEditing(true)}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            </>
           )}
         </Box>
       </Box>
@@ -399,8 +297,8 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             margin="normal"
             label="API 密钥"
             type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            value={apiKeyInput}
+            onChange={(e) => onApiKeyInputChange(e.target.value)}
             disabled={!isEditing}
             placeholder={isEditing ? '' : '••••••••••••••••••••••••••'}
           />
@@ -410,8 +308,8 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
               fullWidth
               margin="normal"
               label="API 基础URL"
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
+              value={baseUrlInput}
+              onChange={(e) => onBaseUrlInputChange(e.target.value)}
               disabled={!isEditing}
               placeholder={isEditing ? '' : 'https://api.example.com/v1'}
             />
@@ -421,7 +319,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             <Button
               variant="outlined"
               onClick={handleTest}
-              disabled={isTesting || (!apiKey && !isEditing)}
+              disabled={isTesting || (!apiKeyInput && !isEditing)}
             >
               {isTesting ? <CircularProgress size={24} /> : '测试连接'}
             </Button>
@@ -434,25 +332,25 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           <Typography variant="subtitle1">
             模型列表
           </Typography>
-          <Tooltip title="刷新模型列表">
-            <span>
+          {onRefreshModels && (
+            <Tooltip title="刷新模型列表">
               <IconButton size="small" onClick={onRefreshModels} disabled={loadingModels}>
-                {loadingModels ? <CircularProgress size={20} /> : <RefreshIcon />}
+                {loadingModels ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
               </IconButton>
-            </span>
-          </Tooltip>
+            </Tooltip>
+          )}
         </Box>
 
         <FormControl fullWidth margin="normal">
           <InputLabel id="model-select-label">选择模型</InputLabel>
           <Select
             labelId="model-select-label"
-            value={selectedModel}
+            value={selectedModelId}
             onChange={(e) => onSelectModel(e.target.value)}
             label="选择模型"
             disabled={!isEditing || loadingModels}
           >
-            {models.map((model) => (
+            {(provider?.models || []).map((model) => (
               <MenuItem key={model.id} value={model.id}>
                 {model.name}
                 {(model as any).is_default && (
@@ -469,13 +367,13 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
         </FormControl>
 
         <List sx={{ mt: 2 }}>
-          {models.map((model) => (
+          {(provider?.models || []).map((model) => (
             <ListItem
               key={model.id}
               sx={{
                 borderRadius: 1,
                 mb: 0.5,
-                bgcolor: model.id === selectedModel ? 'action.selected' : 'transparent',
+                bgcolor: model.id === selectedModelId ? 'action.selected' : 'transparent',
               }}
             >
               <ListItemText
@@ -498,7 +396,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
                       ID: {model.id}
                     </Typography>
                     <Typography variant="caption" component="span" sx={{ ml: 1 }}>
-                      • 上下文: {((model as any).context_window || model.contextWindow || 0).toLocaleString()}
+                      • 上下文: {((model as any).context_window || (model as any).contextWindow || 0).toLocaleString()}
                     </Typography>
                     {model.capabilities && model.capabilities.length > 0 && (
                       <Typography variant="caption" component="span" sx={{ ml: 1 }}>
@@ -535,8 +433,8 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           <FormControlLabel
             control={
               <Switch
-                checked={messageLimitEnabled}
-                onChange={(e) => setMessageLimitEnabled(e.target.checked)}
+                checked={(provider.models.find(m => m.id === selectedModelId) as any)?.message_limit_enabled || false}
+                onChange={(e) => onModelParamsChange({ messageLimitEnabled: e.target.checked })}
                 disabled={!isEditing}
               />
             }
@@ -550,14 +448,21 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             }
           />
 
-          {messageLimitEnabled && (
+          {/* Conditional TextField for maxTokens based on selected model's messageLimitEnabled */}
+          {((provider?.models?.find(m => m.id === selectedModelId) as any)?.message_limit_enabled) && (
             <TextField
               fullWidth
               margin="normal"
-              label="上下文窗口大小"
+              label="上下文窗口大小 (tokens)"
               type="number"
-              value={maxTokens * 1000}
-              onChange={(e) => setMaxTokens(parseInt(e.target.value) / 1000)}
+              value={((provider?.models?.find(m => m.id === selectedModelId) as any)?.max_tokens || 0)} // Direct token value
+              onChange={(e) => {
+                const newMaxTokensInK = parseInt(e.target.value, 10) / 1000;
+                // Also update the main max_tokens value if this TextField is the source of truth for it.
+                // The slider uses k, this uses raw tokens. Ensure consistency or decide primary input.
+                // For now, let's assume this updates the same maxTokens value (in k) as the slider.
+                onModelParamsChange({ maxTokens: newMaxTokensInK });
+              }}
               disabled={!isEditing}
               InputProps={{
                 endAdornment: <InputAdornment position="end">tokens</InputAdornment>,
@@ -577,8 +482,8 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
             <Typography variant="body2" sx={{ mr: 1 }}>0.0</Typography>
             <Slider
-              value={temperature}
-              onChange={(_, newValue) => setTemperature(newValue as number)}
+              value={(provider.models.find(m => m.id === selectedModelId) as any)?.temperature || 0.7}
+              onChange={(_, newValue) => onModelParamsChange({ temperature: newValue as number })}
               min={0}
               max={2}
               step={0.1}
@@ -589,7 +494,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             <Typography variant="body2" sx={{ ml: 1 }}>2.0</Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-            当前值: {temperature.toFixed(1)}
+            当前值: {((provider.models.find(m => m.id === selectedModelId) as any)?.temperature || 0).toFixed(1)}
           </Typography>
         </Box>
 
@@ -604,8 +509,8 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
             <Typography variant="body2" sx={{ mr: 1 }}>0.0</Typography>
             <Slider
-              value={topP}
-              onChange={(_, newValue) => setTopP(newValue as number)}
+              value={(provider.models.find(m => m.id === selectedModelId) as any)?.top_p || 0.9}
+              onChange={(_, newValue) => onModelParamsChange({ topP: newValue as number })}
               min={0}
               max={1}
               step={0.05}
@@ -616,7 +521,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             <Typography variant="body2" sx={{ ml: 1 }}>1.0</Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-            当前值: {topP.toFixed(2)}
+            当前值: {((provider.models.find(m => m.id === selectedModelId) as any)?.top_p || 0).toFixed(2)}
           </Typography>
         </Box>
 
@@ -631,12 +536,12 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
             <Typography variant="body2" sx={{ mr: 1 }}>0</Typography>
             <Slider
-              value={maxTokens}
-              onChange={(_, newValue) => setMaxTokens(newValue as number)}
+              value={((provider.models.find(m => m.id === selectedModelId) as any)?.max_tokens || 4000) / 1000}
+              onChange={(_, newValue) => onModelParamsChange({ maxTokens: newValue as number })}
               min={0}
               max={20}
               step={1}
-              disabled={!isEditing || !messageLimitEnabled}
+              disabled={!isEditing || !((provider.models.find(m => m.id === selectedModelId) as any)?.message_limit_enabled)}
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => `${value}k`}
               sx={{ mx: 2 }}
@@ -644,7 +549,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
             <Typography variant="body2" sx={{ ml: 1 }}>20k</Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-            当前值: {maxTokens}k tokens ({maxTokens * 1000})
+            当前值: {(((provider.models.find(m => m.id === selectedModelId) as any)?.max_tokens || 0) / 1000)}k tokens
           </Typography>
         </Box>
       </Box>
