@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -59,6 +59,14 @@ const VideoDetailComponent: React.FC = () => {
   const [subtitles, setSubtitles] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingSubtitles, setIsLoadingSubtitles] = useState(false);
+
+  // 使用useRef存储AbortController，防止重复请求
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const subtitleCacheRef = useRef<Map<string, any[]>>(new Map());
+  
+  // 使用useRef存储最新的video状态，解决闭包陷阱问题
+  const videoRef = useRef<VideoInfo | null>(null);
 
   /**
    * 查找视频信息并确保后端有该视频的信息
@@ -111,6 +119,8 @@ const VideoDetailComponent: React.FC = () => {
 
       console.log('更新视频信息:', videoInfo);
       setVideo(videoInfo);
+      // 同步更新videoRef，确保loadSubtitleContent能访问到最新状态
+      videoRef.current = videoInfo;
 
       // 如果有字幕轨道，默认选择第一个
       if (videoInfo.subtitleTracks && videoInfo.subtitleTracks.length > 0) {
@@ -312,15 +322,6 @@ const VideoDetailComponent: React.FC = () => {
     fetchVideoFromBackend();
   }, [id, state.videos]);
 
-  // 加载字幕内容
-  useEffect(() => {
-    if (video && selectedTrack) {
-      // 使用视频ID（这是后端生成的ID）和字幕轨道ID（这是轨道索引）
-      const videoId = (video as any).backendId || video.id;
-      loadSubtitleContent(videoId, selectedTrack.id);
-    }
-  }, [video, selectedTrack]);
-
   /**
    * 加载字幕内容的函数
    *
@@ -346,7 +347,59 @@ const VideoDetailComponent: React.FC = () => {
    * @param videoId 视频ID（后端生成的唯一标识符）
    * @param trackId 字幕轨道ID（前端使用的轨道索引）
    */
-  const loadSubtitleContent = async (videoId: string, trackId: string) => {
+  const loadSubtitleContent = useCallback(async (videoId: string, trackId: string) => {
+    // 使用videoRef.current获取最新的video状态，避免闭包陷阱
+    const currentVideo = videoRef.current;
+    if (!currentVideo) {
+      console.warn('loadSubtitleContent调用时video对象为null，停止执行', {
+        videoId,
+        trackId,
+        videoRefCurrent: videoRef.current,
+        timestamp: new Date().toISOString()
+      });
+      setError('视频信息不完整，无法加载字幕');
+      return;
+    }
+    
+    console.log('loadSubtitleContent使用最新video状态:', {
+      videoId: currentVideo.id,
+      fileName: currentVideo.fileName,
+      hasSubtitleTracks: !!currentVideo.subtitleTracks,
+      tracksCount: currentVideo.subtitleTracks?.length || 0
+    });
+
+    // 检查是否已在加载中，防止重复调用
+    if (isLoadingSubtitles) {
+      console.log('字幕已在加载中，跳过重复请求');
+      return;
+    }
+
+    // 检查缓存
+    const cacheKey = `${videoId}-${trackId}`;
+    const cachedSubtitles = subtitleCacheRef.current.get(cacheKey);
+    if (cachedSubtitles) {
+      console.log('使用缓存的字幕数据');
+      setSubtitles(cachedSubtitles);
+      return;
+    }
+
+    // 取消之前的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // 创建新的AbortController
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    console.log('loadSubtitleContent开始执行:', {
+      videoId,
+      trackId,
+      videoExists: !!video,
+      videoFilePath: video?.filePath,
+      subtitleTracksCount: video?.subtitleTracks?.length || 0
+    });
+
     // 状态管理：定义加载状态
     const LoadingState = {
       IDLE: 'idle',
@@ -367,7 +420,13 @@ const VideoDetailComponent: React.FC = () => {
     try {
       setLoading(true);
       setIsRefreshing(true);
+      setIsLoadingSubtitles(true);
       setError(null);
+
+      // 检查是否被取消
+      if (abortController.signal.aborted) {
+        throw new Error('请求已被取消');
+      }
 
       // 第一阶段：参数验证
       currentState = LoadingState.VALIDATING;
@@ -375,8 +434,19 @@ const VideoDetailComponent: React.FC = () => {
         throw new Error('缺少必要参数：视频ID或轨道ID为空');
       }
 
-      if (!video) {
+      // 再次检查video对象（防止在执行过程中被重置）
+      if (!currentVideo) {
+        console.error('参数验证失败：video对象为null', {
+          videoId,
+          trackId,
+          timestamp: new Date().toISOString()
+        });
         throw new Error('视频对象不存在，无法加载字幕');
+      }
+
+      // 检查video对象的关键属性
+      if (!currentVideo.id && !(currentVideo as any).backendId) {
+        throw new Error('视频对象缺少有效ID，无法加载字幕');
       }
 
       if (!window.electronAPI) {
@@ -384,7 +454,7 @@ const VideoDetailComponent: React.FC = () => {
       }
 
       // 获取轨道信息
-      const track = video.subtitleTracks?.find(t => t.id === trackId);
+      const track = currentVideo.subtitleTracks?.find(t => t.id === trackId);
       if (!track) {
         throw new Error(`未找到字幕轨道 (ID: ${trackId})，请检查轨道配置`);
       }
@@ -436,7 +506,7 @@ const VideoDetailComponent: React.FC = () => {
 
       // 如果视频不存在，尝试重新上传
       if (!videoExists) {
-        if (!video.filePath) {
+        if (!currentVideo.filePath) {
           throw new Error('视频在后端不存在，且缺少本地文件路径，无法重新上传');
         }
 
@@ -446,14 +516,14 @@ const VideoDetailComponent: React.FC = () => {
         const uploadVideo = async () => {
           for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                             const uploadResponse = await window.electronAPI!.uploadVideo(video.filePath);
+                             const uploadResponse = await window.electronAPI!.uploadVideo(currentVideo.filePath);
               
               if (uploadResponse?.success && uploadResponse?.data?.id) {
                 console.log('视频重新上传成功:', uploadResponse.data.id);
                 
                 // 保存ID映射
                 const backendId = uploadResponse.data.id;
-                const frontendId = video.id;
+                const frontendId = currentVideo.id;
                 
                 if (frontendId !== backendId) {
                   try {
@@ -467,11 +537,13 @@ const VideoDetailComponent: React.FC = () => {
 
                 // 更新视频对象
                 const updatedVideo = {
-                  ...video,
+                  ...currentVideo,
                   id: backendId,
                   backendId: backendId
                 };
                 setVideo(updatedVideo);
+                // 同步更新videoRef
+                videoRef.current = updatedVideo;
 
                 return backendId;
               } else {
@@ -507,12 +579,20 @@ const VideoDetailComponent: React.FC = () => {
               await new Promise(resolve => setTimeout(resolve, baseRetryDelay * Math.pow(2, attempt - 1)));
             }
 
-            const response = await fetch(url, {
+            // 使用Promise.race实现超时
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('请求超时')), 15000);
+            });
+            
+            const fetchPromise = fetch(url, {
               headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-              }
+              },
+              signal: abortController.signal
             });
+
+            const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
 
             if (!response.ok) {
               const errorText = await response.text();
@@ -547,9 +627,19 @@ const VideoDetailComponent: React.FC = () => {
             currentState = LoadingState.SUCCESS;
             console.log(`字幕加载成功，共 ${subtitleItems.length} 行`);
             setSubtitles(subtitleItems);
+            
+            // 保存到缓存
+            subtitleCacheRef.current.set(cacheKey, subtitleItems);
+            
             return;
 
           } catch (error) {
+            // 检查是否被取消
+            if (abortController.signal.aborted) {
+              console.log('字幕获取请求被取消');
+              return;
+            }
+            
             console.error(`字幕获取失败 (尝试 ${attempt + 1}/${maxRetries}):`, error);
             
             if (attempt === maxRetries - 1) {
@@ -562,6 +652,12 @@ const VideoDetailComponent: React.FC = () => {
       await fetchSubtitleContent();
 
     } catch (error: any) {
+      // 检查是否被取消
+      if (abortController.signal.aborted) {
+        console.log('字幕加载请求被取消');
+        return;
+      }
+      
       currentState = LoadingState.FAILED;
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       
@@ -606,8 +702,21 @@ const VideoDetailComponent: React.FC = () => {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      setIsLoadingSubtitles(false);
     }
-  };
+  }, []); // 移除isLoadingSubtitles依赖，使用内部状态检查避免函数重新创建
+
+  // 加载字幕内容
+  useEffect(() => {
+    if (video && selectedTrack && !isLoadingSubtitles) {
+      // 同步更新videoRef，确保loadSubtitleContent能访问到最新状态
+      videoRef.current = video;
+      
+      // 使用视频ID（这是后端生成的ID）和字幕轨道ID（这是轨道索引）
+      const videoId = (video as any).backendId || video.id;
+      loadSubtitleContent(videoId, selectedTrack.id);
+    }
+  }, [video, selectedTrack, isLoadingSubtitles]); // 移除loadSubtitleContent依赖，避免循环依赖
 
   // 使用useMemo缓存计算结果
   const videoId = useMemo(() => {
@@ -802,8 +911,21 @@ const VideoDetailComponent: React.FC = () => {
   // 创建防抖的刷新字幕函数
   const debouncedRefreshSubtitles = useDebouncedCallback(
     async () => {
-      if (video && selectedTrack && !isRefreshing && !loading && videoId) {
+      // 重新检查所有必要条件
+      if (video && selectedTrack && !isRefreshing && !loading && !isLoadingSubtitles && videoId) {
+        console.log('执行防抖刷新字幕', { videoId, trackId: selectedTrack.id });
+        // 确保videoRef是最新的
+        videoRef.current = video;
         await loadSubtitleContent(videoId, selectedTrack.id);
+      } else {
+        console.log('防抖刷新字幕跳过执行', {
+          hasVideo: !!video,
+          hasSelectedTrack: !!selectedTrack,
+          isRefreshing,
+          loading,
+          isLoadingSubtitles,
+          hasVideoId: !!videoId
+        });
       }
     },
     300 // 300ms防抖延迟

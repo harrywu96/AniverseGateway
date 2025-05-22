@@ -663,6 +663,21 @@ async def get_video_subtitle_content(
         # 获取字幕轨道信息
         track = video_info.subtitle_tracks[track_index]
 
+        # 安全获取轨道语言信息
+        track_language = None
+        if hasattr(track, "language"):
+            track_language = track.language
+        elif isinstance(track, dict) and "language" in track:
+            track_language = track["language"]
+        else:
+            logger.warning(f"字幕轨道 {track_index} 缺少语言信息，使用默认值")
+            track_language = "unknown"
+
+        logger.info(
+            f"字幕轨道信息: index={track_index}, "
+            f"language={track_language}, track_type={type(track)}"
+        )
+
         # 创建临时目录
         output_dir = Path(config.temp_dir) / "subtitles"
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -698,7 +713,7 @@ async def get_video_subtitle_content(
         subtitle_preview = SubtitlePreview(
             lines=lines,
             total_lines=total_lines,
-            language=track.language,
+            language=track_language,
             format="srt",
             duration_seconds=duration_seconds,
         )
