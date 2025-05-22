@@ -22,7 +22,7 @@ import {
   Alert,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { testProvider, createCustomProvider, createCustomModel, activateCustomProvider } from '../services/api';
+import { testProvider } from '../services/api';
 import { Provider as AIProvider, AIModel } from '../store/providerSlice';
 
 // 格式类型选项

@@ -106,6 +106,31 @@ const Settings: React.FC = () => {
   const [device, setDevice] = useState('auto');
   const [computeType, setComputeType] = useState('auto');
 
+  const handleModelParamsChange = useCallback((params: { temperature?: number; topP?: number; maxTokens?: number; messageLimitEnabled?: boolean; }) => {
+    if (!currentProviderId || !currentModelId) return;
+
+    const provider = providers.find(p => p.id === currentProviderId);
+    if (!provider) return;
+
+    const modelIndex = provider.models.findIndex(m => m.id === currentModelId);
+    if (modelIndex === -1) return;
+
+    const updatedModels = provider.models.map((model, index) => {
+      if (index === modelIndex) {
+        const newParams = { ...params };
+        // 如果 maxTokens 存在并且是以 'k' 为单位传入的，则转换为实际 token 数量
+        if (newParams.maxTokens !== undefined) {
+          newParams.maxTokens = newParams.maxTokens * 1000;
+        }
+        return { ...model, ...newParams };
+      }
+      return model;
+    });
+
+    dispatch(updateProviderAction({ id: currentProviderId, models: updatedModels }));
+    setStatusMessage({ message: '模型参数已更新', type: 'success' });
+  }, [dispatch, providers, currentProviderId, currentModelId]);
+
   const fetchProviders = useCallback(async (preferredProviderId?: string) => {
     setLoadingProviders(true);
     try {
@@ -528,6 +553,7 @@ const Settings: React.FC = () => {
               onDeleteProvider={currentProviderId && !providers.find(p=>p.id === currentProviderId)?.isSystem ? () => handleDeleteProvider(currentProviderId) : undefined}
               onRefreshModels={() => currentProviderId && fetchModels(currentProviderId)}
               loadingModels={loadingModels}
+              onModelParamsChange={handleModelParamsChange}
             />
           </Box>
         </Box>

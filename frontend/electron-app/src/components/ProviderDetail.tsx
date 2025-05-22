@@ -39,7 +39,7 @@ import {
   HelpOutline as HelpOutlineIcon,
 } from '@mui/icons-material';
 import { Provider as AIProvider, AIModel } from '../store/providerSlice';
-import { testProvider, updateProvider, getProviderModels, deleteCustomModel, getProviderDetails, deleteCustomProvider } from '../services/api';
+import { testProvider, getProviderModels } from '../services/api';
 import { maskApiKey } from '../utils/apiUtils';
 
 interface ProviderDetailProps {
