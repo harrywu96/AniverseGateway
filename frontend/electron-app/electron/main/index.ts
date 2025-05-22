@@ -832,6 +832,11 @@ function saveProviders(providersData) {
  */
 function getProviderList() {
   const providersData = loadProviders();
+  console.log('获取提供商列表，原始数据:', {
+    activeProvider: providersData.active_provider,
+    providersCount: Object.keys(providersData.providers || {}).length
+  });
+
   const providers = [];
 
   // 添加硬基流动提供商
@@ -844,15 +849,30 @@ function getProviderList() {
   });
 
   // 添加自定义提供商
-  for (const [providerId, provider] of Object.entries(providersData.providers)) {
-    providers.push({
-      id: `custom-${providerId}`,
-      name: provider.name,
-      is_active: providersData.active_provider === providerId,
-      is_configured: true,
-      model_count: provider.models ? provider.models.length : 0
-    });
+  if (providersData.providers) {
+    console.log('自定义提供商IDs:', Object.keys(providersData.providers));
+
+    for (const [providerId, provider] of Object.entries(providersData.providers)) {
+      console.log(`处理提供商 ${providerId}:`, {
+        name: provider.name,
+        isActive: providersData.active_provider === providerId,
+        modelCount: provider.models ? provider.models.length : 0
+      });
+
+      providers.push({
+        id: `custom-${providerId}`,
+        name: provider.name,
+        is_active: providersData.active_provider === providerId,
+        is_configured: true,
+        model_count: provider.models ? provider.models.length : 0
+      });
+    }
   }
+
+  console.log('返回提供商列表:', {
+    count: providers.length,
+    providers: providers.map(p => ({ id: p.id, name: p.name }))
+  });
 
   return {
     providers,
@@ -937,6 +957,8 @@ function updateProvider(providerId, apiKey, defaultModel, baseUrl) {
  * 创建自定义提供商
  */
 function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models = []) {
+  console.log('创建自定义提供商:', { name, baseUrl, defaultModel, formatType, modelsCount: Array.isArray(models) ? models.length : 0 });
+
   const providersData = loadProviders();
   const providerId = Date.now().toString(); // 使用时间戳作为ID
 
@@ -947,6 +969,8 @@ function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, m
     context_window: model.context_window || model.contextWindow || 4096,
     capabilities: model.capabilities || ['chat']
   })) : [];
+
+  console.log('处理后的模型数据:', processedModels);
 
   providersData.providers[providerId] = {
     name,
@@ -962,7 +986,17 @@ function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, m
     providersData.active_provider = providerId;
   }
 
+  console.log('保存提供商数据，ID:', providerId);
   saveProviders(providersData);
+
+  // 验证保存后的数据
+  const savedData = loadProviders();
+  console.log('验证保存的提供商数据:', {
+    providerId,
+    exists: !!savedData.providers[providerId],
+    modelCount: savedData.providers[providerId]?.models?.length || 0
+  });
+
   return { success: true, provider_id: providerId };
 }
 
@@ -996,7 +1030,10 @@ function deleteCustomProvider(providerId) {
  * 激活提供商
  */
 function activateProvider(providerId) {
+  console.log('尝试激活提供商:', providerId);
+
   if (providerId === 'siliconflow') {
+    console.log('激活硬基流动提供商');
     const providersData = loadProviders();
     providersData.active_provider = 'siliconflow';
     saveProviders(providersData);
@@ -1004,13 +1041,32 @@ function activateProvider(providerId) {
   }
   else if (providerId.startsWith('custom-')) {
     const realProviderId = providerId.substring(7); // 去除'custom-'前缀
-    const providersData = loadProviders();
+    console.log('激活自定义提供商, 实际ID:', realProviderId);
 
-    if (providersData.providers[realProviderId]) {
+    const providersData = loadProviders();
+    console.log('当前提供商数据:', {
+      activeProvider: providersData.active_provider,
+      availableProviders: Object.keys(providersData.providers || {})
+    });
+
+    if (providersData.providers && providersData.providers[realProviderId]) {
+      console.log('找到提供商，设置为活跃');
       providersData.active_provider = realProviderId;
       saveProviders(providersData);
+
+      // 验证保存后的数据
+      const savedData = loadProviders();
+      console.log('验证激活后的提供商数据:', {
+        activeProvider: savedData.active_provider,
+        isActive: savedData.active_provider === realProviderId
+      });
+
       return { success: true };
+    } else {
+      console.log('未找到提供商:', realProviderId);
     }
+  } else {
+    console.log('提供商ID格式不正确，需要以custom-开头');
   }
 
   return { success: false, message: '未找到提供商' };

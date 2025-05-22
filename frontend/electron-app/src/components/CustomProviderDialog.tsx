@@ -215,6 +215,8 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         capabilities: model.capabilities,
       }));
 
+      console.log('准备创建自定义提供商:', { name, apiKey, baseUrl, defaultModel, formatType, models: modelData });
+
       let response;
 
       // 创建新的自定义提供商
@@ -227,14 +229,22 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         modelData
       );
 
+      console.log('创建自定义提供商响应:', response);
+
       if (response.success && response.data) {
         // 获取新创建的提供商ID
         const providerId = response.data.provider_id;
+        console.log('获取到的提供商ID:', providerId);
 
         // 激活新创建的提供商
         if (providerId) {
+          // 添加custom-前缀到提供商ID
+          const prefixedProviderId = `custom-${providerId}`;
+          console.log('添加前缀后的提供商ID:', prefixedProviderId);
+
           // 激活自定义提供商
-          await activateCustomProvider(providerId);
+          const activateResponse = await activateCustomProvider(prefixedProviderId);
+          console.log('激活提供商响应:', activateResponse);
 
           // 刷新提供商列表，这将显示新添加的提供商
           onSave();
@@ -248,6 +258,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         setError(response.message || '创建自定义提供商失败');
       }
     } catch (error) {
+      console.error('保存自定义提供商出错:', error);
       setError(error instanceof Error ? error.message : '保存时出错');
     } finally {
       setLoading(false);

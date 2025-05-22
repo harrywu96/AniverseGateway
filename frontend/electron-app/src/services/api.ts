@@ -213,8 +213,8 @@ export async function createCustomProvider(
   try {
     // 使用Electron IPC接口创建自定义提供商
     if (window.electronAPI) {
-      // 由于Electron接口只接受5个参数，我们不能直接传递models
-      const result = await window.electronAPI.createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType);
+      // 传递所有参数，包括models
+      const result = await window.electronAPI.createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models);
       return {
         success: result.success,
         message: result.message || '创建自定义提供商成功',
