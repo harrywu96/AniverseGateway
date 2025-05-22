@@ -43,7 +43,7 @@ const CAPABILITIES = [
 interface CustomProviderDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (newlyActivatedProviderId: string) => void;
   editProvider?: AIProvider;
 }
 
@@ -247,7 +247,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
           console.log('激活提供商响应:', activateResponse);
 
           // 刷新提供商列表，这将显示新添加的提供商
-          onSave();
+          onSave(prefixedProviderId);
 
           // 关闭对话框
           onClose();

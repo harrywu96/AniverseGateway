@@ -33,7 +33,7 @@ import {
   AIProvider,
   AIModel
 } from '../shared';
-import { getProviders, getProviderModels, getLocalModels, getOllamaConfig } from '../services/api';
+import { getProviders, getProviderModels, getLocalModels, getOllamaConfig, updateProviderActiveStatus } from '../services/api';
 import CustomProviderDialog from '../components/CustomProviderDialog';
 import LocalModelDialog from '../components/LocalModelDialog';
 import OllamaDialog from '../components/OllamaDialog';
@@ -41,6 +41,7 @@ import ProviderList from '../components/ProviderList';
 import ProviderDetail from '../components/ProviderDetail';
 
 const Settings: React.FC = () => {
+  const initialLoadCompleteRef = React.useRef(false);
   const [saved, setSaved] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'success' | 'error' | '' }>({
     message: '',
@@ -84,54 +85,62 @@ const Settings: React.FC = () => {
   const [computeType, setComputeType] = useState('auto');
 
   // 加载提供商列表
-  const fetchProviders = async () => {
+  const fetchProviders = async (preferredProviderId?: string) => {
     setLoadingProviders(true);
     try {
       const response = await getProviders();
+      console.log('Response from getProviders API:', JSON.stringify(response, null, 2));
       if (response.success && response.data) {
-        // 只显示硬基流动和自定义提供商
-        const allProviders = response.data.providers;
-        // 现在我们不需要过滤，因为后端已经只返回了硬基流动和自定义提供商
-        setProviders(allProviders);
+        const allProviders = response.data.providers || [];
+        setProviders(allProviders); // 更新提供商列表状态
 
-        // 如果有当前提供商，选中它
-        if (response.data.current_provider && !selectedProvider) {
-          const currentProvider = response.data.current_provider;
-          // 如果是自定义提供商，需要找到对应的custom-{id}
-          if (currentProvider === 'custom') {
-            // 尝试找到激活的自定义提供商
-            const activeCustomProvider = allProviders.find(p => p.id.startsWith('custom-') && p.is_active);
-            if (activeCustomProvider) {
-              setSelectedProvider(activeCustomProvider.id);
-              fetchModels(activeCustomProvider.id);
-            } else {
-              // 如果没有激活的自定义提供商，选择第一个自定义提供商
-              const firstCustomProvider = allProviders.find(p => p.id.startsWith('custom-'));
-              if (firstCustomProvider) {
-                setSelectedProvider(firstCustomProvider.id);
-                fetchModels(firstCustomProvider.id);
-              } else {
-                // 如果没有自定义提供商，选择硬基流动
-                const siliconflow = allProviders.find(p => p.id === 'siliconflow');
-                if (siliconflow) {
-                  setSelectedProvider('siliconflow');
-                  fetchModels('siliconflow');
+        let newSelectedProviderId = '';
+        const currentSelectedStillExists = selectedProvider && allProviders.some(p => p.id === selectedProvider);
+
+        if (preferredProviderId && allProviders.some(p => p.id === preferredProviderId)) {
+            newSelectedProviderId = preferredProviderId;
+        } else if (currentSelectedStillExists) {
+            newSelectedProviderId = selectedProvider;
+        } else if (response.data.current_provider) {
+            const currentProviderFromAPI = response.data.current_provider;
+            let potentialMatchId = currentProviderFromAPI;
+            if (currentProviderFromAPI === 'custom') {
+                const activeCustom = allProviders.find(p => p.id.startsWith('custom-') && p.is_active);
+                if (activeCustom) {
+                    potentialMatchId = activeCustom.id;
+                } else {
+                    const firstCustom = allProviders.find(p => p.id.startsWith('custom-'));
+                    if (firstCustom) potentialMatchId = firstCustom.id;
                 }
-              }
             }
-          } else if (currentProvider === 'siliconflow') {
-            // 如果当前提供商是硬基流动，直接选中
-            setSelectedProvider('siliconflow');
-            fetchModels('siliconflow');
-          } else {
-            // 如果是其他提供商，默认选择硬基流动
-            const siliconflow = allProviders.find(p => p.id === 'siliconflow');
-            if (siliconflow) {
-              setSelectedProvider('siliconflow');
-              fetchModels('siliconflow');
+            if (allProviders.some(p => p.id === potentialMatchId)) {
+                newSelectedProviderId = potentialMatchId;
             }
-          }
         }
+
+        if (!newSelectedProviderId && allProviders.length > 0) {
+            const firstActive = allProviders.find(p => p.is_active);
+            if (firstActive) {
+                newSelectedProviderId = firstActive.id;
+            } else {
+                newSelectedProviderId = allProviders[0].id;
+            }
+        } else if (!newSelectedProviderId && allProviders.length === 0) {
+            newSelectedProviderId = '';
+        }
+        
+        if (!newSelectedProviderId && allProviders.some(p => p.id === 'siliconflow')) {
+            newSelectedProviderId = 'siliconflow';
+        }
+
+        setSelectedProvider(newSelectedProviderId);
+        if (newSelectedProviderId) {
+            fetchModels(newSelectedProviderId); 
+        } else {
+            setModels([]); 
+            setSelectedModel('');
+        }
+
       } else {
         setStatusMessage({
           message: response.message || '获取提供商列表失败',
@@ -144,6 +153,10 @@ const Settings: React.FC = () => {
         message: `获取提供商列表出错: ${errorMessage}`,
         type: 'error'
       });
+      setProviders([]);
+      setSelectedProvider('');
+      setModels([]);
+      setSelectedModel('');
     } finally {
       setLoadingProviders(false);
     }
@@ -195,11 +208,13 @@ const Settings: React.FC = () => {
 
   // 加载保存的设置
   useEffect(() => {
-    const loadSettings = async () => {
+    const loadInitialSettings = async () => {
+      setLoadingProviders(true);
       try {
         // 如果在Electron环境中
         if (window.electronAPI) {
           const settings = await window.electronAPI.getSettings();
+          let preferredProviderOnInit = undefined;
           if (settings) {
             // 设置模型路径和配置
             setModelPath(settings.modelPath || '');
@@ -215,25 +230,99 @@ const Settings: React.FC = () => {
             if (settings.darkMode !== undefined) setDarkMode(settings.darkMode);
             if (settings.apiKey) setApiKey(settings.apiKey);
             if (settings.baseUrl) setBaseUrl(settings.baseUrl);
-            if (settings.selectedProvider) setSelectedProvider(settings.selectedProvider);
-            if (settings.selectedModel) setSelectedModel(settings.selectedModel);
+            // Don't set selectedProvider and selectedModel directly here from settings
+            // Instead, pass settings.selectedProvider to fetchProviders
+            preferredProviderOnInit = settings.selectedProvider;
+            // selectedModel will be handled by fetchModels called by fetchProviders or selectedProvider useEffect
           }
 
-          // 加载提供商列表
-          await fetchProviders();
+          // 加载提供商列表, 传入从设置中加载的首选提供商（如果存在）
+          await fetchProviders(preferredProviderOnInit);
+          // selectedModel 应该在 fetchProviders -> fetchModels 链条中被设置，或者在 selectedProvider 的 useEffect 中设置
+          // 如果 settings.selectedModel 存在且对应于 preferredProviderOnInit，可以考虑在 fetchModels 后恢复它
+          // 但这会使逻辑复杂化，当前依赖 fetchModels 的默认模型选择逻辑
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('加载设置时出错:', errorMessage);
+        // 即使加载设置出错，也尝试获取提供商列表
+        await fetchProviders();
+      } finally {
+        setLoadingProviders(false);
+        initialLoadCompleteRef.current = true; // 标记初始加载完成
       }
     };
 
-    loadSettings();
+    loadInitialSettings();
 
     // 加载本地模型和Ollama配置
     fetchLocalModels();
     fetchOllamaConfig();
   }, []);
+
+  // BEGIN: Logic for item 8 - handleToggleProviderActive function
+  const handleToggleProviderActive = async (providerId: string, newActiveState: boolean) => {
+    setLoadingProviders(true); // Use loadingProviders to indicate operation in progress
+    try {
+      const response = await updateProviderActiveStatus(providerId, newActiveState);
+      if (response.success) {
+        setProviders(prevProviders =>
+          prevProviders.map(p =>
+            p.id === providerId ? { ...p, is_active: newActiveState } : p
+          )
+        );
+        setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
+
+        if (selectedProvider === providerId && !newActiveState) {
+          const nextActiveProvider = providers.find(p => p.id !== providerId && p.is_active);
+          if (nextActiveProvider) {
+            setSelectedProvider(nextActiveProvider.id);
+          } else {
+            const firstProvider = providers.find(p => p.id !== providerId);
+            if (firstProvider) {
+              setSelectedProvider(firstProvider.id);
+            } else {
+              setSelectedProvider('');
+            }
+          }
+        }
+      } else {
+        setStatusMessage({ message: response.message || '更新提供商状态失败', type: 'error' });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '更新提供商状态时出错';
+      setStatusMessage({ message: errorMessage, type: 'error' });
+    } finally {
+      setLoadingProviders(false);
+    }
+  };
+  // END: Logic for item 8
+
+  useEffect(() => {
+    if (!initialLoadCompleteRef.current) {
+      return; 
+    }
+    // 只有当 selectedProvider 有实际值时才触发保存，避免空选择触发
+    if (selectedProvider) { 
+      console.log(`Settings changed, preparing to auto-save. Provider: ${selectedProvider}, Model: ${selectedModel}`);
+      const settingsToSave = {
+        modelPath, configPath, device, computeType,
+        sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
+        apiKey, 
+        baseUrl,
+        selectedProvider, selectedModel,
+      };
+      if (window.electronAPI) {
+        window.electronAPI.saveSettings(settingsToSave)
+          .then(() => console.log('Settings auto-saved successfully.'))
+          .catch(err => console.error('Error auto-saving settings:', err));
+      }
+    }
+  }, [
+    selectedProvider, selectedModel, modelPath, configPath, device, computeType,
+    sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
+    apiKey, baseUrl,
+  ]);
 
   const handleSave = async () => {
     try {
@@ -415,6 +504,7 @@ const Settings: React.FC = () => {
               providers={providers}
               selectedProvider={selectedProvider}
               onSelectProvider={setSelectedProvider}
+              onToggleProviderActive={handleToggleProviderActive}
               onAddProvider={() => {
                 setCustomProviderToEdit(null);
                 setCustomProviderDialogOpen(true);
@@ -426,7 +516,7 @@ const Settings: React.FC = () => {
               onConfigureOllama={() => {
                 setOllamaDialogOpen(true);
               }}
-              onRefreshProviders={fetchProviders}
+              onRefreshProviders={() => fetchProviders(selectedProvider)}
               loading={loadingProviders}
             />
           </Box>
@@ -471,8 +561,8 @@ const Settings: React.FC = () => {
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);
         }}
-        onSave={() => {
-          fetchProviders();
+        onSave={(newlyActivatedProviderId) => {
+          fetchProviders(newlyActivatedProviderId);
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);
         }}

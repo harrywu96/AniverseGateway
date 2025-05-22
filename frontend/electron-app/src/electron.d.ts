@@ -53,10 +53,11 @@ interface ElectronAPI {
   ) => Promise<{ success: boolean; message?: string }>;
   testProvider: (providerId: string, apiKey: string, baseUrl?: string, model?: string, formatType?: string) =>
     Promise<{ success: boolean; message: string; data?: any }>;
-  createCustomProvider: (name: string, apiKey: string, baseUrl: string, defaultModel?: string, formatType?: string) =>
+  createCustomProvider: (name: string, apiKey: string, baseUrl: string, defaultModel?: string, formatType?: string, models?: any[]) =>
     Promise<{ success: boolean; message?: string; provider_id?: string }>;
   deleteCustomProvider: (providerId: string) => Promise<{ success: boolean; message?: string }>;
   activateProvider: (providerId: string) => Promise<{ success: boolean; message?: string }>;
+  updateProviderStatus: (providerId: string, isActive: boolean) => Promise<{ success: boolean; message?: string; data?: any; error?: string }>;
 }
 
 declare global {

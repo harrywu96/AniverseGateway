@@ -934,7 +934,15 @@ class ProviderService:
                 )
 
             # 保存配置
-            self._save_config()
+            if self._save_config():  # 确保保存成功
+                from backend.api.dependencies import get_system_config
+
+                get_system_config.cache_clear()
+                logger.info("系统配置缓存已清除，因为自定义提供商已更新。")
+            else:
+                logger.warning(
+                    "自定义提供商配置保存失败，系统配置缓存未清除。"
+                )
 
             return True, provider_id
         except Exception as e:

@@ -16,15 +16,46 @@ interface ProviderDetails {
  */
 export async function getProviders(): Promise<ApiResponse<{ providers: AIProvider[], current_provider: string }>> {
   try {
-    // 使用后端API获取提供商列表，无论是否在Electron环境中
-    const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.PROVIDERS}`);
-    if (!response.ok) {
-      throw new Error(`获取提供商列表失败: ${response.status} ${response.statusText}`);
+    if (window.electronAPI && typeof window.electronAPI.getProviders === 'function') {
+      console.log('Fetching providers via Electron IPC (direct method call)...');
+      const ipcResponse = await window.electronAPI.getProviders();
+      // main/index.ts的getProviderList返回的是 { providers, current_provider }
+      // 这直接符合 ApiResponse.data 的期望结构
+      if (ipcResponse && typeof ipcResponse.providers !== 'undefined' && typeof ipcResponse.current_provider !== 'undefined') {
+        console.log('Successfully fetched providers via IPC (direct method call):', ipcResponse);
+        return {
+          success: true,
+          message: '获取提供商列表成功 (from IPC)',
+          data: ipcResponse, // ipcResponse 已经是 { providers: AIProvider[], current_provider: string } 格式
+        };
+      } else {
+        // IPC 调用成功但返回数据格式不符合预期
+        console.error('IPC getProviders returned unexpected data format:', ipcResponse);
+        // 可以选择抛出错误或回退到HTTP
+        // 为了明确问题，这里先抛出错误
+        throw new Error('IPC getProviders 返回数据格式不正确');
+      }
+    } else {
+      // Fallback to HTTP if not in Electron or getProviders is not available
+      console.log('Electron API or getProviders method not available, fetching providers via HTTP...');
+      const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.PROVIDERS}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('获取提供商列表失败 (HTTP):', response.status, response.statusText, errorText);
+        throw new Error(`获取提供商列表失败 (HTTP): ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      const httpData = await response.json();
+      console.log('Successfully fetched providers via HTTP:', httpData);
+      return httpData; // 假设HTTP API直接返回 ApiResponse 结构
     }
-    return await response.json();
   } catch (error) {
-    console.error('获取提供商列表出错:', error);
-    throw error;
+    console.error('获取提供商列表出错 (getProviders function):', error);
+    // 确保返回 ApiResponse 格式的错误
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '获取提供商列表时发生未知错误',
+      data: { providers: [], current_provider: '' }, // 提供一个默认的data结构
+    };
   }
 }
 
@@ -35,33 +66,70 @@ export async function getProviders(): Promise<ApiResponse<{ providers: AIProvide
  */
 export async function getProviderModels(providerId: string): Promise<ApiResponse<{ provider: string, models: AIModel[] }>> {
   try {
-    // 使用Electron IPC接口获取模型列表
+    let rawModels: any[] = [];
+    let source: string = '';
+
     if (window.electronAPI) {
       try {
         const result = await window.electronAPI.getProviderModels(providerId);
-        return {
-          success: result.success,
-          message: '获取模型列表成功',
-          data: {
-            provider: providerId,
-            models: result.models || []
-          }
-        };
+        if (result.success) {
+          rawModels = result.models || [];
+          source = 'ipc';
+        } else {
+          // 如果IPC调用明确失败但未抛出错误，则记录并准备回退
+          const ipcMessage = (result as any).message || 'IPC getProviderModels failed without a specific message';
+          console.warn(`IPC getProviderModels for ${providerId} reported failure: ${ipcMessage}. Falling back to HTTP.`);
+        }
       } catch (electronError) {
         console.error(`通过Electron获取提供商 ${providerId} 的模型列表出错:`, electronError);
         // 如果Electron接口失败，尝试使用后端API
       }
     }
 
-    // 使用后端API获取模型列表
-    const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.MODELS(providerId)}`);
-    if (!response.ok) {
-      throw new Error(`获取模型列表失败: ${response.status} ${response.statusText}`);
+    // 如果IPC未成功获取模型 (source不是ipc，或者 rawModels仍为空数组)
+    if (source !== 'ipc') {
+      console.log(`Fetching provider models for ${providerId} via HTTP API.`);
+      const response = await fetch(`${DEFAULT_API_BASE_URL}${API_PATHS.MODELS(providerId)}`);
+      if (!response.ok) {
+        throw new Error(`获取模型列表失败 (HTTP): ${response.status} ${response.statusText}`);
+      }
+      const jsonResponse = await response.json();
+      if (jsonResponse.success && jsonResponse.data) {
+        rawModels = jsonResponse.data.models || [];
+        source = 'http';
+      } else {
+        throw new Error(`获取模型列表失败 (HTTP API Error): ${jsonResponse.message || 'Unknown API error'}`);
+      }
     }
-    return await response.json();
+
+    // 统一转换模型结构，确保包含 provider_id
+    const transformedModels: AIModel[] = rawModels.map(model => ({
+      ...model,
+      provider_id: model.provider || providerId, // 使用 model.provider, 如果没有则回退到函数参数 providerId
+      // capabilities: model.capabilities || [], // 确保 capabilities 总是数组
+      // is_default: model.is_default || false, // 确保 is_default 存在
+    }));
+
+    return {
+      success: true,
+      message: `获取模型列表成功 (from ${source || 'unknown'})`,
+      data: {
+        provider: providerId,
+        models: transformedModels
+      }
+    };
+
   } catch (error) {
     console.error(`获取提供商 ${providerId} 的模型列表出错:`, error);
-    throw error;
+    // 重新抛出错误或返回一个标准的错误响应
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : String(error),
+      data: {
+        provider: providerId,
+        models: []
+      }
+    } as ApiResponse<{ provider: string, models: AIModel[] }>;
   }
 }
 
@@ -759,3 +827,28 @@ export async function getAllModels() {
     };
   }
 }
+
+/**
+ * 更新提供商的活跃状态
+ * @param providerId 提供商ID
+ * @param isActive 是否活跃
+ * @returns 更新结果
+ */
+export const updateProviderActiveStatus = async (providerId: string, isActive: boolean): Promise<ApiResponse<null>> => {
+  try {
+    if (window.electronAPI) {
+      const result = await window.electronAPI.updateProviderStatus(providerId, isActive);
+      if (result && typeof result.success === 'boolean') {
+        return result as ApiResponse<null>;
+      }
+      return { success: false, message: result?.message || 'IPC call to update-provider-status returned unexpected structure or failed' };
+    } else {
+      console.warn('updateProviderActiveStatus: Not in Electron context or IPC not available.');
+      return { success: false, message: '无法更新提供商状态：非Electron环境且无HTTP回退实现' };
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '更新提供商状态时发生未知错误';
+    console.error('updateProviderActiveStatus error:', error);
+    return { success: false, message };
+  }
+};

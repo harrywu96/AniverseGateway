@@ -55,6 +55,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('delete-custom-provider', providerId),
   activateProvider: (providerId: string) =>
     ipcRenderer.invoke('activate-provider', providerId),
+
+  // 新增：更新提供商状态
+  updateProviderStatus: (providerId: string, isActive: boolean) => ipcRenderer.invoke('update-provider-status', providerId, isActive),
 });
 
 // 打印预加载脚本已加载的消息

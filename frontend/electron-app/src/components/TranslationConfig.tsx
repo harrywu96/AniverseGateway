@@ -63,12 +63,17 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
       setLoading(true);
       const response = await getProviders();
       if (response.success && response.data) {
-        setProviders(response.data.providers);
+        const activeProviders = response.data.providers.filter((p: any) => p.is_active);
+        setProviders(activeProviders);
 
         // 如果当前选择的提供商不在列表中，选择第一个
-        if (response.data.providers.length > 0 &&
-            !response.data.providers.some((p: any) => p.id === selectedProvider)) {
-          setSelectedProvider(response.data.providers[0].id);
+        if (activeProviders.length > 0 &&
+            !activeProviders.some((p: any) => p.id === selectedProvider)) {
+          setSelectedProvider(activeProviders[0].id);
+        } else if (activeProviders.length === 0) {
+          // 如果没有活动的提供商，清空选择
+          setSelectedProvider('');
+          setError('没有可用的活动翻译提供商。请在设置中激活提供商。');
         }
       } else {
         setError(response.message || '获取提供商列表失败');

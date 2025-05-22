@@ -5,6 +5,7 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
+  ListItemSecondaryAction,
   Avatar,
   Typography,
   Button,
@@ -13,6 +14,7 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
+  Switch,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -28,6 +30,7 @@ interface ProviderListProps {
   onSelectProvider: (providerId: string) => void;
   onAddProvider: () => void;
   onRefreshProviders: () => void;
+  onToggleProviderActive: (providerId: string, isActive: boolean) => void;
   onAddLocalModel?: () => void;
   onConfigureOllama?: () => void;
   loading: boolean;
@@ -39,6 +42,7 @@ const ProviderList: React.FC<ProviderListProps> = ({
   onSelectProvider,
   onAddProvider,
   onRefreshProviders,
+  onToggleProviderActive,
   onAddLocalModel,
   onConfigureOllama,
   loading,
@@ -116,20 +120,32 @@ const ProviderList: React.FC<ProviderListProps> = ({
                     component="span"
                     variant="caption"
                     sx={{
-                      color: provider.is_active ? 'success.main' : 'text.secondary',
-                      fontWeight: provider.is_active ? 'bold' : 'normal',
+                      // color: provider.is_active ? 'success.main' : 'text.secondary',
+                      // fontWeight: provider.is_active ? 'bold' : 'normal',
                     }}
                   >
-                    {provider.is_active ? '活跃' : '未激活'}
+                    {/* {provider.is_active ? '活跃' : '未激活'} */}
                   </Typography>
-                  {provider.model_count > 0 && (
+                  {provider.model_count > 0 ? (
                     <Typography component="span" variant="caption" color="text.secondary">
-                      • {provider.model_count} 个模型
+                      {provider.model_count} 个模型
+                    </Typography>
+                  ) : (
+                    <Typography component="span" variant="caption" color="text.secondary">
+                      无可用模型
                     </Typography>
                   )}
                 </Box>
               }
             />
+            <ListItemSecondaryAction>
+              <Switch
+                edge="end"
+                onChange={() => onToggleProviderActive(provider.id, !provider.is_active)}
+                checked={provider.is_active}
+                disabled={loading}
+              />
+            </ListItemSecondaryAction>
           </ListItem>
         ))}
       </List>
