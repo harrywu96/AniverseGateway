@@ -12,10 +12,10 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'cherry-studio-electron-app', // 持久化数据在 localStorage 中的主键名，确保唯一性
-  storage,                           // 使用的存储引擎 (localStorage)
-  version: 1,                       // 版本号，用于迁移 (如果需要)
-  whitelist: ['provider'],            // 只持久化 provider slice 的状态，其他 slice 如果有则不会被持久化
+  key: 'subtranslate-app', // 修改key以匹配项目的实际名称
+  storage,                // 使用的存储引擎 (localStorage)
+  version: 1,            // 版本号，用于迁移 (如果需要)
+  whitelist: ['provider'], // 只持久化 provider slice 的状态，其他 slice 如果有则不会被持久化
   // blacklist: [], // 如果 whitelist 未定义，可以使用 blacklist 来排除某些 slice
 };
 

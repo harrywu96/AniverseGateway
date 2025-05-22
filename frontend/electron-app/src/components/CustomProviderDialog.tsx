@@ -75,43 +75,52 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
 
   // 当编辑提供商时，加载提供商信息
   useEffect(() => {
-    if (open && editProvider) {
-      // 设置提供商基本信息
-      setName(editProvider.name || '');
-      
-      // API密钥通常不会从后端返回，所以这里保持空白
-      // 如果需要编辑已保存的API密钥，需要从安全存储中获取
-      setApiKey('');
-      
-      // 设置API基础URL (apiHost)
-      setBaseUrl(editProvider.apiHost || '');
-      
-      // 设置格式类型，这需要根据实际存储位置来获取
-      // 因为Provider接口没有formatType字段，可能需要从其他地方获取或默认为'openai'
-      setFormatType('openai'); // 默认值，实际应根据存储位置获取
-      
-      // 如果提供商有模型，加载模型
-      if (editProvider.models && editProvider.models.length > 0) {
-        const loadedModels = editProvider.models.map(model => ({
-          id: model.id,
-          name: model.name,
-          // 处理不同字段名的兼容性问题
-          contextWindow: (model as any).context_window || 4096,
-          // 确保capabilities是数组
-          capabilities: Array.isArray(model.capabilities) ? model.capabilities : ['chat'],
-        }));
-        setModels(loadedModels);
+    if (open) {
+      if (editProvider) {
+        // 设置提供商基本信息
+        setName(editProvider.name || '');
+        
+        // API密钥通常不会从后端返回，所以这里保持空白
+        // 如果需要编辑已保存的API密钥，需要从安全存储中获取
+        setApiKey('');
+        
+        // 设置API基础URL (apiHost)
+        setBaseUrl(editProvider.apiHost || '');
+        
+        // 设置格式类型，这需要根据实际存储位置来获取
+        // 因为Provider接口没有formatType字段，可能需要从其他地方获取或默认为'openai'
+        setFormatType('openai'); // 默认值，实际应根据存储位置获取
+        
+        // 如果提供商有模型，加载模型
+        if (editProvider.models && editProvider.models.length > 0) {
+          const loadedModels = editProvider.models.map(model => ({
+            id: model.id,
+            name: model.name,
+            // 处理不同字段名的兼容性问题
+            contextWindow: (model as any).context_window || 4096,
+            // 确保capabilities是数组
+            capabilities: Array.isArray(model.capabilities) ? model.capabilities : ['chat'],
+          }));
+          setModels(loadedModels);
+        } else {
+          // 如果没有模型，设置为空数组
+          setModels([]);
+        }
       } else {
-        // 如果没有模型，设置为空数组
+        // 如果是新建提供商或对话框刚打开，重置所有表单字段
+        setName('');
+        setApiKey('');
+        setBaseUrl('');
+        setFormatType('openai');
         setModels([]);
+        setModelId('');
+        setModelName('');
+        setContextWindow(4096);
+        setSelectedCapabilities(['chat']);
+        setError('');
+        setTestResult(null);
+        setTestModel('');
       }
-    } else if (open) {
-      // 如果是新建提供商，重置表单
-      setName('');
-      setApiKey('');
-      setBaseUrl('');
-      setFormatType('openai');
-      setModels([]);
     }
   }, [open, editProvider]);
 

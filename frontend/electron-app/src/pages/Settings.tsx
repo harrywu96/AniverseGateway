@@ -36,7 +36,6 @@ import {
   getProviderModels as fetchProviderModelsFromApi,
   getLocalModels,
   getOllamaConfig,
-  updateProviderActiveStatus as updateProviderActiveStatusApi
 } from '../services/api';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
@@ -55,11 +54,12 @@ import LocalModelDialog from '../components/LocalModelDialog';
 import OllamaDialog from '../components/OllamaDialog';
 import ProviderList from '../components/ProviderList';
 import ProviderDetail from '../components/ProviderDetail';
+import { store, persistor } from '../store';
 
 const Settings: React.FC = () => {
   const initialLoadCompleteRef = React.useRef(false);
   const [saved, setSaved] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' | '' }>({
+  const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' | '' }>({
     message: '',
     type: '',
   });
@@ -135,9 +135,11 @@ const Settings: React.FC = () => {
     setLoadingProviders(true);
     try {
       const response = await fetchProvidersFromApi();
-      if (response.success && response.data) {
-        const fetchedApiProviders: any[] = response.data.providers || [];
-        const mappedProviders: Provider[] = fetchedApiProviders.map((p: any) => ({
+      const existingProvidersInStore = store.getState().provider.providers;
+      const currentProviderIdFromStore = store.getState().provider.currentProviderId;
+
+      if (response && response.success && response.data) {
+        const mappedProvidersFromApi: Provider[] = (response.data.providers || []).map((p: any) => ({
           id: p.id,
           name: p.name,
           apiKey: p.api_key || '',
@@ -161,36 +163,78 @@ const Settings: React.FC = () => {
           model_count: p.model_count || (p.models ? p.models.length : 0),
           is_configured: !!p.api_key,
         }));
-        dispatch(setProviders(mappedProviders));
 
+        let effectiveProviders: Provider[];
         let newSelectedProviderId = '';
-        const currentSelectedProviderInList = currentProviderId && mappedProviders.some(p => p.id === currentProviderId);
 
-        if (preferredProviderId && mappedProviders.some(p => p.id === preferredProviderId)) {
+        if (existingProvidersInStore.length === 0) {
+          dispatch(setProviders(mappedProvidersFromApi));
+          effectiveProviders = mappedProvidersFromApi;
+          console.log('Provider store empty, initialized from API/main process.');
+        } else {
+          effectiveProviders = existingProvidersInStore;
+          console.log('Providers loaded from Redux store (redux-persist). API data not used to setProviders.');
+        }
+        const apiCurrentProvider = response.data.current_provider;
+
+        if (preferredProviderId && effectiveProviders.some(p => p.id === preferredProviderId)) {
           newSelectedProviderId = preferredProviderId;
-        } else if (currentSelectedProviderInList) {
-          newSelectedProviderId = currentProviderId as string;
-        } else if (response.data.current_provider) {
-          const apiCurrent = response.data.current_provider;
-          if (mappedProviders.some(p => p.id === apiCurrent)) {
-            newSelectedProviderId = apiCurrent;
-          }
+        } else if (apiCurrentProvider && effectiveProviders.some(p => p.id === apiCurrentProvider)) {
+          newSelectedProviderId = apiCurrentProvider;
+        } else if (currentProviderIdFromStore && effectiveProviders.some(p => p.id === currentProviderIdFromStore)) {
+          newSelectedProviderId = currentProviderIdFromStore;
         }
 
-        if (!newSelectedProviderId && mappedProviders.length > 0) {
-          const firstActive = mappedProviders.find(p => p.is_active);
-          newSelectedProviderId = firstActive ? firstActive.id : mappedProviders[0].id;
+        if (!newSelectedProviderId && effectiveProviders.length > 0) {
+          const firstActive = effectiveProviders.find(p => p.is_active);
+          newSelectedProviderId = firstActive ? firstActive.id : effectiveProviders[0].id;
         }
         
         dispatch(setCurrentProviderId(newSelectedProviderId || null));
+
       } else {
-        setStatusMessage({ message: response.message || '获取提供商列表失败', type: 'error' });
+        const apiMessage = response ? response.message : '获取提供商列表的API调用失败';
+        setStatusMessage({ message: `${apiMessage}，尝试使用本地缓存数据`, type: 'warning' });
+        
+        if (existingProvidersInStore.length > 0) {
+          let newSelectedProviderId = '';
+          if (preferredProviderId && existingProvidersInStore.some(p => p.id === preferredProviderId)) {
+            newSelectedProviderId = preferredProviderId;
+          } else if (currentProviderIdFromStore && existingProvidersInStore.some(p => p.id === currentProviderIdFromStore)) {
+            newSelectedProviderId = currentProviderIdFromStore;
+          }
+          if (!newSelectedProviderId && existingProvidersInStore.length > 0) {
+            const firstActive = existingProvidersInStore.find(p => p.is_active);
+            newSelectedProviderId = firstActive ? firstActive.id : existingProvidersInStore[0].id;
+          }
+          dispatch(setCurrentProviderId(newSelectedProviderId || null));
+          console.log('API fetch failed, but providers restored from redux-persist.');
+        } else {
+          setStatusMessage({ message: `${apiMessage}，且无本地缓存`, type: 'error' });
+          dispatch(setCurrentProviderId(null));
+          dispatch(setCurrentModelId(null));
+        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       setStatusMessage({ message: `获取提供商列表出错: ${errorMessage}`, type: 'error' });
-      dispatch(setCurrentProviderId(null));
-      dispatch(setCurrentModelId(null));
+      const existingProvidersOnCatch = store.getState().provider.providers;
+      const currentProviderIdOnCatch = store.getState().provider.currentProviderId;
+      if (existingProvidersOnCatch.length > 0) {
+        let newSelectedProviderId = '';
+          if (currentProviderIdOnCatch && existingProvidersOnCatch.some(p => p.id === currentProviderIdOnCatch)) {
+            newSelectedProviderId = currentProviderIdOnCatch;
+          }
+          if (!newSelectedProviderId && existingProvidersOnCatch.length > 0) {
+            const firstActive = existingProvidersOnCatch.find(p => p.is_active);
+            newSelectedProviderId = firstActive ? firstActive.id : existingProvidersOnCatch[0].id;
+          }
+        dispatch(setCurrentProviderId(newSelectedProviderId || null));
+        console.log('Exception during API fetch, but providers restored from redux-persist.');
+      } else {
+        dispatch(setCurrentProviderId(null));
+        dispatch(setCurrentModelId(null));
+      }
     } finally {
       setLoadingProviders(false);
     }
@@ -282,18 +326,8 @@ const Settings: React.FC = () => {
 
   const handleToggleProviderActive = async (providerId: string, newActiveState: boolean) => {
     dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
-    try {
-      const response = await updateProviderActiveStatusApi(providerId, newActiveState);
-      if (!response.success) {
-        setStatusMessage({ message: response.message || '更新提供商状态失败 (API)', type: 'error' });
-        dispatch(setProviderActiveStatus({ id: providerId, is_active: !newActiveState }));
-      } else {
-        setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
-      }
-    } catch (error) {
-      setStatusMessage({ message: error instanceof Error ? error.message : '更新提供商状态时出错', type: 'error' });
-      dispatch(setProviderActiveStatus({ id: providerId, is_active: !newActiveState }));
-    }
+    persistor.persist();
+    setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
   };
 
   useEffect(() => {
@@ -358,10 +392,9 @@ const Settings: React.FC = () => {
   };
 
   const handleDeleteProvider = (providerId: string) => {
-    if (window.confirm(`确定要删除提供商 ${providerId} 吗？此操作不可撤销。`)) {
-      dispatch(removeProviderAction(providerId));
-      setStatusMessage({ message: `提供商 ${providerId} 已删除`, type: 'success'});
-    }
+    dispatch(removeProviderAction(providerId));
+    persistor.persist();
+    setStatusMessage({ message: `提供商 ${providerId} 已删除`, type: 'success'});
   };
 
   const handleBrowseModelPath = async () => {
