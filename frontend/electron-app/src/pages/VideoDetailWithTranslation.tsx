@@ -90,22 +90,96 @@ const VideoDetailWithTranslation: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // 从后端API获取视频信息
         const apiPort = '8000';
-        const url = `http://localhost:${apiPort}/api/videos/${id}`;
+        
+        // 首先尝试直接使用ID从后端获取视频信息
+        let videoUrl = `http://localhost:${apiPort}/api/videos/${id}`;
+        console.log('尝试获取视频信息:', videoUrl);
 
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`获取视频信息失败: ${response.status} ${response.statusText}`);
+        let response;
+        try {
+          response = await fetch(videoUrl);
+        } catch (fetchError) {
+          console.warn('初次获取视频失败，尝试重试机制:', fetchError);
+          // 添加重试机制
+          let retryCount = 0;
+          const maxRetries = 3;
+
+          while (retryCount < maxRetries) {
+            try {
+              await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+              response = await fetch(videoUrl);
+              break;
+            } catch (retryError) {
+              retryCount++;
+              console.warn(`重试获取视频信息失败 (${retryCount}/${maxRetries}):`, retryError);
+              if (retryCount >= maxRetries) {
+                throw retryError;
+              }
+            }
+          }
+        }
+
+        // 如果直接获取失败，尝试从本地ID映射查找
+        if (!response || !response.ok) {
+          console.log('直接获取失败，检查本地ID映射');
+          
+          try {
+            // 检查本地存储的ID映射
+            const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
+            const mappedId = idMappings[id];
+            
+            if (mappedId && mappedId !== id) {
+              console.log(`找到ID映射: ${id} -> ${mappedId}`);
+              videoUrl = `http://localhost:${apiPort}/api/videos/${mappedId}`;
+              response = await fetch(videoUrl);
+            }
+          } catch (mappingError) {
+            console.warn('检查ID映射失败:', mappingError);
+          }
+        }
+
+        // 如果还是失败，尝试通过前端ID查询
+        if (!response || !response.ok) {
+          console.log('尝试通过前端ID查询');
+          try {
+            const frontendIdUrl = `http://localhost:${apiPort}/api/videos/by-frontend-id/${id}`;
+            response = await fetch(frontendIdUrl);
+            
+            if (response && response.ok) {
+              console.log('通过前端ID查询成功');
+            }
+          } catch (frontendIdError) {
+            console.warn('通过前端ID查询失败:', frontendIdError);
+          }
+        }
+
+        // 检查最终响应结果
+        if (!response || !response.ok) {
+          throw new Error(`获取视频信息失败: ${response?.status || 'Unknown'} ${response?.statusText || ''}`);
         }
 
         const result = await response.json();
         if (result.success && result.data) {
-          setVideo(result.data);
+          // 处理后端返回的字幕轨道数据
+          const processedData = {
+            ...result.data,
+            subtitleTracks: (result.data.subtitle_tracks || []).map((track: any) => ({
+              id: track.index.toString(),
+              language: track.language || 'unknown',
+              title: track.title || '',
+              format: track.codec || 'unknown',
+              isExternal: false,
+              backendTrackId: track.id,
+              backendIndex: track.index
+            }))
+          };
+
+          setVideo(processedData);
 
           // 如果有字幕轨道，默认选择第一个
-          if (result.data.subtitleTracks && result.data.subtitleTracks.length > 0) {
-            setSelectedTrack(result.data.subtitleTracks[0]);
+          if (processedData.subtitleTracks && processedData.subtitleTracks.length > 0) {
+            setSelectedTrack(processedData.subtitleTracks[0]);
           }
         } else {
           throw new Error(result.message || '获取视频信息失败');
@@ -479,7 +553,7 @@ const VideoDetailWithTranslation: React.FC = () => {
     <Box sx={{ p: 2, height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
       {/* 页面标题和返回按钮 */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <IconButton onClick={() => navigate('/videos')} sx={{ mr: 1 }}>
+        <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" component="h1">
@@ -492,11 +566,10 @@ const VideoDetailWithTranslation: React.FC = () => {
         {/* 视频播放器 */}
         <Box sx={{ height: '50%', minHeight: 300 }}>
           {video ? (
-            <VideoPlayer
-              videoPath={video.filePath}
-              currentTime={currentTime}
-              onTimeUpdate={setCurrentTime}
-            />
+                          <VideoPlayer
+                src={video.filePath}
+                onTimeUpdate={setCurrentTime}
+              />
           ) : (
             <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               {loading ? <CircularProgress /> : <Typography>未找到视频</Typography>}

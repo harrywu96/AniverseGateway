@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   FormControl,
@@ -10,9 +10,11 @@ import {
   SelectChangeEvent,
   CircularProgress,
   Alert,
+  Chip,
+  Tooltip,
 } from '@mui/material';
-import { getProviders, getProviderModels } from '../services/api';
 import { LANGUAGE_OPTIONS, TRANSLATION_STYLES } from '../shared';
+import { useActiveProviders } from '../hooks/useActiveProviders';
 
 interface TranslationConfigProps {
   onChange: (config: any) => void;
@@ -23,28 +25,70 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
   onChange,
   defaultConfig = {}
 }) => {
-  // 状态
-  const [providers, setProviders] = useState<any[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState(defaultConfig.provider || 'siliconflow');
-  const [models, setModels] = useState<any[]>([]);
+  // 使用自定义Hook获取活跃的提供商数据
+  const {
+    activeProviders,
+    configuredProviders,
+    providerOptions,
+    getModelOptions,
+    isProviderConfigured,
+    activeCount,
+    configuredCount
+  } = useActiveProviders({
+    onlyActive: true,
+    onlyConfigured: true,
+    sortByName: true,
+    sortByActive: true
+  });
+
+  // 本地状态
+  const [selectedProvider, setSelectedProvider] = useState(defaultConfig.provider || '');
   const [selectedModel, setSelectedModel] = useState(defaultConfig.model || '');
   const [sourceLanguage, setSourceLanguage] = useState(defaultConfig.sourceLanguage || 'en');
   const [targetLanguage, setTargetLanguage] = useState(defaultConfig.targetLanguage || 'zh');
   const [style, setStyle] = useState(defaultConfig.style || 'natural');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 加载提供商列表
-  useEffect(() => {
-    fetchProviders();
-  }, []);
+  // 使用useMemo缓存模型选项
+  const modelOptions = useMemo(() => {
+    return getModelOptions(selectedProvider);
+  }, [selectedProvider, getModelOptions]);
 
-  // 当提供商变化时，加载模型列表
+  // 检查提供商可用性并自动选择
   useEffect(() => {
-    if (selectedProvider) {
-      fetchModels(selectedProvider);
+    if (configuredProviders.length === 0) {
+      setError('没有可用的已配置翻译提供商。请在设置中配置提供商API密钥。');
+      setSelectedProvider('');
+      setSelectedModel('');
+      return;
     }
-  }, [selectedProvider]);
+
+    setError(''); // 清除错误信息
+
+    // 如果没有选择提供商或当前选择的提供商不可用，自动选择第一个可用的
+    if (!selectedProvider || !configuredProviders.some(p => p.id === selectedProvider)) {
+      const firstProvider = configuredProviders[0];
+      if (firstProvider) {
+        setSelectedProvider(firstProvider.id);
+      }
+    }
+  }, [configuredProviders, selectedProvider]);
+
+  // 当提供商变化时，自动选择默认模型
+  useEffect(() => {
+    if (selectedProvider && modelOptions.length > 0) {
+      // 如果当前选择的模型不在新的模型列表中，选择默认模型或第一个模型
+      if (!modelOptions.some(m => m.value === selectedModel)) {
+        const defaultModel = modelOptions.find(m => m.isDefault);
+        const modelToSelect = defaultModel || modelOptions[0];
+        if (modelToSelect) {
+          setSelectedModel(modelToSelect.value);
+        }
+      }
+    } else if (selectedProvider && modelOptions.length === 0) {
+      setSelectedModel('');
+    }
+  }, [selectedProvider, modelOptions, selectedModel]);
 
   // 当配置变化时，通知父组件
   useEffect(() => {
@@ -56,57 +100,6 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
       style
     });
   }, [selectedProvider, selectedModel, sourceLanguage, targetLanguage, style, onChange]);
-
-  // 获取提供商列表
-  const fetchProviders = async () => {
-    try {
-      setLoading(true);
-      const response = await getProviders();
-      if (response.success && response.data) {
-        const activeProviders = response.data.providers.filter((p: any) => p.is_active);
-        setProviders(activeProviders);
-
-        // 如果当前选择的提供商不在列表中，选择第一个
-        if (activeProviders.length > 0 &&
-            !activeProviders.some((p: any) => p.id === selectedProvider)) {
-          setSelectedProvider(activeProviders[0].id);
-        } else if (activeProviders.length === 0) {
-          // 如果没有活动的提供商，清空选择
-          setSelectedProvider('');
-          setError('没有可用的活动翻译提供商。请在设置中激活提供商。');
-        }
-      } else {
-        setError(response.message || '获取提供商列表失败');
-      }
-    } catch (error: any) {
-      setError(`获取提供商列表出错: ${error.message || '未知错误'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 获取模型列表
-  const fetchModels = async (providerId: string) => {
-    try {
-      setLoading(true);
-      const response = await getProviderModels(providerId);
-      if (response.success && response.data) {
-        setModels(response.data.models);
-
-        // 如果当前选择的模型不在列表中，选择第一个
-        if (response.data.models.length > 0 &&
-            !response.data.models.some((m: any) => m.id === selectedModel)) {
-          setSelectedModel(response.data.models[0].id);
-        }
-      } else {
-        setError(response.message || `获取${providerId}的模型列表失败`);
-      }
-    } catch (error: any) {
-      setError(`获取模型列表出错: ${error.message || '未知错误'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 处理提供商变化
   const handleProviderChange = (event: SelectChangeEvent) => {
@@ -136,9 +129,35 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
 
   return (
     <Paper sx={{ p: 2 }}>
-      <Typography variant="h6" gutterBottom>翻译配置</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h6">翻译配置</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title={`已激活提供商: ${activeCount}`}>
+            <Chip 
+              label={`激活: ${activeCount}`} 
+              size="small" 
+              color="primary" 
+              variant="outlined" 
+            />
+          </Tooltip>
+          <Tooltip title={`已配置提供商: ${configuredCount}`}>
+            <Chip 
+              label={`可用: ${configuredCount}`} 
+              size="small" 
+              color={configuredCount > 0 ? "success" : "error"} 
+              variant="outlined" 
+            />
+          </Tooltip>
+        </Box>
+      </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {configuredCount === 0 && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          没有已配置的翻译提供商。请前往<strong>设置 → AI服务配置</strong>配置API密钥。
+        </Alert>
+      )}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* 提供商选择 */}
@@ -149,11 +168,25 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
             value={selectedProvider}
             label="翻译提供商"
             onChange={handleProviderChange}
-            disabled={loading}
+            disabled={configuredProviders.length === 0}
           >
-            {providers.map((provider) => (
-              <MenuItem key={provider.id} value={provider.id}>
-                {provider.name}
+            {providerOptions.map((option) => (
+              <MenuItem 
+                key={option.value} 
+                value={option.value}
+                disabled={option.disabled}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span>{option.label}</span>
+                  {option.description && (
+                    <Typography variant="caption" color="text.secondary">
+                      ({option.description})
+                    </Typography>
+                  )}
+                  {!isProviderConfigured(option.value) && (
+                    <Chip label="未配置" size="small" color="warning" variant="outlined" />
+                  )}
+                </Box>
               </MenuItem>
             ))}
           </Select>
@@ -167,11 +200,21 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
             value={selectedModel}
             label="翻译模型"
             onChange={handleModelChange}
-            disabled={loading || models.length === 0}
+            disabled={!selectedProvider || modelOptions.length === 0}
           >
-            {models.map((model) => (
-              <MenuItem key={model.id} value={model.id}>
-                {model.name}
+            {modelOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span>{option.label}</span>
+                  {option.isDefault && (
+                    <Chip label="默认" size="small" color="primary" variant="outlined" />
+                  )}
+                  {option.description && (
+                    <Typography variant="caption" color="text.secondary">
+                      ({option.description})
+                    </Typography>
+                  )}
+                </Box>
               </MenuItem>
             ))}
           </Select>
@@ -228,13 +271,20 @@ const TranslationConfig: React.FC<TranslationConfigProps> = ({
             ))}
           </Select>
         </FormControl>
-      </Box>
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-          <CircularProgress size={24} />
-        </Box>
-      )}
+        {/* 配置摘要 */}
+        {selectedProvider && selectedModel && (
+          <Box sx={{ mt: 1, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            <Typography variant="subtitle2" gutterBottom>当前配置</Typography>
+            <Typography variant="body2" color="text.secondary">
+              提供商: <strong>{providerOptions.find(p => p.value === selectedProvider)?.label}</strong><br/>
+              模型: <strong>{modelOptions.find(m => m.value === selectedModel)?.label}</strong><br/>
+              语言: <strong>{LANGUAGE_OPTIONS.find(l => l.code === sourceLanguage)?.name}</strong> → <strong>{LANGUAGE_OPTIONS.find(l => l.code === targetLanguage)?.name}</strong><br/>
+              风格: <strong>{TRANSLATION_STYLES.find(s => s.id === style)?.name}</strong>
+            </Typography>
+          </Box>
+        )}
+      </Box>
     </Paper>
   );
 };
