@@ -7,6 +7,9 @@ import './electron-mock';
 import App from './App';
 import './styles/index.css';
 import { AppProvider } from './context/AppContext';
+import { Provider as ReduxProvider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './store';
 
 // 创建主题
 const theme = createTheme({
@@ -40,11 +43,15 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <HashRouter>
-        <AppProvider>
-          <App />
-        </AppProvider>
-      </HashRouter>
+      <ReduxProvider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <HashRouter>
+            <AppProvider>
+              <App />
+            </AppProvider>
+          </HashRouter>
+        </PersistGate>
+      </ReduxProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

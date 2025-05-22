@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -30,10 +30,26 @@ import {
   TRANSLATION_STYLES,
   TRANSLATION_SERVICE_TYPES,
   DEFAULT_PROVIDERS,
-  AIProvider,
-  AIModel
 } from '../shared';
-import { getProviders, getProviderModels, getLocalModels, getOllamaConfig, updateProviderActiveStatus } from '../services/api';
+import {
+  getProviders as fetchProvidersFromApi,
+  getProviderModels as fetchProviderModelsFromApi,
+  getLocalModels,
+  getOllamaConfig,
+  updateProviderActiveStatus as updateProviderActiveStatusApi
+} from '../services/api';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import {
+  setProviders,
+  setCurrentProviderId,
+  setCurrentModelId,
+  updateProvider as updateProviderAction,
+  setProviderActiveStatus,
+  addProvider as addProviderAction,
+  removeProvider as removeProviderAction,
+  Provider,
+  AIModel
+} from '../store/providerSlice';
 import CustomProviderDialog from '../components/CustomProviderDialog';
 import LocalModelDialog from '../components/LocalModelDialog';
 import OllamaDialog from '../components/OllamaDialog';
@@ -43,7 +59,7 @@ import ProviderDetail from '../components/ProviderDetail';
 const Settings: React.FC = () => {
   const initialLoadCompleteRef = React.useRef(false);
   const [saved, setSaved] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'success' | 'error' | '' }>({
+  const [statusMessage, setStatusMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' | '' }>({
     message: '',
     type: '',
   });
@@ -56,16 +72,22 @@ const Settings: React.FC = () => {
   const [darkMode, setDarkMode] = useState(true);
 
   // AI 服务设置
-  const [providers, setProviders] = useState<AIProvider[]>([]);
-  const [models, setModels] = useState<AIModel[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [apiKey, setApiKey] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
+  const dispatch = useAppDispatch();
+  const { 
+    providers, 
+    currentProviderId, 
+    currentModelId 
+  } = useAppSelector((state) => state.provider);
+
+  // For API Key and Base URL input fields, we might need local state for controlled components / debouncing
+  // These will be set based on the selected provider from Redux state.
+  const [currentApiKeyInput, setCurrentApiKeyInput] = useState('');
+  const [currentBaseUrlInput, setCurrentBaseUrlInput] = useState('');
+
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
   const [customProviderDialogOpen, setCustomProviderDialogOpen] = useState(false);
-  const [customProviderToEdit, setCustomProviderToEdit] = useState<any>(null);
+  const [customProviderToEdit, setCustomProviderToEdit] = useState<Provider | null>(null);
 
   // 本地模型设置
   const [localModels, setLocalModels] = useState<any[]>([]);
@@ -84,267 +106,210 @@ const Settings: React.FC = () => {
   const [device, setDevice] = useState('auto');
   const [computeType, setComputeType] = useState('auto');
 
-  // 加载提供商列表
-  const fetchProviders = async (preferredProviderId?: string) => {
+  const fetchProviders = useCallback(async (preferredProviderId?: string) => {
     setLoadingProviders(true);
     try {
-      const response = await getProviders();
-      console.log('Response from getProviders API:', JSON.stringify(response, null, 2));
+      const response = await fetchProvidersFromApi();
       if (response.success && response.data) {
-        const allProviders = response.data.providers || [];
-        setProviders(allProviders); // 更新提供商列表状态
+        const fetchedApiProviders: any[] = response.data.providers || [];
+        const mappedProviders: Provider[] = fetchedApiProviders.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          apiKey: p.api_key || '',
+          apiHost: p.base_url || '',
+          models: (p.models || []).map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            isDefault: m.is_default,
+            description: m.description,
+            provider_id: p.id,
+            capabilities: m.capabilities,
+            temperature: m.temperature,
+            top_p: m.top_p,
+            max_tokens: m.max_tokens,
+            message_limit_enabled: m.message_limit_enabled,
+          })),
+          is_active: p.is_active !== undefined ? p.is_active : false,
+          isSystem: DEFAULT_PROVIDERS.some(dp => dp.id === p.id),
+          description: p.description || '',
+          logo_url: p.logo_url || '',
+          model_count: p.model_count || (p.models ? p.models.length : 0),
+          is_configured: !!p.api_key,
+        }));
+        dispatch(setProviders(mappedProviders));
 
         let newSelectedProviderId = '';
-        const currentSelectedStillExists = selectedProvider && allProviders.some(p => p.id === selectedProvider);
+        const currentSelectedProviderInList = currentProviderId && mappedProviders.some(p => p.id === currentProviderId);
 
-        if (preferredProviderId && allProviders.some(p => p.id === preferredProviderId)) {
-            newSelectedProviderId = preferredProviderId;
-        } else if (currentSelectedStillExists) {
-            newSelectedProviderId = selectedProvider;
+        if (preferredProviderId && mappedProviders.some(p => p.id === preferredProviderId)) {
+          newSelectedProviderId = preferredProviderId;
+        } else if (currentSelectedProviderInList) {
+          newSelectedProviderId = currentProviderId as string;
         } else if (response.data.current_provider) {
-            const currentProviderFromAPI = response.data.current_provider;
-            let potentialMatchId = currentProviderFromAPI;
-            if (currentProviderFromAPI === 'custom') {
-                const activeCustom = allProviders.find(p => p.id.startsWith('custom-') && p.is_active);
-                if (activeCustom) {
-                    potentialMatchId = activeCustom.id;
-                } else {
-                    const firstCustom = allProviders.find(p => p.id.startsWith('custom-'));
-                    if (firstCustom) potentialMatchId = firstCustom.id;
-                }
-            }
-            if (allProviders.some(p => p.id === potentialMatchId)) {
-                newSelectedProviderId = potentialMatchId;
-            }
+          const apiCurrent = response.data.current_provider;
+          if (mappedProviders.some(p => p.id === apiCurrent)) {
+            newSelectedProviderId = apiCurrent;
+          }
         }
 
-        if (!newSelectedProviderId && allProviders.length > 0) {
-            const firstActive = allProviders.find(p => p.is_active);
-            if (firstActive) {
-                newSelectedProviderId = firstActive.id;
-            } else {
-                newSelectedProviderId = allProviders[0].id;
-            }
-        } else if (!newSelectedProviderId && allProviders.length === 0) {
-            newSelectedProviderId = '';
+        if (!newSelectedProviderId && mappedProviders.length > 0) {
+          const firstActive = mappedProviders.find(p => p.is_active);
+          newSelectedProviderId = firstActive ? firstActive.id : mappedProviders[0].id;
         }
         
-        if (!newSelectedProviderId && allProviders.some(p => p.id === 'siliconflow')) {
-            newSelectedProviderId = 'siliconflow';
-        }
-
-        setSelectedProvider(newSelectedProviderId);
-        if (newSelectedProviderId) {
-            fetchModels(newSelectedProviderId); 
-        } else {
-            setModels([]); 
-            setSelectedModel('');
-        }
-
+        dispatch(setCurrentProviderId(newSelectedProviderId || null));
       } else {
-        setStatusMessage({
-          message: response.message || '获取提供商列表失败',
-          type: 'error'
-        });
+        setStatusMessage({ message: response.message || '获取提供商列表失败', type: 'error' });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      setStatusMessage({
-        message: `获取提供商列表出错: ${errorMessage}`,
-        type: 'error'
-      });
-      setProviders([]);
-      setSelectedProvider('');
-      setModels([]);
-      setSelectedModel('');
+      setStatusMessage({ message: `获取提供商列表出错: ${errorMessage}`, type: 'error' });
+      dispatch(setCurrentProviderId(null));
+      dispatch(setCurrentModelId(null));
     } finally {
       setLoadingProviders(false);
     }
-  };
+  }, [dispatch]);
 
-  // 加载模型列表
-  const fetchModels = async (providerId: string) => {
-    if (!providerId) return;
-
+  const fetchModels = useCallback(async (providerIdToFetchFor: string) => {
+    if (!providerIdToFetchFor) return;
     setLoadingModels(true);
     try {
-      const response = await getProviderModels(providerId);
-      if (response.success && response.data) {
-        setModels(response.data.models);
-        // 如果有模型且当前未选择模型，选择第一个
-        if (response.data.models.length > 0 && !selectedModel) {
-          const defaultModel = response.data.models.find(m => m.is_default);
-          setSelectedModel(defaultModel?.id || response.data.models[0].id);
+      const response = await fetchProviderModelsFromApi(providerIdToFetchFor);
+      if (response.success && response.data && response.data.models) {
+        const fetchedApiModels: any[] = response.data.models;
+        const mappedApiModels: AIModel[] = fetchedApiModels.map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          isDefault: m.is_default,
+          description: m.description,
+          provider_id: providerIdToFetchFor,
+          capabilities: m.capabilities,
+          temperature: m.temperature,
+          top_p: m.top_p,
+          max_tokens: m.max_tokens,
+          message_limit_enabled: m.message_limit_enabled,
+        }));
+        dispatch(updateProviderAction({ id: providerIdToFetchFor, models: mappedApiModels }));
+        
+        if (currentProviderId === providerIdToFetchFor) {
+          const defaultModel = mappedApiModels.find(m => m.isDefault);
+          dispatch(setCurrentModelId(defaultModel?.id || mappedApiModels[0]?.id || null));
         }
       } else {
-        setStatusMessage({
-          message: response.message || `获取${providerId}的模型列表失败`,
-          type: 'error'
-        });
+        setStatusMessage({ message: response.message || `获取${providerIdToFetchFor}的模型列表失败`, type: 'error' });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      setStatusMessage({
-        message: `获取模型列表出错: ${errorMessage}`,
-        type: 'error'
-      });
+      setStatusMessage({ message: `获取模型列表出错: ${errorMessage}`, type: 'error' });
     } finally {
       setLoadingModels(false);
     }
-  };
+  }, [dispatch, currentProviderId]);
 
-  // 当选择提供商变化时加载相应的模型
   useEffect(() => {
-    if (selectedProvider) {
-      fetchModels(selectedProvider);
-      // 获取提供商的配置信息
-      const provider = providers.find(p => p.id === selectedProvider);
+    if (currentProviderId) {
+      const provider = providers.find(p => p.id === currentProviderId);
       if (provider) {
-        // 清空之前的模型选择
-        setSelectedModel('');
+        setCurrentApiKeyInput(provider.apiKey || '');
+        setCurrentBaseUrlInput(provider.apiHost || '');
+        if (!provider.models || provider.models.length === 0) {
+          fetchModels(currentProviderId);
+        }
       }
+    } else {
+      setCurrentApiKeyInput('');
+      setCurrentBaseUrlInput('');
     }
-  }, [selectedProvider]);
+  }, [currentProviderId, providers, fetchModels, dispatch]);
 
-  // 加载保存的设置
   useEffect(() => {
     const loadInitialSettings = async () => {
-      setLoadingProviders(true);
       try {
-        // 如果在Electron环境中
         if (window.electronAPI) {
           const settings = await window.electronAPI.getSettings();
-          let preferredProviderOnInit = undefined;
+          let preferredProviderOnInit: string | undefined = undefined;
           if (settings) {
-            // 设置模型路径和配置
             setModelPath(settings.modelPath || '');
             setConfigPath(settings.configPath || '');
             setDevice(settings.device || 'auto');
             setComputeType(settings.computeType || 'auto');
-
-            // 设置其他配置参数
             if (settings.sourceLanguage) setSourceLanguage(settings.sourceLanguage);
             if (settings.targetLanguage) setTargetLanguage(settings.targetLanguage);
             if (settings.defaultStyle) setDefaultStyle(settings.defaultStyle);
             if (settings.translationServiceType) setTranslationServiceType(settings.translationServiceType);
             if (settings.darkMode !== undefined) setDarkMode(settings.darkMode);
-            if (settings.apiKey) setApiKey(settings.apiKey);
-            if (settings.baseUrl) setBaseUrl(settings.baseUrl);
-            // Don't set selectedProvider and selectedModel directly here from settings
-            // Instead, pass settings.selectedProvider to fetchProviders
             preferredProviderOnInit = settings.selectedProvider;
-            // selectedModel will be handled by fetchModels called by fetchProviders or selectedProvider useEffect
           }
-
-          // 加载提供商列表, 传入从设置中加载的首选提供商（如果存在）
           await fetchProviders(preferredProviderOnInit);
-          // selectedModel 应该在 fetchProviders -> fetchModels 链条中被设置，或者在 selectedProvider 的 useEffect 中设置
-          // 如果 settings.selectedModel 存在且对应于 preferredProviderOnInit，可以考虑在 fetchModels 后恢复它
-          // 但这会使逻辑复杂化，当前依赖 fetchModels 的默认模型选择逻辑
         }
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error('加载设置时出错:', errorMessage);
-        // 即使加载设置出错，也尝试获取提供商列表
+        console.error('加载设置时出错:', error instanceof Error ? error.message : String(error));
         await fetchProviders();
       } finally {
-        setLoadingProviders(false);
-        initialLoadCompleteRef.current = true; // 标记初始加载完成
+        initialLoadCompleteRef.current = true;
       }
     };
-
     loadInitialSettings();
-
-    // 加载本地模型和Ollama配置
     fetchLocalModels();
     fetchOllamaConfig();
-  }, []);
+  }, [dispatch, fetchProviders]);
 
-  // BEGIN: Logic for item 8 - handleToggleProviderActive function
   const handleToggleProviderActive = async (providerId: string, newActiveState: boolean) => {
-    setLoadingProviders(true); // Use loadingProviders to indicate operation in progress
+    dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
     try {
-      const response = await updateProviderActiveStatus(providerId, newActiveState);
-      if (response.success) {
-        setProviders(prevProviders =>
-          prevProviders.map(p =>
-            p.id === providerId ? { ...p, is_active: newActiveState } : p
-          )
-        );
-        setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
-
-        if (selectedProvider === providerId && !newActiveState) {
-          const nextActiveProvider = providers.find(p => p.id !== providerId && p.is_active);
-          if (nextActiveProvider) {
-            setSelectedProvider(nextActiveProvider.id);
-          } else {
-            const firstProvider = providers.find(p => p.id !== providerId);
-            if (firstProvider) {
-              setSelectedProvider(firstProvider.id);
-            } else {
-              setSelectedProvider('');
-            }
-          }
-        }
+      const response = await updateProviderActiveStatusApi(providerId, newActiveState);
+      if (!response.success) {
+        setStatusMessage({ message: response.message || '更新提供商状态失败 (API)', type: 'error' });
+        dispatch(setProviderActiveStatus({ id: providerId, is_active: !newActiveState }));
       } else {
-        setStatusMessage({ message: response.message || '更新提供商状态失败', type: 'error' });
+        setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '更新提供商状态时出错';
-      setStatusMessage({ message: errorMessage, type: 'error' });
-    } finally {
-      setLoadingProviders(false);
+      setStatusMessage({ message: error instanceof Error ? error.message : '更新提供商状态时出错', type: 'error' });
+      dispatch(setProviderActiveStatus({ id: providerId, is_active: !newActiveState }));
     }
   };
-  // END: Logic for item 8
 
   useEffect(() => {
-    if (!initialLoadCompleteRef.current) {
-      return; 
-    }
-    // 只有当 selectedProvider 有实际值时才触发保存，避免空选择触发
-    if (selectedProvider) { 
-      console.log(`Settings changed, preparing to auto-save. Provider: ${selectedProvider}, Model: ${selectedModel}`);
-      const settingsToSave = {
-        modelPath, configPath, device, computeType,
-        sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
-        apiKey, 
-        baseUrl,
-        selectedProvider, selectedModel,
-      };
-      if (window.electronAPI) {
-        window.electronAPI.saveSettings(settingsToSave)
-          .then(() => console.log('Settings auto-saved successfully.'))
-          .catch(err => console.error('Error auto-saving settings:', err));
-      }
+    if (!initialLoadCompleteRef.current) return;
+    const generalSettingsToSave = {
+      modelPath, configPath, device, computeType,
+      sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
+      selectedProvider: currentProviderId,
+      selectedModel: currentModelId,
+    };
+    if (window.electronAPI && window.electronAPI.saveSettings) {
+      window.electronAPI.saveSettings(generalSettingsToSave)
+        .then(() => console.log('General settings auto-saved successfully.'))
+        .catch(err => console.error('Error auto-saving general settings:', err));
     }
   }, [
-    selectedProvider, selectedModel, modelPath, configPath, device, computeType,
-    sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
-    apiKey, baseUrl,
+    modelPath, configPath, device, computeType, sourceLanguage, targetLanguage,
+    defaultStyle, translationServiceType, darkMode, currentProviderId, currentModelId
   ]);
 
   const handleSave = async () => {
     try {
-      // 如果在Electron环境中
-      if (window.electronAPI) {
+      if (window.electronAPI && window.electronAPI.saveSettings) {
         await window.electronAPI.saveSettings({
-          modelPath,
-          configPath,
-          device,
-          computeType,
-          sourceLanguage,
-          targetLanguage,
-          defaultStyle,
-          translationServiceType,
-          darkMode,
-          apiKey,
-          baseUrl,
-          selectedProvider,
-          selectedModel
+          modelPath, configPath, device, computeType,
+          sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
+          selectedProvider: currentProviderId,
+          selectedModel: currentModelId
         });
       }
-
+      if (currentProviderId) {
+        const provider = providers.find(p => p.id === currentProviderId);
+        if (provider && (currentApiKeyInput !== provider.apiKey || currentBaseUrlInput !== provider.apiHost)) {
+          dispatch(updateProviderAction({
+            id: currentProviderId,
+            apiKey: currentApiKeyInput,
+            apiHost: currentBaseUrlInput,
+            is_configured: !!currentApiKeyInput
+          }));
+        }
+      }
       setSaved(true);
       setStatusMessage({ message: '设置已保存', type: 'success' });
       setTimeout(() => setSaved(false), 3000);
@@ -352,6 +317,25 @@ const Settings: React.FC = () => {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('保存设置时出错:', errorMessage);
       setStatusMessage({ message: `保存设置出错: ${errorMessage || '未知错误'}`, type: 'error' });
+    }
+  };
+
+  const handleUpdateProviderDetails = () => {
+    if (currentProviderId) {
+      dispatch(updateProviderAction({
+        id: currentProviderId,
+        apiKey: currentApiKeyInput,
+        apiHost: currentBaseUrlInput,
+        is_configured: !!currentApiKeyInput
+      }));
+      setStatusMessage({message: 'Provider details updated successfully.', type: 'success'});
+    }
+  };
+
+  const handleDeleteProvider = (providerId: string) => {
+    if (window.confirm(`确定要删除提供商 ${providerId} 吗？此操作不可撤销。`)) {
+      dispatch(removeProviderAction(providerId));
+      setStatusMessage({ message: `提供商 ${providerId} 已删除`, type: 'success'});
     }
   };
 
@@ -480,7 +464,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
+    <Box sx={{ maxWidth: 1000, mx: 'auto', p: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         系统设置
       </Typography>
@@ -497,13 +481,12 @@ const Settings: React.FC = () => {
         </Typography>
         <Divider sx={{ mb: 3 }} />
 
-        <Box sx={{ display: 'flex', height: 500 }}>
-          {/* 提供商列表 */}
-          <Box sx={{ mr: 2 }}>
+        <Box sx={{ display: 'flex', height: 'auto', minHeight: 500 }}>
+          <Box sx={{ mr: 2, width: '350px', flexShrink: 0 }}>
             <ProviderList
               providers={providers}
-              selectedProvider={selectedProvider}
-              onSelectProvider={setSelectedProvider}
+              selectedProvider={currentProviderId || ''}
+              onSelectProvider={(id) => dispatch(setCurrentProviderId(id))}
               onToggleProviderActive={handleToggleProviderActive}
               onAddProvider={() => {
                 setCustomProviderToEdit(null);
@@ -516,116 +499,88 @@ const Settings: React.FC = () => {
               onConfigureOllama={() => {
                 setOllamaDialogOpen(true);
               }}
-              onRefreshProviders={() => fetchProviders(selectedProvider)}
+              onRefreshProviders={() => fetchProviders(currentProviderId || undefined)}
               loading={loadingProviders}
             />
           </Box>
 
-          {/* 提供商详情 */}
-          <ProviderDetail
-            provider={providers.find(p => p.id === selectedProvider) || null}
-            models={models}
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
-            onUpdateProvider={() => {
-              fetchProviders();
-              fetchModels(selectedProvider);
-            }}
-            onEditProvider={() => {
-              // 打开编辑对话框，传入当前提供商信息
-              setCustomProviderToEdit(null);
-              setCustomProviderDialogOpen(true);
-            }}
-            onRefreshModels={() => fetchModels(selectedProvider)}
-            loadingModels={loadingModels}
-            onDeleteProvider={() => {
-              // 删除提供商后，刷新提供商列表并选择第一个提供商
-              fetchProviders();
-              // 重置选中的提供商和模型
-              setSelectedProvider('');
-              setSelectedModel('');
-              setModels([]);
-              setStatusMessage({
-                message: '删除提供商成功',
-                type: 'success'
-              });
-            }}
-          />
+          <Box sx={{ flexGrow: 1 }}>
+            <ProviderDetail
+              provider={providers.find(p => p.id === currentProviderId) || null}
+              apiKeyInput={currentApiKeyInput}
+              baseUrlInput={currentBaseUrlInput}
+              onApiKeyInputChange={setCurrentApiKeyInput}
+              onBaseUrlInputChange={setCurrentBaseUrlInput}
+              onSaveProviderDetails={handleUpdateProviderDetails}
+              selectedModelId={currentModelId || ''}
+              onSelectModel={(id) => dispatch(setCurrentModelId(id))}
+              onEditProvider={() => {
+                const providerToEdit = providers.find(p => p.id === currentProviderId);
+                if (providerToEdit && !providerToEdit.isSystem) {
+                  setCustomProviderToEdit(providerToEdit);
+                  setCustomProviderDialogOpen(true);
+                } else if (providerToEdit?.isSystem) {
+                  setStatusMessage({message: '系统预置提供商不可编辑', type: 'info'});
+                } else {
+                  setStatusMessage({message: '请先选择一个提供商进行编辑', type: 'info'});
+                }
+              }}
+              onDeleteProvider={currentProviderId && !providers.find(p=>p.id === currentProviderId)?.isSystem ? () => handleDeleteProvider(currentProviderId) : undefined}
+              onRefreshModels={() => currentProviderId && fetchModels(currentProviderId)}
+              loadingModels={loadingModels}
+            />
+          </Box>
         </Box>
       </Paper>
 
-      {/* 自定义提供商对话框 */}
       <CustomProviderDialog
         open={customProviderDialogOpen}
         onClose={() => {
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);
         }}
-        onSave={(newlyActivatedProviderId) => {
-          fetchProviders(newlyActivatedProviderId);
+        onSave={(providerData) => {
+          if (customProviderToEdit) {
+            dispatch(updateProviderAction({ ...customProviderToEdit, ...providerData, id: customProviderToEdit.id, is_configured: !!providerData.apiKey }));
+          } else {
+            const newId = providerData.id || `custom-${Date.now()}`;
+            const newProvider: Provider = {
+              id: newId,
+              name: providerData.name || '自定义提供商',
+              apiKey: providerData.apiKey || '',
+              apiHost: providerData.apiHost || '',
+              models: providerData.models || [],
+              is_active: providerData.is_active !== undefined ? providerData.is_active : true,
+              isSystem: false,
+              description: providerData.description || '',
+              logo_url: providerData.logo_url || '',
+              model_count: providerData.models ? providerData.models.length : 0,
+              is_configured: !!providerData.apiKey,
+              provider_id: newId,
+            } as Provider;
+            dispatch(addProviderAction(newProvider));
+          }
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);
         }}
-        editProvider={customProviderToEdit || (selectedProvider === 'custom' ? providers.find(p => p.id === 'custom') : undefined)}
+        editProvider={customProviderToEdit}
       />
 
-      {/* 本地模型对话框 */}
-      <LocalModelDialog
-        open={localModelDialogOpen}
-        onClose={() => {
-          setLocalModelDialogOpen(false);
-          setLocalModelToEdit(null);
-        }}
-        onSave={() => {
-          fetchLocalModels();
-          setLocalModelDialogOpen(false);
-          setLocalModelToEdit(null);
-        }}
-        editModel={localModelToEdit}
-      />
-
-      {/* Ollama配置对话框 */}
-      <OllamaDialog
-        open={ollamaDialogOpen}
-        onClose={() => {
-          setOllamaDialogOpen(false);
-        }}
-        onSave={() => {
-          fetchOllamaConfig();
-          setOllamaDialogOpen(false);
-        }}
-        initialConfig={ollamaConfig}
-      />
+      <LocalModelDialog open={localModelDialogOpen} onClose={() => setLocalModelDialogOpen(false)} onSave={() => { fetchLocalModels(); setLocalModelDialogOpen(false); }} editModel={localModelToEdit} />
+      <OllamaDialog open={ollamaDialogOpen} onClose={() => setOllamaDialogOpen(false)} onSave={() => { fetchOllamaConfig(); setOllamaDialogOpen(false);}} initialConfig={ollamaConfig} />
 
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           Faster-Whisper 设置
         </Typography>
         <Divider sx={{ mb: 3 }} />
-
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-              <TextField
-                fullWidth
-                label="本地模型路径"
-                variant="outlined"
-                value={modelPath}
-                onChange={(e) => setModelPath(e.target.value)}
-                placeholder="选择或输入本地模型路径"
-                sx={{ mr: 1 }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleBrowseModelPath}
-                sx={{ minWidth: '100px' }}
-              >
-                浏览...
-              </Button>
+              <TextField fullWidth label="本地模型路径" variant="outlined" value={modelPath} onChange={(e) => setModelPath(e.target.value)} placeholder="选择或输入本地模型路径" sx={{ mr: 1 }} />
+              <Button variant="contained" onClick={handleBrowseModelPath} sx={{ minWidth: '100px' }}>浏览...</Button>
             </Box>
-            <Typography variant="caption" color="text.secondary">
-              请选择包含模型文件的文件夹，或者输入已下载的模型文件路径
-            </Typography>
+            <Typography variant="caption" color="text.secondary">请选择包含模型文件的文件夹，或者输入已下载的模型文件路径</Typography>
           </Grid>
 
           <Grid item xs={12}>
