@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 // 导入电子API模拟实现
 import './electron-mock';
 import App from './App';
@@ -10,38 +10,12 @@ import { AppProvider } from './context/AppContext';
 import { Provider as ReduxProvider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './store';
-
-// 创建主题
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#2196f3',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-    },
-  },
-  typography: {
-    fontFamily: [
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
-  },
-});
+// 导入完整的主题系统
+import { darkTheme } from './theme';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <ReduxProvider store={store}>
         <PersistGate loading={null} persistor={persistor}>

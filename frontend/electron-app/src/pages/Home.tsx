@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import HeroSection from '../components/ui/HeroSection';
 import StatsCard from '../components/ui/StatsCard';
+import { createModernCardStyles } from '../utils/modernStyles';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -271,40 +272,98 @@ const Home: React.FC = () => {
                       <Slide direction="right" in={true} timeout={300 + index * 100}>
                         <Card
                           sx={{
+                            ...createModernCardStyles(theme, action.color, 1.1),
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            border: `1px solid ${alpha(theme.palette[action.color].main, 0.2)}`,
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
-                              transform: 'translateX(8px)',
-                              boxShadow: theme.shadows[4],
-                              backgroundColor: alpha(theme.palette[action.color].main, 0.05)
+                              transform: 'translateX(12px) translateY(-2px)',
+                              boxShadow: `0 16px 48px ${alpha(theme.palette[action.color].main, 0.2)}`,
+                              '& .action-icon': {
+                                transform: 'scale(1.15) rotate(5deg)',
+                                backgroundColor: alpha(theme.palette[action.color].main, 0.15)
+                              },
+                              '& .action-title': {
+                                background: `linear-gradient(135deg, ${theme.palette[action.color].main}, ${theme.palette[action.color].dark})`,
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                              }
                             }
                           }}
                           onClick={action.action}
                         >
-                          <CardContent sx={{ p: 2 }}>
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                          <CardContent sx={{ p: 2.5 }}>
+                            <Stack direction="row" alignItems="center" spacing={2.5}>
+                              <Box
+                                className="action-icon"
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: 3,
+                                  backgroundColor: alpha(theme.palette[action.color].main, 0.1),
+                                  color: theme.palette[action.color].main,
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+                                  '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: `linear-gradient(135deg, ${alpha(theme.palette[action.color].main, 0.1)}, transparent)`,
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s ease'
+                                  },
+                                  '&:hover::before': {
+                                    opacity: 1
+                                  }
+                                }}
+                              >
+                                <action.icon fontSize="medium" />
+                              </Box>
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography 
+                                  className="action-title"
+                                  variant="subtitle1" 
+                                  sx={{ 
+                                    fontWeight: 700,
+                                    mb: 0.5,
+                                    transition: 'all 0.3s ease'
+                                  }}
+                                >
+                                  {action.title}
+                                </Typography>
+                                <Typography 
+                                  variant="body2" 
+                                  color="text.secondary"
+                                  sx={{ 
+                                    fontWeight: 500,
+                                    lineHeight: 1.4
+                                  }}
+                                >
+                                  {action.description}
+                                </Typography>
+                              </Box>
                               <Box
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius: 2,
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: '50%',
                                   backgroundColor: alpha(theme.palette[action.color].main, 0.1),
-                                  color: theme.palette[action.color].main
+                                  color: theme.palette[action.color].main,
+                                  transition: 'all 0.3s ease',
+                                  opacity: 0.7
                                 }}
                               >
-                                <action.icon fontSize="small" />
-                              </Box>
-                              <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                  {action.title}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {action.description}
-                                </Typography>
+                                →
                               </Box>
                             </Stack>
                           </CardContent>

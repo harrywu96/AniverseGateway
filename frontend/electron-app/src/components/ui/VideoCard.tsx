@@ -183,7 +183,7 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
           }}
         >
           {/* 视频预览 - 未来可以添加真实的缩略图 */}
-          <PlayIcon sx={{ fontSize: 48, color: alpha('#fff', 0.7) }} />
+          <PlayIcon sx={{ fontSize: 48, color: alpha('#ddd', 0.7) }} />
           
           {/* 时长标签 */}
           {video.duration > 0 && (
@@ -196,9 +196,9 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
                 bottom: 8,
                 right: 8,
                 backgroundColor: alpha('#000', 0.7),
-                color: '#fff',
+                color: '#ddd',
                 '& .MuiChip-icon': {
-                  color: '#fff'
+                  color: '#ddd'
                 }
               }}
             />
@@ -215,7 +215,7 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
               top: 8,
               left: 8,
               backgroundColor: alpha(theme.palette[status.color].main, 0.9),
-              color: '#fff'
+              color: '#ddd'
             }}
           />
         </CardMedia>
@@ -242,7 +242,7 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
               <IconButton
                 sx={{
                   backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                  color: '#fff',
+                  color: '#ddd',
                   width: 64,
                   height: 64,
                   '&:hover': {

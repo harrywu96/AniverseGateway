@@ -45,6 +45,7 @@ import { VideoInfo } from '@subtranslate/shared';
 import VideoCard from '../components/ui/VideoCard';
 import VideoSkeleton from '../components/ui/VideoSkeleton';
 import ErrorSnackbar from '../components/ErrorSnackbar';
+import { createStatsCardStyles } from '../utils/modernStyles';
 
 // 视图模式类型
 type ViewMode = 'grid' | 'list';
@@ -302,15 +303,47 @@ const Videos: React.FC = () => {
               
               {/* 统计卡片 */}
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <Card variant="outlined" sx={{ minWidth: 120 }}>
+                <Card 
+                  sx={{
+                    ...createStatsCardStyles(theme, theme.palette.primary.main),
+                    minWidth: 120,
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => navigate('/videos')}
+                >
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <FolderIcon color="primary" fontSize="small" />
+                      <Box
+                        className="stats-icon"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 36,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          color: theme.palette.primary.main,
+                          transition: 'transform 0.2s ease'
+                        }}
+                      >
+                        <FolderIcon fontSize="small" />
+                      </Box>
                       <Box>
-                        <Typography variant="h6" component="div">
+                        <Typography 
+                          variant="h6" 
+                          component="div"
+                          sx={{ 
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                        >
                           {stats.totalVideos}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                           总视频数
                         </Typography>
                       </Box>
@@ -318,15 +351,46 @@ const Videos: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                <Card variant="outlined" sx={{ minWidth: 120 }}>
+                <Card 
+                  sx={{
+                    ...createStatsCardStyles(theme, theme.palette.success.main),
+                    minWidth: 120,
+                    cursor: 'pointer'
+                  }}
+                >
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <PlayCircleIcon color="success" fontSize="small" />
+                      <Box
+                        className="stats-icon"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 36,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: alpha(theme.palette.success.main, 0.1),
+                          color: theme.palette.success.main,
+                          transition: 'transform 0.2s ease'
+                        }}
+                      >
+                        <PlayCircleIcon fontSize="small" />
+                      </Box>
                       <Box>
-                        <Typography variant="h6" component="div">
+                        <Typography 
+                          variant="h6" 
+                          component="div"
+                          sx={{ 
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.success.main}, ${alpha(theme.palette.success.main, 0.8)})`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                        >
                           {stats.withSubtitles}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                           有字幕
                         </Typography>
                       </Box>
@@ -334,15 +398,46 @@ const Videos: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                <Card variant="outlined" sx={{ minWidth: 120 }}>
+                <Card 
+                  sx={{
+                    ...createStatsCardStyles(theme, theme.palette.info.main),
+                    minWidth: 120,
+                    cursor: 'pointer'
+                  }}
+                >
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <AnalyticsIcon color="info" fontSize="small" />
+                      <Box
+                        className="stats-icon"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 36,
+                          height: 36,
+                          borderRadius: 2,
+                          backgroundColor: alpha(theme.palette.info.main, 0.1),
+                          color: theme.palette.info.main,
+                          transition: 'transform 0.2s ease'
+                        }}
+                      >
+                        <AnalyticsIcon fontSize="small" />
+                      </Box>
                       <Box>
-                        <Typography variant="h6" component="div">
+                        <Typography 
+                          variant="h6" 
+                          component="div"
+                          sx={{ 
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${theme.palette.info.main}, ${alpha(theme.palette.info.main, 0.8)})`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                        >
                           {formatDuration(stats.totalDuration)}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                           总时长
                         </Typography>
                       </Box>

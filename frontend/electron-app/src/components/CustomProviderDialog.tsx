@@ -365,7 +365,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 <Typography
                   variant="subtitle1"
                   sx={{
-                    color: 'white',
+                    color: '#ddd',
                     fontWeight: 600,
                     fontSize: '0.95rem',
                   }}
@@ -391,7 +391,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                       size="small"
                       sx={{
                         background: 'rgba(255,255,255,0.1)',
-                        color: 'white',
+                        color: '#ddd',
                         fontSize: '0.7rem',
                         height: 20,
                       }}
@@ -403,7 +403,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                         size="small"
                         sx={{
                           background: modernTheme.primary.gradient,
-                          color: 'white',
+                          color: '#ddd',
                           fontSize: '0.7rem',
                           height: 20,
                         }}
@@ -419,7 +419,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 onClick={() => handleDeleteModel(model.id)}
                 sx={{
                   background: 'rgba(255,255,255,0.1)',
-                  color: 'white',
+                  color: '#ddd',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background: modernTheme.secondary.gradient,
@@ -465,7 +465,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
             <Typography
               variant="subtitle1"
               sx={{
-                color: 'white',
+                color: '#ddd',
                 fontWeight: 600,
               }}
             >
@@ -475,7 +475,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
 
           {testResult.models_tested && testResult.models_tested.length > 0 && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#ddd', mb: 1 }}>
                 测试详情：
               </Typography>
               {testResult.models_tested.map((modelTest, index) => (
@@ -491,16 +491,16 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                     border: '1px solid rgba(255,255,255,0.1)',
                   }}
                 >
-                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: '#ddd', mb: 0.5 }}>
                     <strong>模型：</strong> {modelTest.model_id || '未指定'}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: '#ddd', mb: 0.5 }}>
                     <strong>状态：</strong> {modelTest.success ? '成功' : '失败'}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: '#ddd', mb: 0.5 }}>
                     <strong>响应时间：</strong> {modelTest.response_time.toFixed(2)} 秒
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'white' }}>
+                  <Typography variant="body2" sx={{ color: '#ddd' }}>
                     <strong>消息：</strong> {modelTest.message}
                   </Typography>
                 </Paper>
@@ -524,7 +524,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 3,
-          color: 'white',
+          color: '#ddd',
           maxHeight: '90vh',
           position: 'relative',
           overflow: 'hidden',
@@ -585,7 +585,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 mb: 2,
                 background: 'rgba(244, 67, 54, 0.1)',
                 border: '1px solid rgba(244, 67, 54, 0.3)',
-                color: 'white',
+                color: '#ddd',
                 '& .MuiAlert-icon': { color: '#f44336' },
               }}
             >
@@ -611,7 +611,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
             variant="h6" 
             sx={{ 
               mb: 2, 
-              color: 'white',
+              color: '#ddd',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
@@ -636,7 +636,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                   '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiInputBase-input': { color: '#ddd' },
               }}
             />
             
@@ -655,7 +655,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                   '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiInputBase-input': { color: '#ddd' },
               }}
             />
             
@@ -674,7 +674,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                   '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiInputBase-input': { color: '#ddd' },
               }}
             />
             
@@ -689,7 +689,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: modernTheme.primary.main },
-                  '& .MuiSelect-select': { color: 'white' },
+                  '& .MuiSelect-select': { color: '#ddd' },
                   '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
                 }}
                 MenuProps={{
@@ -698,7 +698,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                       background: modernTheme.surface.dark,
                       border: '1px solid rgba(255,255,255,0.1)',
                       '& .MuiMenuItem-root': {
-                        color: 'white',
+                        color: '#ddd',
                         '&:hover': { background: 'rgba(255,255,255,0.1)' },
                       }
                     }
@@ -730,7 +730,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                     sx={{
                       backgroundColor: 'rgba(255,255,255,0.05)',
                       '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
-                      '& .MuiSelect-select': { color: 'white' },
+                      '& .MuiSelect-select': { color: '#ddd' },
                       '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
                     }}
                   >
@@ -750,7 +750,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 startIcon={loading ? <CircularProgress size={20} /> : <SpeedIcon />}
                 sx={{
                   borderColor: 'rgba(255,255,255,0.3)',
-                  color: 'white',
+                  color: '#ddd',
                   background: 'rgba(255,255,255,0.05)',
                   '&:hover': {
                     background: modernTheme.accent.gradient,
@@ -779,7 +779,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
             variant="h6" 
             sx={{ 
               mb: 2, 
-              color: 'white',
+              color: '#ddd',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
@@ -805,7 +805,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                     '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
                   },
                   '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputBase-input': { color: '#ddd' },
                 }}
               />
               <TextField
@@ -822,7 +822,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                     '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
                   },
                   '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputBase-input': { color: '#ddd' },
                 }}
               />
             </Box>
@@ -841,7 +841,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                   '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiInputBase-input': { color: '#ddd' },
               }}
             />
             
@@ -861,7 +861,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                         size="small"
                         sx={{
                           background: modernTheme.primary.gradient,
-                          color: 'white',
+                          color: '#ddd',
                           fontSize: '0.7rem',
                           height: 20,
                         }}
@@ -872,7 +872,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.05)',
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
-                  '& .MuiSelect-select': { color: 'white' },
+                  '& .MuiSelect-select': { color: '#ddd' },
                   '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
                 }}
               >
@@ -894,7 +894,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
               disabled={!modelId || !modelName}
               sx={{
                 borderColor: 'rgba(255,255,255,0.3)',
-                color: 'white',
+                color: '#ddd',
                 background: 'rgba(255,255,255,0.05)',
                 '&:hover': {
                   background: modernTheme.primary.gradient,
@@ -918,7 +918,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 variant="subtitle1" 
                 sx={{ 
                   mb: 2, 
-                  color: 'white',
+                  color: '#ddd',
                   fontWeight: 600,
                 }}
               >

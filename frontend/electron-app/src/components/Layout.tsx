@@ -202,12 +202,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             }
           }}
         >
-          <TranslateIcon sx={{ color: 'white', fontSize: 28 }} />
+          <TranslateIcon sx={{ color: '#ddd', fontSize: 28 }} />
         </Avatar>
         <Typography
           variant="h6"
           sx={{
-            color: 'white',
+            color: '#ddd',
             fontWeight: 700,
             fontSize: '1.1rem',
             textShadow: '0 2px 8px rgba(0,0,0,0.3)',
@@ -278,7 +278,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ListItemIcon
               sx={{
                 minWidth: 48,
-                color: isSelected ? 'white' : 'rgba(255,255,255,0.7)',
+                color: isSelected ? '#ddd' : 'rgba(255,255,255,0.7)',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: isHovered 
                   ? 'scale(1.1)' 
@@ -293,7 +293,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 secondary={item.description}
                 primaryTypographyProps={{
                   sx: {
-                    color: isSelected ? 'white' : 'rgba(255,255,255,0.9)',
+                    color: isSelected ? '#ddd' : 'rgba(255,255,255,0.9)',
                     fontWeight: isSelected ? 600 : 500,
                     fontSize: '0.95rem',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -399,7 +399,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 4px 32px rgba(0,0,0,0.3)',
-          color: 'white',
+          color: '#ddd',
         }}
       >
         <Toolbar sx={{ minHeight: 72 }}>
@@ -412,7 +412,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               mr: 2, 
               display: { sm: 'none' },
               background: modernTheme.primary.gradient,
-              color: 'white',
+              color: '#ddd',
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'scale(1.1) rotate(90deg)',
@@ -467,7 +467,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               size="small"
               sx={{
                 background: modernTheme.accent.gradient,
-                color: 'white',
+                color: '#ddd',
                 fontWeight: 600,
                 fontSize: '0.7rem',
                 boxShadow: modernTheme.accent.glow,

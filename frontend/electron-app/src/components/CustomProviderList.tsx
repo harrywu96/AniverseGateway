@@ -226,7 +226,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
               : '0 4px 12px rgba(0,0,0,0.3)',
           fontWeight: 700,
           fontSize: '0.9rem',
-          color: 'white',
+          color: '#ddd',
         }}
       >
         {initials}
@@ -309,7 +309,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                   <Typography
                     variant="h6"
                     sx={{
-                      color: 'white',
+                      color: '#ddd',
                       fontWeight: 600,
                       fontSize: '1.1rem',
                       mr: 1,
@@ -325,12 +325,12 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                         icon={<CheckIcon />}
                         sx={{
                           background: modernTheme.primary.gradient,
-                          color: 'white',
+                          color: '#ddd',
                           fontWeight: 600,
                           fontSize: '0.7rem',
                           height: 24,
                           boxShadow: modernTheme.primary.glow,
-                          '& .MuiChip-icon': { color: 'white' },
+                          '& .MuiChip-icon': { color: '#ddd' },
                         }}
                       />
                     </Zoom>
@@ -380,7 +380,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                     sx={{
                       background: 'rgba(255,255,255,0.1)',
                       backdropFilter: 'blur(10px)',
-                      color: 'white',
+                      color: '#ddd',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         background: modernTheme.accent.gradient,
@@ -400,7 +400,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                     sx={{
                       background: 'rgba(255,255,255,0.1)',
                       backdropFilter: 'blur(10px)',
-                      color: 'white',
+                      color: '#ddd',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         background: modernTheme.secondary.gradient,
@@ -471,7 +471,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           <Typography 
             variant="h6"
             sx={{
-              color: 'white',
+              color: '#ddd',
               fontWeight: 700,
               background: modernTheme.primary.gradient,
               backgroundClip: 'text',
@@ -490,7 +490,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
             sx={{
               background: 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(10px)',
-              color: 'white',
+              color: '#ddd',
               transition: 'all 0.3s ease',
               '&:hover': {
                 background: modernTheme.primary.gradient,
@@ -502,7 +502,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
             {loading ? (
               <CircularProgress 
                 size={20} 
-                sx={{ color: 'white' }} 
+                sx={{ color: '#ddd' }} 
               />
             ) : (
               <RefreshIcon />
@@ -583,7 +583,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           disabled={loading}
           sx={{
             borderColor: 'rgba(255,255,255,0.3)',
-            color: 'white',
+            color: '#ddd',
             background: 'rgba(255,255,255,0.05)',
             backdropFilter: 'blur(10px)',
             borderRadius: 2,
@@ -616,14 +616,14 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 3,
-            color: 'white',
+            color: '#ddd',
           }
         }}
       >
         <DialogTitle
           sx={{
             background: 'linear-gradient(135deg, rgba(245, 87, 108, 0.15) 0%, rgba(240, 147, 251, 0.15) 100%)',
-            color: 'white',
+            color: '#ddd',
             fontWeight: 700,
           }}
         >

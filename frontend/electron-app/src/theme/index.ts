@@ -92,16 +92,16 @@ const colors = {
 // 深色主题扩展
 const darkColors = {
   background: {
-    default: '#0a0e1a',
-    paper: '#121829',
-    elevated: '#1a2333',
+    default: '#0f1419',  // 从 '#0a0e1a' 调整为更温暖的深蓝灰色
+    paper: '#1e2632',    // 从 '#1a2333' 调整为更浅的蓝灰色
+    elevated: '#2a3441', // 从 '#242d3f' 调整为更浅的层次
   },
   surface: {
-    1: alpha('#ffffff', 0.05),
-    2: alpha('#ffffff', 0.08),
-    3: alpha('#ffffff', 0.11),
-    4: alpha('#ffffff', 0.12),
-    5: alpha('#ffffff', 0.14),
+    1: alpha('#dddddd', 0.05),
+    2: alpha('#dddddd', 0.08),
+    3: alpha('#dddddd', 0.11),
+    4: alpha('#dddddd', 0.12),
+    5: alpha('#dddddd', 0.14),
   }
 };
 
@@ -109,7 +109,7 @@ const darkColors = {
 const lightColors = {
   background: {
     default: '#fafbfc',
-    paper: '#ffffff',
+    paper: '#dddddd',
     elevated: '#f8fafc',
   },
   surface: {
@@ -317,10 +317,10 @@ export const darkTheme = createTheme({
     grey: colors.grey,
     background: darkColors.background,
     text: {
-      primary: '#ffffff',
+      primary: '#dddddd',
       secondary: colors.grey[400],
     },
-    divider: alpha('#ffffff', 0.12),
+    divider: alpha('#dddddd', 0.12),
   },
   components: {
     MuiCssBaseline: {

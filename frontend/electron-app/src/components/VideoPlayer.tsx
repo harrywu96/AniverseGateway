@@ -373,7 +373,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            color: 'white',
+            color: '#ddd',
             zIndex: 2
           }}
         >
@@ -382,7 +382,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               width: 40,
               height: 40,
               border: '3px solid rgba(255,255,255,0.3)',
-              borderTop: '3px solid white',
+              borderTop: '3px solid #ddd',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
               '@keyframes spin': {
@@ -406,7 +406,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
+            color: '#ddd',
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             padding: 2,
             textAlign: 'center',
@@ -443,7 +443,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 width: 80,
                 height: 80,
                 backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                color: 'white',
+                color: '#ddd',
                 '&:hover': {
                   backgroundColor: theme.palette.primary.main,
                   transform: 'scale(1.1)'
@@ -479,7 +479,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 position: 'relative',
                 height: 6,
                 borderRadius: 3,
-                backgroundColor: alpha('#fff', 0.2),
+                backgroundColor: alpha('#ddd', 0.2),
                 overflow: 'hidden'
               }}
             >
@@ -491,7 +491,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   top: 0,
                   height: '100%',
                   width: `${buffered}%`,
-                  backgroundColor: alpha('#fff', 0.4),
+                  backgroundColor: alpha('#ddd', 0.4),
                   transition: 'width 0.3s ease'
                 }}
               />
@@ -522,7 +522,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   '& .MuiSlider-thumb': {
                     width: 16,
                     height: 16,
-                    backgroundColor: '#fff',
+                    backgroundColor: '#ddd',
                     '&:hover': {
                       boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
                     },
@@ -543,7 +543,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <Tooltip title={playing ? '暂停' : '播放'}>
                 <IconButton 
                   onClick={handlePlayPause}
-                  sx={{ color: 'white' }}
+                  sx={{ color: '#ddd' }}
                 >
                   {playing ? <PauseIcon /> : <PlayIcon />}
                 </IconButton>
@@ -553,7 +553,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <Tooltip title="快退 10 秒">
                 <IconButton 
                   onClick={handleRewind}
-                  sx={{ color: 'white' }}
+                  sx={{ color: '#ddd' }}
                 >
                   <FastRewindIcon />
                 </IconButton>
@@ -563,7 +563,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <Tooltip title="快进 10 秒">
                 <IconButton 
                   onClick={handleFastForward}
-                  sx={{ color: 'white' }}
+                  sx={{ color: '#ddd' }}
                 >
                   <FastForwardIcon />
                 </IconButton>
@@ -574,7 +574,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <Tooltip title={isMuted ? '取消静音' : '静音'}>
                   <IconButton 
                     onClick={handleMuteToggle}
-                    sx={{ color: 'white' }}
+                    sx={{ color: '#ddd' }}
                   >
                     {getVolumeIcon()}
                   </IconButton>
@@ -588,7 +588,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   step={0.01}
                   sx={{
                     width: 80,
-                    color: 'white',
+                    color: '#ddd',
                     '& .MuiSlider-thumb': {
                       width: 12,
                       height: 12
@@ -598,7 +598,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </Stack>
 
               {/* 时间显示 */}
-              <Typography variant="body2" sx={{ color: 'white', ml: 2 }}>
+              <Typography variant="body2" sx={{ color: '#ddd', ml: 2 }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </Typography>
             </Stack>
@@ -611,7 +611,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   <IconButton 
                     onClick={onSubtitleToggle}
                     sx={{ 
-                      color: showSubtitles ? theme.palette.primary.main : 'white'
+                      color: showSubtitles ? theme.palette.primary.main : '#ddd'
                     }}
                   >
                     <SubtitlesIcon />
@@ -621,7 +621,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
               {/* 设置 */}
               <Tooltip title="设置">
-                <IconButton sx={{ color: 'white' }}>
+                <IconButton sx={{ color: '#ddd' }}>
                   <SettingsIcon />
                 </IconButton>
               </Tooltip>
@@ -630,7 +630,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <Tooltip title={isFullscreen ? '退出全屏' : '全屏'}>
                 <IconButton 
                   onClick={handleFullscreen}
-                  sx={{ color: 'white' }}
+                  sx={{ color: '#ddd' }}
                 >
                   {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
                 </IconButton>

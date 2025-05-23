@@ -835,7 +835,7 @@ const Settings: React.FC = () => {
                         py: 0.5,
                         borderRadius: 2,
                         background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)',
-                        color: 'white',
+                        color: '#ddd',
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         letterSpacing: '0.5px',

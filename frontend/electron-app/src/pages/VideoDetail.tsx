@@ -47,6 +47,7 @@ import VideoPlayer from '../components/VideoPlayer';
 import SubtitleEditor, { SubtitleItem } from '../components/SubtitleEditor';
 import { useDebouncedCallback } from '../utils/useDebounce';
 import ErrorSnackbar from '../components/ErrorSnackbar';
+import { createModernCardStyles, createModernPaperStyles, createModernFormStyles, createModernContainerStyles, createModernButtonStyles, createElegantAreaStyles } from '../utils/modernStyles';
 
 // Tab 面板组件
 interface TabPanelProps {
@@ -769,7 +770,12 @@ const VideoDetailComponent: React.FC = () => {
 
           {/* 视频信息标签页 */}
           <Fade in={true} timeout={800}>
-            <Card>
+            <Card 
+              sx={{
+                ...createModernCardStyles(theme, 'default', 1.2),
+                overflow: 'hidden'
+              }}
+            >
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
                   <Tab icon={<InfoIcon />} label="视频信息" {...a11yProps(0)} />
@@ -778,60 +784,184 @@ const VideoDetailComponent: React.FC = () => {
               </Box>
               
               <TabPanel value={tabValue} index={0}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      基本信息
-                    </Typography>
-                    <Stack spacing={1}>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">文件名</Typography>
-                        <Typography variant="body1">{video.fileName}</Typography>
+                <Box 
+                  sx={{
+                    ...createElegantAreaStyles(theme, 'info-panel'),
+                    p: 3
+                  }}
+                >
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.04)})`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                        }}
+                      >
+                        <Typography 
+                          variant="subtitle2" 
+                          color="text.secondary" 
+                          gutterBottom
+                          sx={{ 
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          基本信息
+                        </Typography>
+                        <Stack spacing={2}>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                              文件名
+                            </Typography>
+                            <Typography 
+                              variant="body1" 
+                              sx={{ 
+                                fontWeight: 600,
+                                wordBreak: 'break-word'
+                              }}
+                            >
+                              {video.fileName}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                              格式
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                              {video.format || '未知'}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                              时长
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                              {formatTime(video.duration)}
+                            </Typography>
+                          </Box>
+                        </Stack>
                       </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">格式</Typography>
-                        <Typography variant="body1">{video.format || '未知'}</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)}, ${alpha(theme.palette.success.main, 0.04)})`,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
+                        }}
+                      >
+                        <Typography 
+                          variant="subtitle2" 
+                          color="text.secondary" 
+                          gutterBottom
+                          sx={{ 
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          字幕状态
+                        </Typography>
+                        <Stack spacing={2}>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 1 }}>
+                              内嵌字幕
+                            </Typography>
+                            <Chip 
+                              label={video.hasEmbeddedSubtitles ? '是' : '否'} 
+                              color={video.hasEmbeddedSubtitles ? 'success' : 'default'}
+                              size="small"
+                              sx={{
+                                fontWeight: 600,
+                                '& .MuiChip-label': {
+                                  px: 1.5
+                                }
+                              }}
+                            />
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 1 }}>
+                              外部字幕
+                            </Typography>
+                            <Chip 
+                              label={video.hasExternalSubtitles ? '是' : '否'} 
+                              color={video.hasExternalSubtitles ? 'success' : 'default'}
+                              size="small"
+                              sx={{
+                                fontWeight: 600,
+                                '& .MuiChip-label': {
+                                  px: 1.5
+                                }
+                              }}
+                            />
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                              字幕轨道数
+                            </Typography>
+                            <Typography 
+                              variant="body1" 
+                              sx={{ 
+                                fontWeight: 600,
+                                color: video.subtitleTracks?.length ? theme.palette.success.main : theme.palette.text.primary
+                              }}
+                            >
+                              {video.subtitleTracks?.length || 0}
+                            </Typography>
+                          </Box>
+                        </Stack>
                       </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">时长</Typography>
-                        <Typography variant="body1">{formatTime(video.duration)}</Typography>
-                      </Box>
-                    </Stack>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      字幕状态
-                    </Typography>
-                    <Stack spacing={1}>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">内嵌字幕</Typography>
-                        <Chip 
-                          label={video.hasEmbeddedSubtitles ? '是' : '否'} 
-                          color={video.hasEmbeddedSubtitles ? 'success' : 'default'}
-                          size="small"
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">外部字幕</Typography>
-                        <Chip 
-                          label={video.hasExternalSubtitles ? '是' : '否'} 
-                          color={video.hasExternalSubtitles ? 'success' : 'default'}
-                          size="small"
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">字幕轨道数</Typography>
-                        <Typography variant="body1">{video.subtitleTracks?.length || 0}</Typography>
-                      </Box>
-                    </Stack>
-                  </Grid>
-                </Grid>
+                </Box>
               </TabPanel>
               
               <TabPanel value={tabValue} index={1}>
-                <Typography variant="body1" color="text.secondary">
-                  视频设置功能开发中...
-                </Typography>
+                <Box 
+                  sx={{
+                    ...createElegantAreaStyles(theme, 'settings-panel'),
+                    p: 3,
+                    textAlign: 'center'
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      py: 4
+                    }}
+                  >
+                    <SettingsIcon 
+                      sx={{ 
+                        fontSize: 48, 
+                        color: theme.palette.grey[400],
+                        mb: 2
+                      }} 
+                    />
+                    <Typography 
+                      variant="h6" 
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      视频设置功能开发中...
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ mt: 1, maxWidth: 300 }}
+                    >
+                      更多视频配置选项即将推出，敬请期待
+                    </Typography>
+                  </Box>
+                </Box>
               </TabPanel>
             </Card>
           </Fade>
@@ -840,10 +970,31 @@ const VideoDetailComponent: React.FC = () => {
         {/* 右侧：字幕编辑区域 */}
         <Grid item xs={12} lg={4}>
           <Fade in={true} timeout={1000}>
-            <Card sx={{ height: 'fit-content', minHeight: 600 }}>
+            <Card 
+              sx={{ 
+                ...createModernCardStyles(theme, 'secondary', 1.1),
+                ...createElegantAreaStyles(theme, 'subtitle-editor'),
+                height: 'fit-content', 
+                minHeight: 600 
+              }}
+            >
               <CardContent sx={{ p: 3 }}>
                 {/* 字幕轨道选择 */}
                 <Box sx={{ mb: 3 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2,
+                      fontWeight: 600,
+                      background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}
+                  >
+                    字幕编辑器
+                  </Typography>
+                  
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel id="subtitle-track-label">字幕轨道</InputLabel>
                     <Select
@@ -852,6 +1003,20 @@ const VideoDetailComponent: React.FC = () => {
                       label="字幕轨道"
                       onChange={handleTrackChange}
                       disabled={trackOptions.length === 0}
+                      sx={{
+                        ...createModernFormStyles(theme, 'secondary'),
+                        borderRadius: 2,
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: alpha(theme.palette.secondary.main, 0.3)
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: alpha(theme.palette.secondary.main, 0.5)
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.secondary.main,
+                          boxShadow: `0 0 0 3px ${alpha(theme.palette.secondary.main, 0.1)}`
+                        }
+                      }}
                     >
                       {trackOptions.map((option) => (
                         <MenuItem key={option.id} value={option.value}>
@@ -865,44 +1030,100 @@ const VideoDetailComponent: React.FC = () => {
                   <Paper 
                     variant="outlined" 
                     sx={{ 
+                      ...createModernPaperStyles(theme, 2),
                       p: 2, 
                       mb: 2,
-                      background: alpha(theme.palette.primary.main, 0.02),
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                      background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)}, ${alpha(theme.palette.info.main, 0.04)})`,
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        background: `linear-gradient(90deg, ${theme.palette.info.main}, ${alpha(theme.palette.info.main, 0.7)})`
+                      }
                     }}
                   >
-                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      gutterBottom
+                      sx={{ 
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       当前播放时间
                     </Typography>
-                    <Typography variant="h6" sx={{ mb: 1 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 1,
+                        fontWeight: 700,
+                        fontFamily: 'monospace',
+                        color: theme.palette.info.main
+                      }}
+                    >
                       {formatTime(currentTime)}
                     </Typography>
                     {currentSubtitle && (
                       <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          当前字幕
-                        </Typography>
                         <Typography 
-                          variant="body2" 
+                          variant="caption" 
+                          color="text.secondary"
                           sx={{ 
-                            fontStyle: 'italic',
-                            p: 1,
-                            backgroundColor: alpha(theme.palette.info.main, 0.1),
-                            borderRadius: 1,
-                            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
                           }}
                         >
-                          {currentSubtitle.text}
+                          当前字幕
                         </Typography>
+                        <Box
+                          sx={{ 
+                            ...createModernContainerStyles(theme, 2, 'info'),
+                            p: 1.5,
+                            mt: 1,
+                            fontStyle: 'italic',
+                            fontWeight: 500,
+                            lineHeight: 1.6
+                          }}
+                        >
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: theme.palette.text.primary
+                            }}
+                          >
+                            {currentSubtitle.text}
+                          </Typography>
+                        </Box>
                       </Box>
                     )}
                   </Paper>
                 </Box>
 
-                <Divider sx={{ mb: 3 }} />
+                <Divider 
+                  sx={{ 
+                    mb: 3,
+                    borderColor: alpha(theme.palette.secondary.main, 0.2)
+                  }} 
+                />
 
                 {/* 字幕内容区域 */}
-                <Box sx={{ height: 400, mb: 3 }}>
+                <Box 
+                  sx={{ 
+                    ...createModernContainerStyles(theme, 1, 'default'),
+                    height: 400, 
+                    mb: 3,
+                    overflow: 'hidden'
+                  }}
+                >
                   <SubtitleEditor
                     subtitles={processedSubtitles as SubtitleItem[]}
                     currentTime={currentTime}
@@ -914,99 +1135,132 @@ const VideoDetailComponent: React.FC = () => {
                 </Box>
 
                 {/* 操作按钮 */}
-                <Stack spacing={2}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    startIcon={isRefreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-                    onClick={handleRefreshSubtitles}
-                    disabled={!selectedTrack || isRefreshing || loading}
-                  >
-                    {isRefreshing ? '刷新中...' : '刷新字幕'}
-                  </Button>
-
-                  <Stack direction="row" spacing={1}>
+                <Box
+                  sx={{
+                    ...createModernContainerStyles(theme, 1, 'default'),
+                    p: 2
+                  }}
+                >
+                  <Stack spacing={2}>
                     <Button
                       variant="outlined"
-                      size="small"
-                      startIcon={<DownloadIcon />}
-                      disabled={!selectedTrack}
-                      sx={{ flex: 1 }}
-                    >
-                      导出
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<TranslateIcon />}
-                      disabled={!selectedTrack}
-                      color="secondary"
-                      onClick={() => {
-                        if (video && id) {
-                          navigate(`/videos/${id}/translate`);
+                      fullWidth
+                      startIcon={isRefreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+                      onClick={handleRefreshSubtitles}
+                      disabled={!selectedTrack || isRefreshing || loading}
+                      sx={{
+                        ...createModernButtonStyles(theme, 'outlined'),
+                        borderColor: alpha(theme.palette.secondary.main, 0.3),
+                        color: theme.palette.secondary.main,
+                        '&:hover': {
+                          borderColor: theme.palette.secondary.main,
+                          backgroundColor: alpha(theme.palette.secondary.main, 0.05),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
                         }
                       }}
-                      sx={{ flex: 1 }}
                     >
-                      翻译
+                      {isRefreshing ? '刷新中...' : '刷新字幕'}
+                    </Button>
+
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<DownloadIcon />}
+                        disabled={!selectedTrack}
+                        sx={{ 
+                          ...createModernButtonStyles(theme, 'outlined'),
+                          flex: 1,
+                          borderColor: alpha(theme.palette.info.main, 0.3),
+                          color: theme.palette.info.main,
+                          '&:hover': {
+                            borderColor: theme.palette.info.main,
+                            backgroundColor: alpha(theme.palette.info.main, 0.05),
+                            transform: 'translateY(-1px)',
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.2)}`
+                          }
+                        }}
+                      >
+                        导出
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<TranslateIcon />}
+                        disabled={!selectedTrack}
+                        color="secondary"
+                        onClick={() => {
+                          if (video && id) {
+                            navigate(`/videos/${id}/translate`);
+                          }
+                        }}
+                        sx={{ 
+                          ...createModernButtonStyles(theme, 'outlined'),
+                          flex: 1
+                        }}
+                      >
+                        翻译
+                      </Button>
+                    </Stack>
+
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      startIcon={<SaveIcon />}
+                      disabled={!selectedTrack}
+                      onClick={async () => {
+                        try {
+                          if (!video || !selectedTrack || !videoId) return;
+
+                          const apiPort = '8000';
+                          let trackIndex = 0;
+
+                          if ((selectedTrack as any).backendIndex !== undefined) {
+                            trackIndex = (selectedTrack as any).backendIndex;
+                          } else {
+                            try {
+                              const parsedIndex = parseInt(selectedTrack.id);
+                              if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                                trackIndex = parsedIndex;
+                              }
+                            } catch (e) {
+                              console.warn('轨道ID转换为索引失败，使用默认值0:', e);
+                            }
+                          }
+
+                          const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
+
+                          const response = await fetch(url, {
+                            method: 'POST'
+                          });
+
+                          if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                              setError('字幕保存成功');
+                              return;
+                            }
+                          }
+
+                          console.warn('调用保存字幕API失败，显示模拟成功消息');
+                          setError('字幕保存成功');
+                        } catch (error) {
+                          console.error('保存字幕失败:', error);
+                          setError('字幕保存失败，请重试');
+                        }
+                      }}
+                      sx={{ 
+                        ...createModernButtonStyles(theme, 'primary'),
+                        py: 1.5,
+                        fontSize: '1rem'
+                      }}
+                    >
+                      保存所有修改
                     </Button>
                   </Stack>
-
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    startIcon={<SaveIcon />}
-                    disabled={!selectedTrack}
-                    onClick={async () => {
-                      try {
-                        if (!video || !selectedTrack || !videoId) return;
-
-                        const apiPort = '8000';
-                        let trackIndex = 0;
-
-                        if ((selectedTrack as any).backendIndex !== undefined) {
-                          trackIndex = (selectedTrack as any).backendIndex;
-                        } else {
-                          try {
-                            const parsedIndex = parseInt(selectedTrack.id);
-                            if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                              trackIndex = parsedIndex;
-                            }
-                          } catch (e) {
-                            console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                          }
-                        }
-
-                        const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
-
-                        const response = await fetch(url, {
-                          method: 'POST'
-                        });
-
-                        if (response.ok) {
-                          const result = await response.json();
-                          if (result.success) {
-                            setError('字幕保存成功');
-                            return;
-                          }
-                        }
-
-                        console.warn('调用保存字幕API失败，显示模拟成功消息');
-                        setError('字幕保存成功');
-                      } catch (error) {
-                        console.error('保存字幕失败:', error);
-                        setError('字幕保存失败，请重试');
-                      }
-                    }}
-                    sx={{ 
-                      borderRadius: 2,
-                      py: 1.5
-                    }}
-                  >
-                    保存所有修改
-                  </Button>
-                </Stack>
+                </Box>
               </CardContent>
             </Card>
           </Fade>

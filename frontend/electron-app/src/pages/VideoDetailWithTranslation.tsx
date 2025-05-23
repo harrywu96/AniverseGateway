@@ -58,6 +58,7 @@ import { useAppContext } from '../context/AppContext';
 import { VideoInfo } from '@subtranslate/shared';
 import VideoPlayer from '../components/VideoPlayer';
 import ErrorSnackbar from '../components/ErrorSnackbar';
+import { createModernCardStyles, createModernPaperStyles, createModernFormStyles, createModernAlertStyles, createModernDialogStyles, createModernButtonStyles, createModernContainerStyles, createElegantAreaStyles } from '../utils/modernStyles';
 
 // 翻译步骤枚举
 const TRANSLATION_STEPS = [
@@ -591,256 +592,410 @@ const VideoDetailWithTranslation: React.FC = () => {
         {/* 右侧：翻译配置和进度 */}
         <Grid item xs={12} lg={6}>
           <Fade in={true} timeout={1000}>
-            <Card>
+            <Card
+              sx={{
+                ...createModernCardStyles(theme, 'primary', 1.2),
+                ...createElegantAreaStyles(theme, 'translation-flow'),
+                overflow: 'hidden'
+              }}
+            >
               <CardHeader
                 title={
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <LanguageIcon color="primary" />
-                    <Typography variant="h6">翻译流程</Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 2,
+                        backgroundColor: alpha(theme.palette.info.main, 0.15),
+                        color: theme.palette.info.main
+                      }}
+                    >
+                      <LanguageIcon />
+                    </Box>
+                    <Typography 
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        background: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                      }}
+                    >
+                      翻译流程
+                    </Typography>
                   </Stack>
                 }
+                sx={{
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)}, ${alpha(theme.palette.info.main, 0.04)})`,
+                  borderBottom: `1px solid ${alpha(theme.palette.info.main, 0.15)}`
+                }}
               />
-              <CardContent>
-                <Stepper activeStep={activeStep} orientation="vertical">
+              <CardContent sx={{ p: 3 }}>
+                <Stepper 
+                  activeStep={activeStep} 
+                  orientation="vertical"
+                  sx={{
+                    '& .MuiStepLabel-root': {
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        '& .MuiStepLabel-label': {
+                          color: theme.palette.info.main
+                        }
+                      }
+                    },
+                    '& .MuiStepConnector-line': {
+                      borderColor: alpha(theme.palette.info.main, 0.25)
+                    },
+                    '& .MuiStepIcon-root': {
+                      color: alpha(theme.palette.info.main, 0.4),
+                      '&.Mui-active': {
+                        color: theme.palette.info.main
+                      },
+                      '&.Mui-completed': {
+                        color: theme.palette.success.main
+                      }
+                    }
+                  }}
+                >
                   {TRANSLATION_STEPS.map((step, index) => (
                     <Step key={step.key}>
                       <StepLabel
                         optional={
-                          <Typography variant="caption">
+                          <Typography 
+                            variant="caption"
+                            sx={{ 
+                              color: 'text.secondary',
+                              fontStyle: 'italic'
+                            }}
+                          >
                             {step.description}
                           </Typography>
                         }
                         onClick={() => handleStepChange(index)}
                         sx={{ cursor: 'pointer' }}
                       >
-                        {step.label}
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: activeStep === index ? theme.palette.info.main : 'text.primary'
+                          }}
+                        >
+                          {step.label}
+                        </Typography>
                       </StepLabel>
                       <StepContent>
-                        {/* 步骤0：配置翻译 */}
-                        {index === 0 && (
-                          <Box sx={{ mb: 2 }}>
-                            <Grid container spacing={2}>
-                              <Grid item xs={12}>
-                                <FormControl fullWidth>
-                                  <InputLabel>字幕轨道</InputLabel>
-                                  <Select
-                                    value={selectedTrackId}
-                                    onChange={(e) => setSelectedTrackId(e.target.value)}
-                                    label="字幕轨道"
-                                  >
-                                    {trackOptions.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
+                        <Box
+                          sx={{
+                            ...createModernContainerStyles(theme, 3, 'info'),
+                            p: 2,
+                            mb: 2
+                          }}
+                        >
+                          {/* 步骤0：配置翻译 */}
+                          {index === 0 && (
+                            <Box>
+                              <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
+                                    <InputLabel>字幕轨道</InputLabel>
+                                    <Select
+                                      value={selectedTrackId}
+                                      onChange={(e) => setSelectedTrackId(e.target.value)}
+                                      label="字幕轨道"
+                                      sx={{
+                                        borderRadius: 2,
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                          borderColor: alpha(theme.palette.info.main, 0.3)
+                                        }
+                                      }}
+                                    >
+                                      {trackOptions.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                          {option.label}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                
+                                <Grid item xs={6}>
+                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
+                                    <InputLabel>源语言</InputLabel>
+                                    <Select
+                                      value={sourceLanguage}
+                                      onChange={(e) => setSourceLanguage(e.target.value)}
+                                      label="源语言"
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {SUPPORTED_LANGUAGES.map((lang) => (
+                                        <MenuItem key={lang.code} value={lang.code}>
+                                          {lang.flag} {lang.name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                
+                                <Grid item xs={6}>
+                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
+                                    <InputLabel>目标语言</InputLabel>
+                                    <Select
+                                      value={targetLanguage}
+                                      onChange={(e) => setTargetLanguage(e.target.value)}
+                                      label="目标语言"
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      {SUPPORTED_LANGUAGES.map((lang) => (
+                                        <MenuItem key={lang.code} value={lang.code}>
+                                          {lang.flag} {lang.name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                
+                                <Grid item xs={12}>
+                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
+                                    <InputLabel>翻译模型</InputLabel>
+                                    <Select
+                                      value={translationModel}
+                                      onChange={(e) => setTranslationModel(e.target.value)}
+                                      label="翻译模型"
+                                      sx={{ borderRadius: 2 }}
+                                    >
+                                      <MenuItem value="gpt-4">GPT-4 (推荐)</MenuItem>
+                                      <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
+                                      <MenuItem value="claude-3">Claude-3</MenuItem>
+                                      <MenuItem value="gemini-pro">Gemini Pro</MenuItem>
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
                               </Grid>
                               
-                              <Grid item xs={6}>
-                                <FormControl fullWidth>
-                                  <InputLabel>源语言</InputLabel>
-                                  <Select
-                                    value={sourceLanguage}
-                                    onChange={(e) => setSourceLanguage(e.target.value)}
-                                    label="源语言"
-                                  >
-                                    {SUPPORTED_LANGUAGES.map((lang) => (
-                                      <MenuItem key={lang.code} value={lang.code}>
-                                        {lang.flag} {lang.name}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              
-                              <Grid item xs={6}>
-                                <FormControl fullWidth>
-                                  <InputLabel>目标语言</InputLabel>
-                                  <Select
-                                    value={targetLanguage}
-                                    onChange={(e) => setTargetLanguage(e.target.value)}
-                                    label="目标语言"
-                                  >
-                                    {SUPPORTED_LANGUAGES.map((lang) => (
-                                      <MenuItem key={lang.code} value={lang.code}>
-                                        {lang.flag} {lang.name}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                              
-                              <Grid item xs={12}>
-                                <FormControl fullWidth>
-                                  <InputLabel>翻译模型</InputLabel>
-                                  <Select
-                                    value={translationModel}
-                                    onChange={(e) => setTranslationModel(e.target.value)}
-                                    label="翻译模型"
-                                  >
-                                    <MenuItem value="gpt-4">GPT-4 (推荐)</MenuItem>
-                                    <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
-                                    <MenuItem value="claude-3">Claude-3</MenuItem>
-                                    <MenuItem value="gemini-pro">Gemini Pro</MenuItem>
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                            </Grid>
-                            
-                            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                              <Button
-                                variant="contained"
-                                startIcon={<PlayIcon />}
-                                onClick={startTranslation}
-                                disabled={!isConfigComplete || translationStatus === TranslationStatus.TRANSLATING}
-                                sx={{ flex: 1 }}
-                              >
-                                开始翻译
-                              </Button>
-                            </Box>
-                          </Box>
-                        )}
-
-                        {/* 步骤1：执行翻译 */}
-                        {index === 1 && (
-                          <Box sx={{ mb: 2 }}>
-                            {translationStatus === TranslationStatus.TRANSLATING && (
-                              <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                  <CircularProgress size={24} sx={{ mr: 2 }} />
-                                  <Typography variant="body1">
-                                    正在翻译中...
-                                  </Typography>
-                                </Box>
-                                
-                                <LinearProgress 
-                                  variant="determinate" 
-                                  value={translationProgress.percentage} 
-                                  sx={{ mb: 2, height: 8, borderRadius: 4 }}
-                                />
-                                
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                  <Typography variant="body2" color="text.secondary">
-                                    进度: {translationProgress.current} / {translationProgress.total}
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {Math.round(translationProgress.percentage)}%
-                                  </Typography>
-                                </Box>
-                                
-                                {translationProgress.currentItem && (
-                                  <Typography variant="body2" sx={{ mb: 1 }}>
-                                    当前处理: {translationProgress.currentItem}
-                                  </Typography>
-                                )}
-                                
-                                {translationProgress.estimatedTimeRemaining && (
-                                  <Typography variant="body2" color="text.secondary">
-                                    预计剩余时间: {formatEstimatedTime(translationProgress.estimatedTimeRemaining)}
-                                  </Typography>
-                                )}
-                                
+                              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
                                 <Button
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<StopIcon />}
-                                  onClick={stopTranslation}
-                                  sx={{ mt: 2 }}
+                                  variant="contained"
+                                  startIcon={<PlayIcon />}
+                                  onClick={startTranslation}
+                                  disabled={!isConfigComplete || translationStatus === TranslationStatus.TRANSLATING}
+                                  sx={{ 
+                                    ...createModernButtonStyles(theme, 'primary'),
+                                    flex: 1,
+                                    py: 1.2
+                                  }}
                                 >
-                                  停止翻译
+                                  开始翻译
                                 </Button>
                               </Box>
-                            )}
-                            
-                            {translationStatus === TranslationStatus.COMPLETED && (
-                              <Alert severity="success" sx={{ mb: 2 }}>
-                                <AlertTitle>翻译完成</AlertTitle>
-                                成功翻译了 {translationResults.length} 条字幕
-                              </Alert>
-                            )}
-                            
-                            {translationStatus === TranslationStatus.ERROR && (
-                              <Alert severity="error" sx={{ mb: 2 }}>
-                                <AlertTitle>翻译失败</AlertTitle>
-                                {error}
-                              </Alert>
-                            )}
-                          </Box>
-                        )}
+                            </Box>
+                          )}
 
-                        {/* 步骤2：预览结果 */}
-                        {index === 2 && translationResults.length > 0 && (
-                          <Box sx={{ mb: 2 }}>
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                              <AlertTitle>预览完成</AlertTitle>
-                              请查看左侧的翻译结果预览，确认无误后可以保存文件
-                            </Alert>
-                            
-                            <Stack direction="row" spacing={2}>
-                              <Button
-                                variant="contained"
-                                startIcon={<SaveIcon />}
-                                onClick={saveTranslation}
-                                disabled={loading}
-                              >
-                                保存翻译文件
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                startIcon={<DownloadIcon />}
-                                onClick={() => {
-                                  // 触发下载
-                                  const blob = new Blob([
-                                    translationResults.map((result, index) => 
-                                      `${index + 1}\n${formatTime(result.startTime)} --> ${formatTime(result.endTime)}\n${result.translated}\n`
-                                    ).join('\n')
-                                  ], { type: 'text/plain' });
-                                  const url = URL.createObjectURL(blob);
-                                  const a = document.createElement('a');
-                                  a.href = url;
-                                  a.download = `${video.fileName}_${targetLanguage}.srt`;
-                                  a.click();
-                                  URL.revokeObjectURL(url);
+                          {/* 步骤1：执行翻译 */}
+                          {index === 1 && (
+                            <Box>
+                              {translationStatus === TranslationStatus.TRANSLATING && (
+                                <Box
+                                  sx={{
+                                    ...createModernContainerStyles(theme, 2, 'info'),
+                                    p: 2
+                                  }}
+                                >
+                                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <CircularProgress size={24} sx={{ mr: 2, color: theme.palette.info.main }} />
+                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                      正在翻译中...
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <LinearProgress 
+                                    variant="determinate" 
+                                    value={translationProgress.percentage} 
+                                    sx={{ 
+                                      mb: 2, 
+                                      height: 8, 
+                                      borderRadius: 4,
+                                      backgroundColor: alpha(theme.palette.info.main, 0.1),
+                                      '& .MuiLinearProgress-bar': {
+                                        backgroundColor: theme.palette.info.main
+                                      }
+                                    }}
+                                  />
+                                  
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                      进度: {translationProgress.current} / {translationProgress.total}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                      {Math.round(translationProgress.percentage)}%
+                                    </Typography>
+                                  </Box>
+                                  
+                                  {translationProgress.currentItem && (
+                                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                                      当前处理: {translationProgress.currentItem}
+                                    </Typography>
+                                  )}
+                                  
+                                  {translationProgress.estimatedTimeRemaining && (
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                      预计剩余时间: {formatEstimatedTime(translationProgress.estimatedTimeRemaining)}
+                                    </Typography>
+                                  )}
+                                  
+                                  <Button
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<StopIcon />}
+                                    onClick={stopTranslation}
+                                    sx={{ 
+                                      ...createModernButtonStyles(theme, 'outlined'),
+                                      mt: 2,
+                                      borderColor: alpha(theme.palette.error.main, 0.3),
+                                      color: theme.palette.error.main,
+                                      '&:hover': {
+                                        borderColor: theme.palette.error.main,
+                                        backgroundColor: alpha(theme.palette.error.main, 0.05)
+                                      }
+                                    }}
+                                  >
+                                    停止翻译
+                                  </Button>
+                                </Box>
+                              )}
+                              
+                              {translationStatus === TranslationStatus.COMPLETED && (
+                                <Alert 
+                                  severity="success" 
+                                  sx={{ 
+                                    ...createModernAlertStyles(theme, 'success'),
+                                    mb: 2
+                                  }}
+                                >
+                                  <AlertTitle sx={{ fontWeight: 600 }}>翻译完成</AlertTitle>
+                                  成功翻译了 {translationResults.length} 条字幕
+                                </Alert>
+                              )}
+                              
+                              {translationStatus === TranslationStatus.ERROR && (
+                                <Alert 
+                                  severity="error" 
+                                  sx={{ 
+                                    ...createModernAlertStyles(theme, 'error'),
+                                    mb: 2
+                                  }}
+                                >
+                                  <AlertTitle sx={{ fontWeight: 600 }}>翻译失败</AlertTitle>
+                                  {error}
+                                </Alert>
+                              )}
+                            </Box>
+                          )}
+
+                          {/* 步骤2：预览结果 */}
+                          {index === 2 && translationResults.length > 0 && (
+                            <Box>
+                              <Alert 
+                                severity="info" 
+                                sx={{ 
+                                  ...createModernAlertStyles(theme, 'info'),
+                                  mb: 2
                                 }}
                               >
-                                下载字幕文件
-                              </Button>
-                            </Stack>
-                          </Box>
-                        )}
+                                <AlertTitle sx={{ fontWeight: 600 }}>预览完成</AlertTitle>
+                                请查看左侧的翻译结果预览，确认无误后可以保存文件
+                              </Alert>
+                              
+                              <Stack direction="row" spacing={2}>
+                                <Button
+                                  variant="contained"
+                                  startIcon={<SaveIcon />}
+                                  onClick={saveTranslation}
+                                  disabled={loading}
+                                  sx={{
+                                    ...createModernButtonStyles(theme, 'primary'),
+                                    background: `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`
+                                  }}
+                                >
+                                  保存翻译文件
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<DownloadIcon />}
+                                  onClick={() => {
+                                    // 触发下载
+                                    const blob = new Blob([
+                                      translationResults.map((result, index) => 
+                                        `${index + 1}\n${formatTime(result.startTime)} --> ${formatTime(result.endTime)}\n${result.translated}\n`
+                                      ).join('\n')
+                                    ], { type: 'text/plain' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `${video.fileName}_${targetLanguage}.srt`;
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                  }}
+                                  sx={{ 
+                                    ...createModernButtonStyles(theme, 'outlined')
+                                  }}
+                                >
+                                  下载字幕文件
+                                </Button>
+                              </Stack>
+                            </Box>
+                          )}
 
-                        {/* 步骤3：保存文件 */}
-                        {index === 3 && (
-                          <Box sx={{ mb: 2 }}>
-                            <Alert severity="success" sx={{ mb: 2 }}>
-                              <AlertTitle>翻译任务完成</AlertTitle>
-                              翻译文件已成功保存到服务器
-                            </Alert>
-                            
-                            <Stack direction="row" spacing={2}>
-                              <Button
-                                variant="outlined"
-                                startIcon={<RefreshIcon />}
-                                onClick={() => {
-                                  setActiveStep(0);
-                                  setTranslationStatus(TranslationStatus.IDLE);
-                                  setTranslationResults([]);
-                                  setTranslationProgress({ current: 0, total: 0, percentage: 0 });
+                          {/* 步骤3：保存文件 */}
+                          {index === 3 && (
+                            <Box>
+                              <Alert 
+                                severity="success" 
+                                sx={{ 
+                                  ...createModernAlertStyles(theme, 'success'),
+                                  mb: 2
                                 }}
                               >
-                                重新翻译
-                              </Button>
-                              <Button
-                                variant="contained"
-                                startIcon={<ArrowBackIcon />}
-                                onClick={handleBack}
-                              >
-                                返回视频详情
-                              </Button>
-                            </Stack>
-                          </Box>
-                        )}
+                                <AlertTitle sx={{ fontWeight: 600 }}>翻译任务完成</AlertTitle>
+                                翻译文件已成功保存到服务器
+                              </Alert>
+                              
+                              <Stack direction="row" spacing={2}>
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<RefreshIcon />}
+                                  onClick={() => {
+                                    setActiveStep(0);
+                                    setTranslationStatus(TranslationStatus.IDLE);
+                                    setTranslationResults([]);
+                                    setTranslationProgress({ current: 0, total: 0, percentage: 0 });
+                                  }}
+                                  sx={{ 
+                                    ...createModernButtonStyles(theme, 'outlined')
+                                  }}
+                                >
+                                  重新翻译
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  startIcon={<ArrowBackIcon />}
+                                  onClick={handleBack}
+                                  sx={{
+                                    ...createModernButtonStyles(theme, 'primary')
+                                  }}
+                                >
+                                  返回视频详情
+                                </Button>
+                              </Stack>
+                            </Box>
+                          )}
+                        </Box>
                       </StepContent>
                     </Step>
                   ))}
@@ -857,6 +1012,9 @@ const VideoDetailWithTranslation: React.FC = () => {
         onClose={() => setSettingsOpen(false)}
         maxWidth="sm"
         fullWidth
+        sx={{
+          ...createModernDialogStyles(theme)
+        }}
       >
         <DialogTitle>翻译设置</DialogTitle>
         <DialogContent>
@@ -887,6 +1045,9 @@ const VideoDetailWithTranslation: React.FC = () => {
           <Button 
             onClick={() => setSettingsOpen(false)}
             variant="contained"
+            sx={{
+              ...createModernButtonStyles(theme, 'primary')
+            }}
           >
             保存设置
           </Button>

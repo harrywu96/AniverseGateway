@@ -10,7 +10,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -64,6 +66,8 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
   isSaving,
   formatTime
 }) => {
+  const theme = useTheme();
+  
   return (
     <Paper
       sx={{
@@ -71,12 +75,34 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
         mb: 1,
         position: 'relative',
         bgcolor: isActive
-          ? 'rgba(144, 202, 249, 0.2)'
-          : 'background.paper'
+          ? alpha(theme.palette.primary.main, 0.12)
+          : 'background.paper',
+        border: isActive 
+          ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+          : `1px solid transparent`,
+        borderRadius: 2,
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          bgcolor: isActive 
+            ? alpha(theme.palette.primary.main, 0.16)
+            : alpha(theme.palette.action.hover, 0.04),
+          transform: 'translateY(-1px)',
+          boxShadow: isActive 
+            ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+            : theme.shadows[2]
+        }
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="caption">
+        <Typography 
+          variant="caption"
+          sx={{
+            color: isActive 
+              ? theme.palette.primary.main
+              : theme.palette.text.secondary,
+            fontWeight: isActive ? 600 : 400
+          }}
+        >
           {formatTime(subtitle.startTime)} - {formatTime(subtitle.endTime)}
         </Typography>
         <Box>
@@ -84,6 +110,11 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
             size="small"
             onClick={() => onEdit(subtitle)}
             disabled={isSaving || isDeleting || subtitle.translating}
+            sx={{
+              color: isActive 
+                ? theme.palette.primary.main 
+                : theme.palette.action.active
+            }}
           >
             <EditIcon fontSize="small" />
           </IconButton>
@@ -91,6 +122,11 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
             size="small"
             onClick={() => onDelete(subtitle.id)}
             disabled={isSaving || isDeleting || subtitle.translating}
+            sx={{
+              color: isActive 
+                ? theme.palette.error.main 
+                : theme.palette.action.active
+            }}
           >
             {isDeleting ? (
               <CircularProgress size={20} />
@@ -105,6 +141,11 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
               onClick={() => onTranslate(subtitle)}
               disabled={subtitle.translating}
               color={subtitle.translated ? "primary" : "default"}
+              sx={{
+                color: isActive 
+                  ? (subtitle.translated ? theme.palette.primary.main : theme.palette.secondary.main)
+                  : (subtitle.translated ? theme.palette.primary.main : theme.palette.action.active)
+              }}
             >
               {subtitle.translating ? (
                 <CircularProgress size={20} />
@@ -115,7 +156,18 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
           )}
         </Box>
       </Box>
-      <Typography variant="body1">{subtitle.text}</Typography>
+      <Typography 
+        variant="body1"
+        sx={{
+          color: isActive 
+            ? theme.palette.text.primary
+            : theme.palette.text.primary,
+          fontWeight: isActive ? 500 : 400,
+          lineHeight: 1.6
+        }}
+      >
+        {subtitle.text}
+      </Typography>
 
       {/* 显示翻译结果 */}
       {subtitle.translated && (
@@ -123,14 +175,24 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
           width: '100%',
           mt: 1,
           p: 1,
-          bgcolor: 'action.hover',
+          bgcolor: isActive 
+            ? alpha(theme.palette.info.main, 0.08)
+            : 'action.hover',
           borderRadius: 1,
-          borderLeft: '3px solid #1976d2'
+          borderLeft: `3px solid ${theme.palette.info.main}`
         }}>
           <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold', mb: 0.5 }}>
             翻译:
           </Typography>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              whiteSpace: 'pre-wrap',
+              color: isActive 
+                ? theme.palette.text.primary
+                : theme.palette.text.secondary
+            }}
+          >
             {subtitle.translated}
           </Typography>
         </Box>
