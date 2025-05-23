@@ -175,7 +175,7 @@ const sharedThemeOptions: ThemeOptions = {
   },
   
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   
   shadows: [
@@ -239,6 +239,12 @@ export const lightTheme = createTheme({
           '&::-webkit-scrollbar-thumb': {
             background: colors.grey[300],
             borderRadius: 4,
+          },
+        },
+        // 全局限制过大的 borderRadius
+        '*': {
+          '&[style*="border-radius: 48px"], &[style*="borderRadius: 48px"]': {
+            borderRadius: '8px !important',
           },
         },
       },
@@ -336,6 +342,12 @@ export const darkTheme = createTheme({
           '&::-webkit-scrollbar-thumb': {
             background: colors.grey[600],
             borderRadius: 4,
+          },
+        },
+        // 全局限制过大的 borderRadius
+        '*': {
+          '&[style*="border-radius: 48px"], &[style*="borderRadius: 48px"]': {
+            borderRadius: '8px !important',
           },
         },
       },

@@ -199,7 +199,7 @@ export const createStatsCardStyles = (
 ) => ({
   background: `linear-gradient(135deg, ${alpha(color, 0.1)}, ${alpha(color, 0.05)})`,
   border: `1px solid ${alpha(color, 0.2)}`,
-  borderRadius: 4,
+  borderRadius: 2,
   position: 'relative' as const,
   overflow: 'hidden' as const,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
