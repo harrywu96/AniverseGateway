@@ -216,6 +216,15 @@ const VideoDetailWithTranslation: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // 添加状态调试日志
+      console.log('loadSubtitleContent开始:', {
+        videoId,
+        trackId,
+        hasVideo: !!video,
+        hasSelectedTrack: !!selectedTrack,
+        videoSubtitleTracks: video?.subtitleTracks?.length || 0
+      });
+
       // 检查参数有效性
       if (!videoId || !trackId) {
         throw new Error('无效的视频ID或轨道ID');
@@ -302,6 +311,14 @@ const VideoDetailWithTranslation: React.FC = () => {
 
         console.log(`成功转换字幕数据，共 ${subtitleItems.length} 条`);
         setSubtitles(subtitleItems);
+
+        // 添加加载完成后的状态调试
+        console.log('字幕加载完成后的状态:', {
+          hasVideo: !!video,
+          hasSelectedTrack: !!selectedTrack,
+          subtitleCount: subtitleItems.length,
+          videoFileName: video?.fileName
+        });
       } else {
         throw new Error(result.message || '获取字幕内容失败');
       }
@@ -312,6 +329,13 @@ const VideoDetailWithTranslation: React.FC = () => {
       setStatusSeverity('error');
     } finally {
       setLoading(false);
+
+      // 添加最终状态调试
+      console.log('loadSubtitleContent结束时状态:', {
+        hasVideo: !!video,
+        hasSelectedTrack: !!selectedTrack,
+        loading: false
+      });
     }
   };
 
@@ -585,9 +609,15 @@ const VideoDetailWithTranslation: React.FC = () => {
   );
 
   return (
-    <Box sx={{ p: 2, height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ 
+      p: 2, 
+      height: 'calc(100vh - 64px)', 
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden' // 防止整体页面溢出
+    }}>
       {/* 页面标题和返回按钮 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexShrink: 0 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
@@ -597,14 +627,18 @@ const VideoDetailWithTranslation: React.FC = () => {
       </Box>
 
       {/* 主要内容区域 */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
         {/* 视频播放器 */}
-        <Box sx={{ height: '50%', minHeight: 300 }}>
+        <Box sx={{ 
+          height: '40%', // 减少视频播放器高度，为控制区域留出更多空间
+          minHeight: 250, 
+          flexShrink: 0 
+        }}>
           {video ? (
-                          <VideoPlayer
-                src={video.filePath}
-                onTimeUpdate={setCurrentTime}
-              />
+            <VideoPlayer
+              src={video.filePath}
+              onTimeUpdate={setCurrentTime}
+            />
           ) : (
             <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               {loading ? <CircularProgress /> : <Typography>未找到视频</Typography>}
@@ -612,62 +646,76 @@ const VideoDetailWithTranslation: React.FC = () => {
           )}
         </Box>
 
-        {/* 字幕轨道选择 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>字幕轨道</InputLabel>
-            <Select
-              value={selectedTrack?.id || ''}
-              label="字幕轨道"
-              onChange={(e: SelectChangeEvent) => {
-                const trackId = e.target.value;
-                const track = video?.subtitleTracks?.find(t => t.id === trackId) || null;
-                setSelectedTrack(track);
-              }}
-              disabled={!video || !video.subtitleTracks || video.subtitleTracks.length === 0}
-            >
-              {video?.subtitleTracks?.map((track) => (
-                <MenuItem key={track.id} value={track.id}>
-                  {track.language} - {track.title || `轨道 ${track.id}`}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* 翻译服务类型选择 */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ mr: 2 }}>
-              当前翻译服务：
-            </Typography>
-            <FormControl component="fieldset" size="small">
-              <RadioGroup
-                value={translationServiceType}
-                onChange={(e) => setTranslationServiceType(e.target.value)}
-                row
+        {/* 控制区域 - 确保始终可见 */}
+        <Box sx={{ flexShrink: 0 }}>
+          {/* 字幕轨道选择 */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: 1,
+            minHeight: 56 // 确保足够的高度
+          }}>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>字幕轨道</InputLabel>
+              <Select
+                value={selectedTrack?.id || ''}
+                label="字幕轨道"
+                onChange={(e: SelectChangeEvent) => {
+                  const trackId = e.target.value;
+                  const track = video?.subtitleTracks?.find(t => t.id === trackId) || null;
+                  console.log('选择字幕轨道:', { trackId, track });
+                  setSelectedTrack(track);
+                }}
+                disabled={!video || !video.subtitleTracks || video.subtitleTracks.length === 0}
               >
-                {TRANSLATION_SERVICE_TYPES.map((type) => (
-                  <FormControlLabel
-                    key={type.id}
-                    value={type.id}
-                    control={<Radio size="small" />}
-                    label={type.name}
-                  />
+                {video?.subtitleTracks?.map((track) => (
+                  <MenuItem key={track.id} value={track.id}>
+                    {track.language} - {track.title || `轨道 ${track.id}`}
+                  </MenuItem>
                 ))}
-              </RadioGroup>
+              </Select>
             </FormControl>
+
+            {/* 翻译服务类型选择 */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="subtitle1" sx={{ mr: 2 }}>
+                当前翻译服务：
+              </Typography>
+              <FormControl component="fieldset" size="small">
+                <RadioGroup
+                  value={translationServiceType}
+                  onChange={(e) => setTranslationServiceType(e.target.value)}
+                  row
+                >
+                  {TRANSLATION_SERVICE_TYPES.map((type) => (
+                    <FormControlLabel
+                      key={type.id}
+                      value={type.id}
+                      control={<Radio size="small" />}
+                      label={type.name}
+                    />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </Box>
           </Box>
-        </Box>
 
-        <Divider />
+          <Divider sx={{ my: 1 }} />
 
-        {/* 字幕编辑区域 */}
-        <Box sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+          {/* 操作按钮区域 */}
+          <Box sx={{ 
+            mb: 2, 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            minHeight: 48 // 确保按钮区域有足够高度
+          }}>
             <Button
               variant="outlined"
               color="primary"
               disabled={!selectedTrack}
               onClick={() => {
+                console.log('点击刷新字幕按钮:', { hasVideo: !!video, hasSelectedTrack: !!selectedTrack });
                 if (video && selectedTrack) {
                   const videoId = (video as any).backendId || video.id;
                   loadSubtitleContent(videoId, selectedTrack.id);
@@ -678,12 +726,11 @@ const VideoDetailWithTranslation: React.FC = () => {
               刷新字幕
             </Button>
 
-            <Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="outlined"
                 color="secondary"
                 disabled={!selectedTrack}
-                sx={{ mr: 1 }}
               >
                 导出字幕
               </Button>
@@ -694,7 +741,6 @@ const VideoDetailWithTranslation: React.FC = () => {
                 disabled={!selectedTrack}
                 onClick={() => setTranslationDialogOpen(true)}
                 startIcon={<TranslateIcon />}
-                sx={{ mr: 1 }}
               >
                 翻译字幕
               </Button>
@@ -758,7 +804,16 @@ const VideoDetailWithTranslation: React.FC = () => {
               </Button>
             </Box>
           </Box>
+        </Box>
 
+        {/* 字幕编辑区域 */}
+        <Box sx={{ 
+          flexGrow: 1, 
+          overflow: 'hidden', 
+          display: 'flex', 
+          flexDirection: 'column',
+          minHeight: 0 // 确保可以正确收缩
+        }}>
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
             <SubtitleEditor
               subtitles={subtitles}
