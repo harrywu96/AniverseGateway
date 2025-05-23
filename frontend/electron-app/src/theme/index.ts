@@ -238,12 +238,12 @@ export const lightTheme = createTheme({
           },
           '&::-webkit-scrollbar-thumb': {
             background: colors.grey[300],
-            borderRadius: 4,
+            borderRadius: 2,
           },
         },
         // 全局限制过大的 borderRadius
         '*': {
-          '&[style*="border-radius: 48px"], &[style*="borderRadius: 48px"]': {
+          '&[style*="border-radius: 48px"], &[style*="borderRadius: 28px"]': {
             borderRadius: '8px !important',
           },
         },
@@ -341,12 +341,12 @@ export const darkTheme = createTheme({
           },
           '&::-webkit-scrollbar-thumb': {
             background: colors.grey[600],
-            borderRadius: 4,
+            borderRadius: 2,
           },
         },
         // 全局限制过大的 borderRadius
         '*': {
-          '&[style*="border-radius: 48px"], &[style*="borderRadius: 48px"]': {
+          '&[style*="border-radius: 48px"], &[style*="borderRadius: 28px"]': {
             borderRadius: '8px !important',
           },
         },

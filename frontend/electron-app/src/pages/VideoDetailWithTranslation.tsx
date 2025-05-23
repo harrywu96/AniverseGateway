@@ -820,7 +820,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                     sx={{ 
                                       mb: 2, 
                                       height: 8, 
-                                      borderRadius: 4,
+                                      borderRadius: 2,
                                       backgroundColor: alpha(theme.palette.info.main, 0.1),
                                       '& .MuiLinearProgress-bar': {
                                         backgroundColor: theme.palette.info.main

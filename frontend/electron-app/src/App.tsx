@@ -276,7 +276,7 @@ const App: React.FC = () => {
             <LinearProgress
               variant="determinate"
               value={Math.min((elapsedTime / 30) * 100, 100)}
-              sx={{ height: 8, borderRadius: 4 }}
+              sx={{ height: 8, borderRadius: 2 }}
             />
           </Box>
 

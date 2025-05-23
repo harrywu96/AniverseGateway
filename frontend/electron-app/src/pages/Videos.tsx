@@ -607,7 +607,7 @@ const Videos: React.FC = () => {
                 textAlign: 'center',
                 background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
                 border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-                borderRadius: 4
+                borderRadius: 2
               }}
             >
               <Box sx={{ mb: 3 }}>

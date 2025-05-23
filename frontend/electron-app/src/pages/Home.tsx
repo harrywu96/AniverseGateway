@@ -467,7 +467,7 @@ const Home: React.FC = () => {
             p: 6,
             textAlign: 'center',
             background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
-            borderRadius: 4,
+            borderRadius: 2,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
           }}
         >

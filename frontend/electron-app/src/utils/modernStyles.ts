@@ -74,7 +74,7 @@ export const createModernCardStyles = (
   return {
     background: `linear-gradient(135deg, ${alpha(colors.main, baseAlpha)}, ${alpha(colors.secondary, baseAlpha * 0.5)})`,
     border: `1px solid ${alpha(colors.main, borderAlpha)}`,
-    borderRadius: 4,
+    borderRadius: 2,
     backdropFilter: 'blur(10px)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative' as const,
@@ -128,7 +128,7 @@ export const createGlassmorphismStyles = (
   background: alpha(theme.palette.background.paper, opacity),
   backdropFilter: `blur(${blur}px)`,
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: 4
+  borderRadius: 2
 });
 
 /**
@@ -373,7 +373,7 @@ export const createModernDialogStyles = (theme: Theme) => {
   
   return {
     '& .MuiDialog-paper': {
-      borderRadius: 4,
+      borderRadius: 2,
       background: `linear-gradient(135deg, ${alpha(baseColor, 0.95)}, ${alpha(baseColor, 0.98)})`,
       backdropFilter: 'blur(20px)',
       border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
