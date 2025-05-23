@@ -257,15 +257,50 @@ const VideoDetailWithTranslation: React.FC = () => {
       }
 
       const result = await response.json();
+      console.log('字幕API返回数据:', result);
+      
       if (result.success && result.data) {
-        // 将后端字幕数据转换为前端格式
-        const subtitleItems: SubtitleItem[] = result.data.subtitles.map((item: any) => ({
-          id: item.id.toString(),
-          startTime: item.start_time,
-          endTime: item.end_time,
-          text: item.text
-        }));
+        // 检查数据格式并进行适当转换
+        let subtitleItems: SubtitleItem[] = [];
+        
+        if (result.data.lines && Array.isArray(result.data.lines)) {
+          // 正确格式：result.data.lines (与VideoDetail.tsx一致)
+          subtitleItems = result.data.lines.map((line: any, index: number) => {
+            // 数据验证和转换
+            if (typeof line.index !== 'number' || typeof line.start_ms !== 'number' || 
+                typeof line.end_ms !== 'number' || typeof line.text !== 'string') {
+              console.warn(`字幕行数据格式异常 (索引: ${index}):`, line);
+            }
+            
+            return {
+              id: (line.index ?? index).toString(),
+              startTime: Math.max(0, (line.start_ms ?? 0) / 1000),
+              endTime: Math.max(0, (line.end_ms ?? 0) / 1000),
+              text: line.text ?? ''
+            };
+          });
+        } else if (result.data.subtitles && Array.isArray(result.data.subtitles)) {
+          // 备用格式：result.data.subtitles
+          subtitleItems = result.data.subtitles.map((item: any) => ({
+            id: item.id ? item.id.toString() : Math.random().toString(),
+            startTime: item.start_time || item.startTime || 0,
+            endTime: item.end_time || item.endTime || 0,
+            text: item.text || item.content || ''
+          }));
+        } else if (Array.isArray(result.data)) {
+          // 备用格式：result.data 直接是数组
+          subtitleItems = result.data.map((item: any) => ({
+            id: item.id ? item.id.toString() : Math.random().toString(),
+            startTime: item.start_time || item.startTime || 0,
+            endTime: item.end_time || item.endTime || 0,
+            text: item.text || item.content || ''
+          }));
+        } else {
+          console.warn('未识别的字幕数据格式:', result.data);
+          throw new Error('返回的字幕数据格式不正确');
+        }
 
+        console.log(`成功转换字幕数据，共 ${subtitleItems.length} 条`);
         setSubtitles(subtitleItems);
       } else {
         throw new Error(result.message || '获取字幕内容失败');
