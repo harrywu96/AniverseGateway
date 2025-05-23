@@ -20,24 +20,103 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Chip,
+  Fade,
+  Grow,
+  Zoom,
+  keyframes,
+  Paper,
+  Avatar,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Delete as DeleteIcon,
+  Settings as SettingsIcon,
+  CloudQueue as CloudIcon,
+  Speed as SpeedIcon,
+  CheckCircle as CheckIcon,
+  Error as ErrorIcon,
+  Psychology as AIIcon,
+} from '@mui/icons-material';
 import { testProvider } from '../services/api';
 import { Provider as AIProvider, AIModel } from '../store/providerSlice';
 
+// 现代化深色主题
+const modernTheme = {
+  primary: {
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    main: '#667eea',
+    glow: '0 0 20px rgba(102, 126, 234, 0.6)',
+  },
+  secondary: {
+    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    main: '#f093fb',
+    glow: '0 0 20px rgba(240, 147, 251, 0.6)',
+  },
+  accent: {
+    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    main: '#4facfe',
+    glow: '0 0 20px rgba(79, 172, 254, 0.6)',
+  },
+  success: {
+    gradient: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+    glow: '0 0 20px rgba(76, 175, 80, 0.6)',
+  },
+  error: {
+    gradient: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+    glow: '0 0 20px rgba(244, 67, 54, 0.6)',
+  },
+  surface: {
+    dark: 'linear-gradient(135deg, #1e1e2f 0%, #2d1b69 100%)',
+    card: 'rgba(255, 255, 255, 0.05)',
+    cardHover: 'rgba(255, 255, 255, 0.08)',
+  }
+};
+
+// 动画关键帧
+const shimmer = keyframes`
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+`;
+
+const pulseSuccess = keyframes`
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8), 0 0 30px rgba(76, 175, 80, 0.6);
+  }
+`;
+
+const rotateIcon = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
 // 格式类型选项
 const FORMAT_TYPES = [
-  { value: 'openai', label: 'OpenAI 兼容' },
-  { value: 'anthropic', label: 'Anthropic 兼容' },
-  { value: 'custom', label: '自定义格式' },
+  { value: 'openai', label: 'OpenAI 兼容', icon: '🤖' },
+  { value: 'anthropic', label: 'Anthropic 兼容', icon: '🧠' },
+  { value: 'custom', label: '自定义格式', icon: '⚙️' },
 ];
 
 // 模型能力选项
 const CAPABILITIES = [
-  { value: 'chat', label: '聊天' },
-  { value: 'completion', label: '文本补全' },
-  { value: 'vision', label: '视觉' },
-  { value: 'embedding', label: '嵌入' },
+  { value: 'chat', label: '聊天', icon: '💬' },
+  { value: 'completion', label: '文本补全', icon: '📝' },
+  { value: 'vision', label: '视觉', icon: '👁️' },
+  { value: 'embedding', label: '嵌入', icon: '🔗' },
 ];
 
 interface CustomProviderDialogProps {
@@ -77,37 +156,23 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
   useEffect(() => {
     if (open) {
       if (editProvider) {
-        // 设置提供商基本信息
         setName(editProvider.name || '');
-        
-        // API密钥通常不会从后端返回，所以这里保持空白
-        // 如果需要编辑已保存的API密钥，需要从安全存储中获取
         setApiKey('');
-        
-        // 设置API基础URL (apiHost)
         setBaseUrl(editProvider.apiHost || '');
+        setFormatType('openai');
         
-        // 设置格式类型，这需要根据实际存储位置来获取
-        // 因为Provider接口没有formatType字段，可能需要从其他地方获取或默认为'openai'
-        setFormatType('openai'); // 默认值，实际应根据存储位置获取
-        
-        // 如果提供商有模型，加载模型
         if (editProvider.models && editProvider.models.length > 0) {
           const loadedModels = editProvider.models.map(model => ({
             id: model.id,
             name: model.name,
-            // 处理不同字段名的兼容性问题
             contextWindow: (model as any).context_window || 4096,
-            // 确保capabilities是数组
             capabilities: Array.isArray(model.capabilities) ? model.capabilities : ['chat'],
           }));
           setModels(loadedModels);
         } else {
-          // 如果没有模型，设置为空数组
           setModels([]);
         }
       } else {
-        // 如果是新建提供商或对话框刚打开，重置所有表单字段
         setName('');
         setApiKey('');
         setBaseUrl('');
@@ -136,6 +201,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [error, setError] = useState('');
   const [testModel, setTestModel] = useState<string>('');
+  const [hoveredModel, setHoveredModel] = useState<string | null>(null);
 
   // 添加模型
   const handleAddModel = () => {
@@ -144,7 +210,6 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
       return;
     }
 
-    // 检查ID是否已存在
     if (models.some(m => m.id === modelId)) {
       setError('模型ID已存在');
       return;
@@ -184,7 +249,6 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
     setTestResult(null);
 
     try {
-      // 如果有选择模型进行测试，则使用选择的模型
       const modelToTest = testModel || (models.length > 0 ? models[0].id : undefined);
 
       const response = await testProvider(
@@ -223,10 +287,8 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
     setError('');
 
     try {
-      // 使用第一个模型作为默认模型
       const defaultModel = models[0].id;
 
-      // 准备模型数据
       const modelData = models.map(model => ({
         id: model.id,
         name: model.name,
@@ -234,32 +296,21 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         capabilities: model.capabilities,
       }));
 
-      // 构建要传递给父组件的提供商数据
       const providerData: Partial<AIProvider> = {
         name,
         apiKey,
         apiHost: baseUrl,
-        // 当创建新提供商时，id 将由后端生成
-        // 当编辑现有提供商时，使用现有的 id
         id: editProvider?.id,
-        // 假设新的/编辑的提供商默认是激活的
         is_active: true,
-        // 对于自定义提供商，isSystem 应为 false
         isSystem: false,
-        // 将模型数据添加到提供商数据中
         models: modelData.map(model => ({
           ...model,
-          // 如果是编辑现有提供商，使用其 id 作为 provider_id
           provider_id: editProvider?.id || '',
-          // 将第一个模型设为默认
           isDefault: model.id === defaultModel
         })),
       };
 
-      // 调用父组件的 onSave 回调，传递提供商数据和编辑状态
       onSave(providerData, !!editProvider);
-      
-      // 关闭对话框
       onClose();
     } catch (error) {
       console.error('保存自定义提供商出错:', error);
@@ -269,217 +320,664 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
     }
   };
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{editProvider ? `编辑提供商: ${editProvider.name}` : '添加自定义提供商'}</DialogTitle>
-      <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {testResult && (
-          <Box sx={{ mb: 2 }}>
-            <Alert severity={testResult.success ? 'success' : 'error'} sx={{ mb: 1 }}>
-              {testResult.message}
-            </Alert>
+  // 现代化模型项组件
+  const ModelItem = ({ model }: { model: CustomModel }) => {
+    const isHovered = hoveredModel === model.id;
 
-            {testResult.models_tested && testResult.models_tested.length > 0 && (
-              <Box sx={{ mt: 1, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                <Typography variant="subtitle2" gutterBottom>测试详情：</Typography>
-                {testResult.models_tested.map((modelTest, index) => (
-                  <Box key={index} sx={{ mb: 1, p: 1, bgcolor: modelTest.success ? 'rgba(0, 200, 0, 0.05)' : 'rgba(255, 0, 0, 0.05)', borderRadius: 1 }}>
-                    <Typography variant="body2">
-                      <strong>模型：</strong> {modelTest.model_id || '未指定'}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>状态：</strong> {modelTest.success ? '成功' : '失败'}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>响应时间：</strong> {modelTest.response_time.toFixed(2)} 秒
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>消息：</strong> {modelTest.message}
-                    </Typography>
-                    {modelTest.response_data && (
-                      <Typography variant="body2" sx={{ mt: 1, wordBreak: 'break-word' }}>
-                        <strong>响应数据：</strong>
-                        <Box component="span" sx={{ display: 'block', maxHeight: '100px', overflow: 'auto', whiteSpace: 'pre-wrap', fontSize: '0.8rem', bgcolor: 'rgba(0,0,0,0.03)', p: 1, borderRadius: 1, mt: 0.5 }}>
-                          {typeof modelTest.response_data === 'string'
-                            ? modelTest.response_data
-                            : JSON.stringify(modelTest.response_data, null, 2)}
-                        </Box>
-                      </Typography>
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-        )}
-
-        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-          基本信息
-        </Typography>
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="提供商名称"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="API密钥"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            required
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="API基础URL"
-            value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
-            placeholder="例如: https://api.example.com/v1"
-            required
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>API格式类型</InputLabel>
-            <Select
-              value={formatType}
-              onChange={(e) => setFormatType(e.target.value)}
-              label="API格式类型"
+    return (
+      <Grow in timeout={300}>
+        <Paper
+          elevation={isHovered ? 8 : 2}
+          sx={{
+            mb: 1.5,
+            borderRadius: 2,
+            background: isHovered 
+              ? modernTheme.surface.cardHover
+              : modernTheme.surface.card,
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            transform: isHovered ? 'translateY(-2px) scale(1.02)' : 'translateY(0) scale(1)',
+            '&:hover': {
+              boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+            }
+          }}
+        >
+          <ListItem
+            onMouseEnter={() => setHoveredModel(model.id)}
+            onMouseLeave={() => setHoveredModel(null)}
+            sx={{ p: 2 }}
+          >
+            <Avatar
+              sx={{
+                background: modernTheme.accent.gradient,
+                mr: 2,
+                width: 40,
+                height: 40,
+                fontSize: '0.9rem',
+                fontWeight: 700,
+              }}
             >
-              {FORMAT_TYPES.map((type) => (
-                <MenuItem key={type.value} value={type.value}>
-                  {type.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            {models.length > 0 && (
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>选择测试模型</InputLabel>
-                <Select
-                  value={testModel}
-                  onChange={(e) => setTestModel(e.target.value)}
-                  label="选择测试模型"
-                  disabled={loading}
+              <AIIcon />
+            </Avatar>
+            <ListItemText
+              primary={
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                  }}
                 >
-                  <MenuItem value="">不指定模型</MenuItem>
-                  {models.map((model) => (
-                    <MenuItem key={model.id} value={model.id}>
-                      {model.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  {model.name}
+                </Typography>
+              }
+              secondary={
+                <Box sx={{ mt: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '0.8rem',
+                      mb: 0.5,
+                    }}
+                  >
+                    ID: {model.id}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Chip
+                      label={`${model.contextWindow.toLocaleString()} tokens`}
+                      size="small"
+                      sx={{
+                        background: 'rgba(255,255,255,0.1)',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        height: 20,
+                      }}
+                    />
+                    {model.capabilities.map((cap) => (
+                      <Chip
+                        key={cap}
+                        label={CAPABILITIES.find(c => c.value === cap)?.label || cap}
+                        size="small"
+                        sx={{
+                          background: modernTheme.primary.gradient,
+                          color: 'white',
+                          fontSize: '0.7rem',
+                          height: 20,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              }
+            />
+            <ListItemSecondaryAction>
+              <IconButton
+                edge="end"
+                onClick={() => handleDeleteModel(model.id)}
+                sx={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: modernTheme.secondary.gradient,
+                    transform: 'scale(1.1)',
+                    boxShadow: modernTheme.secondary.glow,
+                  }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+        </Paper>
+      </Grow>
+    );
+  };
+
+  // 现代化测试结果组件
+  const TestResultDisplay = () => {
+    if (!testResult) return null;
+
+    return (
+      <Fade in timeout={500}>
+        <Paper
+          sx={{
+            mb: 2,
+            borderRadius: 2,
+            background: testResult.success 
+              ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(69, 160, 73, 0.15) 100%)'
+              : 'linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(211, 47, 47, 0.15) 100%)',
+            border: testResult.success 
+              ? '1px solid rgba(76, 175, 80, 0.3)'
+              : '1px solid rgba(244, 67, 54, 0.3)',
+            p: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            {testResult.success ? (
+              <CheckIcon sx={{ color: '#4CAF50', mr: 1 }} />
+            ) : (
+              <ErrorIcon sx={{ color: '#f44336', mr: 1 }} />
             )}
-            <Button
-              variant="outlined"
-              onClick={handleTestConnection}
-              disabled={loading || !apiKey || !baseUrl}
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: 'white',
+                fontWeight: 600,
+              }}
             >
-              {loading ? <CircularProgress size={24} /> : '测试连接'}
-            </Button>
+              {testResult.message}
+            </Typography>
           </Box>
-        </Box>
 
-        <Divider sx={{ my: 2 }} />
-
-        <Typography variant="h6" gutterBottom>
-          模型配置
-        </Typography>
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="模型ID"
-            value={modelId}
-            onChange={(e) => setModelId(e.target.value)}
-            placeholder="例如: gpt-4-custom"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="模型名称"
-            value={modelName}
-            onChange={(e) => setModelName(e.target.value)}
-            placeholder="例如: GPT-4 自定义"
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="上下文窗口大小"
-            type="number"
-            value={contextWindow}
-            onChange={(e) => setContextWindow(parseInt(e.target.value))}
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>模型能力</InputLabel>
-            <Select
-              multiple
-              value={selectedCapabilities}
-              onChange={(e) => setSelectedCapabilities(typeof e.target.value === 'string' ? [e.target.value] : e.target.value)}
-              label="模型能力"
-            >
-              {CAPABILITIES.map((capability) => (
-                <MenuItem key={capability.value} value={capability.value}>
-                  {capability.label}
-                </MenuItem>
+          {testResult.models_tested && testResult.models_tested.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
+                测试详情：
+              </Typography>
+              {testResult.models_tested.map((modelTest, index) => (
+                <Paper
+                  key={index}
+                  sx={{
+                    mb: 1,
+                    p: 1.5,
+                    background: modelTest.success 
+                      ? 'rgba(76, 175, 80, 0.1)' 
+                      : 'rgba(244, 67, 54, 0.1)',
+                    borderRadius: 1,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                    <strong>模型：</strong> {modelTest.model_id || '未指定'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                    <strong>状态：</strong> {modelTest.success ? '成功' : '失败'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                    <strong>响应时间：</strong> {modelTest.response_time.toFixed(2)} 秒
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white' }}>
+                    <strong>消息：</strong> {modelTest.message}
+                  </Typography>
+                </Paper>
               ))}
-            </Select>
-          </FormControl>
-          <Box sx={{ mt: 2 }}>
+            </Box>
+          )}
+        </Paper>
+      </Fade>
+    );
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          background: modernTheme.surface.dark,
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 3,
+          color: 'white',
+          maxHeight: '90vh',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%)',
+            pointerEvents: 'none',
+          }
+        }
+      }}
+    >
+      {/* 现代化标题 */}
+      <DialogTitle
+        sx={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          p: 3,
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <SettingsIcon 
+            sx={{ 
+              mr: 2, 
+              color: modernTheme.primary.main,
+              fontSize: 28,
+              filter: 'drop-shadow(0 0 8px rgba(102, 126, 234, 0.6))',
+            }} 
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              background: modernTheme.primary.gradient,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {editProvider ? `编辑提供商: ${editProvider.name}` : '添加自定义提供商'}
+          </Typography>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+        {error && (
+          <Fade in timeout={300}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2,
+                background: 'rgba(244, 67, 54, 0.1)',
+                border: '1px solid rgba(244, 67, 54, 0.3)',
+                color: 'white',
+                '& .MuiAlert-icon': { color: '#f44336' },
+              }}
+            >
+              {error}
+            </Alert>
+          </Fade>
+        )}
+
+        <TestResultDisplay />
+
+        {/* 基本信息步骤 */}
+        <Paper
+          sx={{
+            p: 3,
+            mb: 3,
+            background: modernTheme.surface.card,
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              mb: 2, 
+              color: 'white',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <CloudIcon sx={{ mr: 1, color: modernTheme.primary.main }} />
+            基本信息
+          </Typography>
+          
+          <Box sx={{ display: 'grid', gap: 2 }}>
+            <TextField
+              fullWidth
+              label="提供商名称"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputBase-input': { color: 'white' },
+              }}
+            />
+            
+            <TextField
+              fullWidth
+              label="API密钥"
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputBase-input': { color: 'white' },
+              }}
+            />
+            
+            <TextField
+              fullWidth
+              label="API基础URL"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="例如: https://api.example.com/v1"
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&.Mui-focused fieldset': { borderColor: modernTheme.primary.main },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputBase-input': { color: 'white' },
+              }}
+            />
+            
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>API格式类型</InputLabel>
+              <Select
+                value={formatType}
+                onChange={(e) => setFormatType(e.target.value)}
+                label="API格式类型"
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: modernTheme.primary.main },
+                  '& .MuiSelect-select': { color: 'white' },
+                  '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      background: modernTheme.surface.dark,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      '& .MuiMenuItem-root': {
+                        color: 'white',
+                        '&:hover': { background: 'rgba(255,255,255,0.1)' },
+                      }
+                    }
+                  }
+                }}
+              >
+                {FORMAT_TYPES.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography sx={{ mr: 1 }}>{type.icon}</Typography>
+                      {type.label}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* 测试连接部分 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+              {models.length > 0 && (
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>选择测试模型</InputLabel>
+                  <Select
+                    value={testModel}
+                    onChange={(e) => setTestModel(e.target.value)}
+                    label="选择测试模型"
+                    disabled={loading}
+                    size="small"
+                    sx={{
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                      '& .MuiSelect-select': { color: 'white' },
+                      '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
+                    }}
+                  >
+                    <MenuItem value="">不指定模型</MenuItem>
+                    {models.map((model) => (
+                      <MenuItem key={model.id} value={model.id}>
+                        {model.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              <Button
+                variant="outlined"
+                onClick={handleTestConnection}
+                disabled={loading || !apiKey || !baseUrl}
+                startIcon={loading ? <CircularProgress size={20} /> : <SpeedIcon />}
+                sx={{
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.05)',
+                  '&:hover': {
+                    background: modernTheme.accent.gradient,
+                    borderColor: 'transparent',
+                    boxShadow: modernTheme.accent.glow,
+                  }
+                }}
+              >
+                {loading ? '测试中...' : '测试连接'}
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+
+        {/* 模型配置步骤 */}
+        <Paper
+          sx={{
+            p: 3,
+            background: modernTheme.surface.card,
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              mb: 2, 
+              color: 'white',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <AIIcon sx={{ mr: 1, color: modernTheme.accent.main }} />
+            模型配置
+          </Typography>
+          
+          <Box sx={{ display: 'grid', gap: 2, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <TextField
+                label="模型ID"
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                placeholder="例如: gpt-4-custom"
+                size="small"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                    '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                  '& .MuiInputBase-input': { color: 'white' },
+                }}
+              />
+              <TextField
+                label="模型名称"
+                value={modelName}
+                onChange={(e) => setModelName(e.target.value)}
+                placeholder="例如: GPT-4 自定义"
+                size="small"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                    '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                  '& .MuiInputBase-input': { color: 'white' },
+                }}
+              />
+            </Box>
+            
+            <TextField
+              label="上下文窗口大小"
+              type="number"
+              value={contextWindow}
+              onChange={(e) => setContextWindow(parseInt(e.target.value))}
+              size="small"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                  '&.Mui-focused fieldset': { borderColor: modernTheme.accent.main },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                '& .MuiInputBase-input': { color: 'white' },
+              }}
+            />
+            
+            <FormControl size="small">
+              <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>模型能力</InputLabel>
+              <Select
+                multiple
+                value={selectedCapabilities}
+                onChange={(e) => setSelectedCapabilities(typeof e.target.value === 'string' ? [e.target.value] : e.target.value)}
+                label="模型能力"
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip
+                        key={value}
+                        label={CAPABILITIES.find(c => c.value === value)?.label}
+                        size="small"
+                        sx={{
+                          background: modernTheme.primary.gradient,
+                          color: 'white',
+                          fontSize: '0.7rem',
+                          height: 20,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                  '& .MuiSelect-select': { color: 'white' },
+                  '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.7)' },
+                }}
+              >
+                {CAPABILITIES.map((capability) => (
+                  <MenuItem key={capability.value} value={capability.value}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography sx={{ mr: 1 }}>{capability.icon}</Typography>
+                      {capability.label}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={handleAddModel}
               disabled={!modelId || !modelName}
+              sx={{
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: 'white',
+                background: 'rgba(255,255,255,0.05)',
+                '&:hover': {
+                  background: modernTheme.primary.gradient,
+                  borderColor: 'transparent',
+                  boxShadow: modernTheme.primary.glow,
+                },
+                '&:disabled': {
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.3)',
+                }
+              }}
             >
               添加模型
             </Button>
           </Box>
-        </Box>
 
-        {models.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              已添加的模型
-            </Typography>
-            <List>
-              {models.map((model) => (
-                <ListItem key={model.id}>
-                  <ListItemText
-                    primary={`${model.name} (${model.id})`}
-                    secondary={`上下文窗口: ${model.contextWindow}, 能力: ${model.capabilities.join(', ')}`}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton edge="end" onClick={() => handleDeleteModel(model.id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-        )}
+          {/* 已添加的模型列表 */}
+          {models.length > 0 && (
+            <Box>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  mb: 2, 
+                  color: 'white',
+                  fontWeight: 600,
+                }}
+              >
+                已添加的模型 ({models.length})
+              </Typography>
+              <List sx={{ p: 0 }}>
+                {models.map((model) => (
+                  <ModelItem key={model.id} model={model} />
+                ))}
+              </List>
+            </Box>
+          )}
+        </Paper>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>取消</Button>
+
+      {/* 现代化操作按钮 */}
+      <DialogActions 
+        sx={{ 
+          p: 3, 
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+          backdropFilter: 'blur(10px)',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          gap: 2,
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <Button 
+          onClick={onClose}
+          sx={{
+            color: 'rgba(255,255,255,0.7)',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)',
+            }
+          }}
+        >
+          取消
+        </Button>
         <Button
           onClick={handleSave}
           variant="contained"
-          color="primary"
           disabled={loading || !name || !apiKey || !baseUrl || models.length === 0}
+          startIcon={loading ? <CircularProgress size={20} /> : <CheckIcon />}
+          sx={{
+            background: modernTheme.primary.gradient,
+            boxShadow: modernTheme.primary.glow,
+            fontWeight: 600,
+            px: 3,
+            '&:hover': {
+              transform: 'translateY(-1px)',
+              boxShadow: `${modernTheme.primary.glow}, 0 6px 20px rgba(0,0,0,0.3)`,
+            },
+            '&:disabled': {
+              background: 'rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.3)',
+            }
+          }}
         >
-          {loading ? <CircularProgress size={24} /> : '保存'}
+          {loading ? '保存中...' : '保存'}
         </Button>
       </DialogActions>
     </Dialog>
