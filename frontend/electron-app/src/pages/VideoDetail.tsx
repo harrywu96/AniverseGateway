@@ -14,44 +14,83 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Container,
+  Card,
+  CardContent,
+  Stack,
+  Chip,
+  Tabs,
+  Tab,
+  Fade,
+  Slide,
+  useTheme,
+  alpha,
+  Tooltip,
+  LinearProgress
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import TranslateIcon from '@mui/icons-material/Translate';
+import {
+  ArrowBack as ArrowBackIcon,
+  Translate as TranslateIcon,
+  Refresh as RefreshIcon,
+  Download as DownloadIcon,
+  Settings as SettingsIcon,
+  Info as InfoIcon,
+  PlayCircle as PlayCircleIcon,
+  Subtitles as SubtitlesIcon,
+  VideoFile as VideoFileIcon,
+  Save as SaveIcon
+} from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
 import { VideoInfo, SubtitleTrack } from '@subtranslate/shared';
 import VideoPlayer from '../components/VideoPlayer';
 import SubtitleEditor, { SubtitleItem } from '../components/SubtitleEditor';
-import { useDebouncedCallback, useDebouncedRequest } from '../utils/useDebounce';
+import { useDebouncedCallback } from '../utils/useDebounce';
+import ErrorSnackbar from '../components/ErrorSnackbar';
+
+// Tab 面板组件
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ pt: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
 
 /**
- * 视频详情页组件 - 性能优化版本
- *
- * ID 概念说明：
- * 1. 视频ID：
- *    - id（URL参数）：从路由获取的视频ID，是后端生成的唯一标识符
- *    - 在上传视频时，后端会生成一个唯一的ID，前端应该使用这个ID进行后续操作
- *
- * 2. 字幕轨道ID：
- *    - 前端使用轨道索引的字符串表示作为ID（如 "0", "1", "2"）
- *    - backendIndex：字幕轨道在后端的索引，用于API调用
- *    - backendTrackId：后端生成的字幕轨道ID，用于某些特定操作
- *
- * 数据流：
- * 1. 页面加载时，使用URL中的ID从后端获取视频信息
- * 2. 如果后端找不到视频，尝试从前端状态中查找并上传到后端
- * 3. 选择字幕轨道后，使用视频ID和轨道索引从后端获取字幕内容
- *
- * 性能优化：
- * - 使用React.memo防止不必要的重渲染
- * - 使用useMemo缓存计算结果
- * - 使用useCallback稳定事件处理函数
- * - 字幕数据处理优化
+ * 视频详情页组件 - 现代化版本
  */
 const VideoDetailComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // 从URL获取视频ID（后端生成的）
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const theme = useTheme();
   const { state } = useAppContext();
+  
+  // 主要状态
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [video, setVideo] = useState<VideoInfo | null>(null);
@@ -60,54 +99,35 @@ const VideoDetailComponent: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingSubtitles, setIsLoadingSubtitles] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   // 使用useRef存储AbortController，防止重复请求
   const abortControllerRef = useRef<AbortController | null>(null);
   const subtitleCacheRef = useRef<Map<string, any[]>>(new Map());
-  
-  // 使用useRef存储最新的video状态，解决闭包陷阱问题
   const videoRef = useRef<VideoInfo | null>(null);
 
   /**
    * 查找视频信息并确保后端有该视频的信息
-   *
-   * ID 概念说明：
-   * - id（URL参数）：这是从路由获取的视频ID，是后端生成的唯一标识符
-   * - state.videos中的视频对象：包含前端显示所需的视频信息
-   * - 字幕轨道ID：使用轨道索引作为前端ID，同时保存后端生成的轨道ID
-   *
-   * 逻辑流程：
-   * 1. 首先尝试直接从后端获取视频信息（使用URL中的ID）
-   * 2. 如果成功获取，将后端信息与前端状态合并
-   * 3. 如果后端找不到视频，检查前端状态中是否有该视频的信息
-   *    - 如果有，尝试上传视频到后端
-   *    - 如果没有，显示错误信息
-   *
-   * 这样可以避免不必要的重复上传，提高性能和用户体验
    */
   useEffect(() => {
     if (!id) return;
 
-    // 定义一个函数来处理从后端获取的视频信息
     const processVideoFromBackend = (backendData: any, frontendVideo?: VideoInfo) => {
-      // 将后端返回的字幕轨道转换为前端格式
       const convertedTracks = (backendData.subtitle_tracks || []).map((track: any) => ({
-        id: track.index.toString(), // 使用轨道索引作为前端ID
+        id: track.index.toString(),
         language: track.language || 'unknown',
         title: track.title || '',
         format: track.codec || 'unknown',
         isExternal: false,
-        // 保存原始的后端轨道ID和索引，用于API调用
         backendTrackId: track.id,
         backendIndex: track.index
       }));
 
-      // 如果有前端视频信息，合并数据；否则创建新的视频对象
       const videoInfo = frontendVideo ? {
         ...frontendVideo,
         subtitleTracks: convertedTracks
       } : {
-        id: backendData.id, // 使用后端ID作为视频ID
+        id: backendData.id,
         fileName: backendData.filename,
         filePath: backendData.path,
         format: backendData.format || '',
@@ -119,52 +139,34 @@ const VideoDetailComponent: React.FC = () => {
 
       console.log('更新视频信息:', videoInfo);
       setVideo(videoInfo);
-      // 同步更新videoRef，确保loadSubtitleContent能访问到最新状态
       videoRef.current = videoInfo;
 
-      // 如果有字幕轨道，默认选择第一个
       if (videoInfo.subtitleTracks && videoInfo.subtitleTracks.length > 0) {
         setSelectedTrack(videoInfo.subtitleTracks[0]);
       }
     };
 
-    // 定义一个函数来上传视频到后端
     const uploadVideoToBackend = async (videoToUpload: VideoInfo) => {
       try {
         setLoading(true);
         console.log('正在上传视频到后端:', videoToUpload.filePath);
 
-        // 确保 electronAPI 存在
-        if (!window.electronAPI) {
-          throw new Error('无法访问electronAPI，无法上传视频');
+        if (!window.electronAPI || !videoToUpload.filePath) {
+          throw new Error('无法访问electronAPI或视频文件路径不存在');
         }
 
-        if (!videoToUpload.filePath) {
-          throw new Error('视频文件路径不存在，无法上传');
-        }
-
-        // 注意：我们需要在后端添加对前端ID的支持
-        // 目前先使用简单的上传方式
-
-        // 添加重试机制
         let retryCount = 0;
         const maxRetries = 3;
         let response;
 
         while (retryCount < maxRetries) {
           try {
-            // 修复参数传递方式
-            response = await window.electronAPI!.uploadVideo(videoToUpload.filePath);
-            break; // 如果成功，跳出循环
+            response = await window.electronAPI.uploadVideo(videoToUpload.filePath);
+            break;
           } catch (uploadErr) {
             retryCount++;
             console.warn(`上传视频失败，尝试重试 (${retryCount}/${maxRetries}):`, uploadErr);
-
-            if (retryCount >= maxRetries) {
-              throw uploadErr; // 重试次数用完，抛出错误
-            }
-
-            // 等待一段时间再重试
+            if (retryCount >= maxRetries) throw uploadErr;
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
           }
         }
@@ -172,18 +174,13 @@ const VideoDetailComponent: React.FC = () => {
         console.log('视频上传到后端响应:', response);
 
         if (response && response.success && response.data) {
-          // 保存后端返回的视频ID和前端ID的映射关系
           const backendId = response.data.id;
           const frontendId = videoToUpload.id;
 
           console.log(`保存ID映射: 前端ID ${frontendId} -> 后端ID ${backendId}`);
-
-          // 使用后端返回的数据更新视频信息
           processVideoFromBackend(response.data, videoToUpload);
 
-          // 如果前端ID和后端ID不同，可以在本地存储中保存映射关系
           if (frontendId !== backendId) {
-            // 这里可以添加本地存储映射的逻辑，例如使用localStorage
             try {
               const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
               idMappings[frontendId] = backendId;
@@ -193,7 +190,6 @@ const VideoDetailComponent: React.FC = () => {
               console.warn('保存ID映射到本地存储失败:', storageErr);
             }
           }
-
           return true;
         } else {
           console.error('上传视频到后端失败:', response?.error || '未知错误');
@@ -209,7 +205,6 @@ const VideoDetailComponent: React.FC = () => {
       }
     };
 
-    // 首先尝试直接从后端获取视频信息
     const fetchVideoFromBackend = async () => {
       try {
         setLoading(true);
@@ -219,7 +214,6 @@ const VideoDetailComponent: React.FC = () => {
         const url = `http://localhost:${apiPort}/api/videos/${id}`;
         console.log('从后端获取视频信息:', url);
 
-        // 添加重试机制
         let retryCount = 0;
         const maxRetries = 3;
         let response;
@@ -227,27 +221,20 @@ const VideoDetailComponent: React.FC = () => {
         while (retryCount < maxRetries) {
           try {
             response = await fetch(url);
-            break; // 如果成功，跳出循环
+            break;
           } catch (fetchErr) {
             retryCount++;
             console.warn(`获取视频信息失败，尝试重试 (${retryCount}/${maxRetries}):`, fetchErr);
-
-            if (retryCount >= maxRetries) {
-              throw fetchErr; // 重试次数用完，抛出错误
-            }
-
-            // 等待一段时间再重试
+            if (retryCount >= maxRetries) throw fetchErr;
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
           }
         }
 
         if (response && response.ok) {
-          // 视频存在于后端，获取信息并更新
           const result = await response.json();
           console.log('从后端获取到视频信息:', result);
 
           if (result.success && result.data) {
-            // 查找前端状态中是否有该视频的信息
             const frontendVideo = state.videos.find(v => v.id === id);
             if (frontendVideo) {
               console.log('前端状态中找到视频信息，合并数据');
@@ -263,13 +250,10 @@ const VideoDetailComponent: React.FC = () => {
             return false;
           }
         } else {
-          // 视频不存在于后端，检查前端状态
           console.log('后端未找到视频，检查前端状态');
-
-          // 首先尝试使用前端ID查询后端
+          
           if (id) {
             try {
-              // 尝试使用前端ID查询后端
               const mappingUrl = `http://localhost:${apiPort}/api/videos/by-frontend-id/${id}`;
               console.log('尝试使用前端ID查询后端:', mappingUrl);
 
@@ -284,11 +268,9 @@ const VideoDetailComponent: React.FC = () => {
               }
             } catch (mappingErr) {
               console.warn('使用前端ID查询后端失败:', mappingErr);
-              // 继续尝试其他方法
             }
           }
 
-          // 如果通过ID映射未找到，检查前端状态
           const frontendVideo = state.videos.find(v => v.id === id);
           if (frontendVideo) {
             console.log('前端状态中找到视频信息，尝试上传到后端');
@@ -304,7 +286,6 @@ const VideoDetailComponent: React.FC = () => {
         console.error('获取视频信息时出错:', err);
         setError('获取视频信息时出错: ' + err.message);
 
-        // 如果获取失败，检查前端状态
         const frontendVideo = state.videos.find(v => v.id === id);
         if (frontendVideo) {
           console.log('前端状态中找到视频信息，尝试上传到后端');
@@ -318,63 +299,25 @@ const VideoDetailComponent: React.FC = () => {
       }
     };
 
-    // 执行获取视频信息
     fetchVideoFromBackend();
   }, [id, state.videos]);
 
   /**
    * 加载字幕内容的函数
-   *
-   * ID 概念说明：
-   * - videoId：视频的ID，是后端生成的唯一标识符
-   * - trackId：字幕轨道的前端ID，通常是轨道索引的字符串表示
-   * - trackIndex：字幕轨道在后端的索引，用于API调用
-   *
-   * 逻辑流程：
-   * 1. 检查参数有效性和视频对象是否存在
-   * 2. 获取字幕轨道索引
-   * 3. 检查视频是否存在于后端
-   *    - 如果不存在，尝试重新上传视频
-   * 4. 请求字幕内容
-   *    - 如果成功，更新字幕状态
-   *    - 如果失败，回退到模拟数据
-   *
-   * 错误处理：
-   * - 每个步骤都有适当的错误处理
-   * - 如果无法从后端获取数据，使用模拟数据
-   * - 所有错误都会被记录并显示给用户
-   *
-   * @param videoId 视频ID（后端生成的唯一标识符）
-   * @param trackId 字幕轨道ID（前端使用的轨道索引）
    */
   const loadSubtitleContent = useCallback(async (videoId: string, trackId: string) => {
-    // 使用videoRef.current获取最新的video状态，避免闭包陷阱
     const currentVideo = videoRef.current;
     if (!currentVideo) {
-      console.warn('loadSubtitleContent调用时video对象为null，停止执行', {
-        videoId,
-        trackId,
-        videoRefCurrent: videoRef.current,
-        timestamp: new Date().toISOString()
-      });
+      console.warn('loadSubtitleContent调用时video对象为null，停止执行');
       setError('视频信息不完整，无法加载字幕');
       return;
     }
     
-    console.log('loadSubtitleContent使用最新video状态:', {
-      videoId: currentVideo.id,
-      fileName: currentVideo.fileName,
-      hasSubtitleTracks: !!currentVideo.subtitleTracks,
-      tracksCount: currentVideo.subtitleTracks?.length || 0
-    });
-
-    // 检查是否已在加载中，防止重复调用
     if (isLoadingSubtitles) {
       console.log('字幕已在加载中，跳过重复请求');
       return;
     }
 
-    // 检查缓存
     const cacheKey = `${videoId}-${trackId}`;
     const cachedSubtitles = subtitleCacheRef.current.get(cacheKey);
     if (cachedSubtitles) {
@@ -383,39 +326,12 @@ const VideoDetailComponent: React.FC = () => {
       return;
     }
 
-    // 取消之前的请求
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // 创建新的AbortController
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-
-    console.log('loadSubtitleContent开始执行:', {
-      videoId,
-      trackId,
-      videoExists: !!video,
-      videoFilePath: video?.filePath,
-      subtitleTracksCount: video?.subtitleTracks?.length || 0
-    });
-
-    // 状态管理：定义加载状态
-    const LoadingState = {
-      IDLE: 'idle',
-      VALIDATING: 'validating',
-      CHECKING_VIDEO: 'checking_video',
-      UPLOADING_VIDEO: 'uploading_video',
-      FETCHING_SUBTITLES: 'fetching_subtitles',
-      RETRYING: 'retrying',
-      SUCCESS: 'success',
-      FAILED: 'failed'
-    };
-
-    let currentState = LoadingState.IDLE;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const baseRetryDelay = 1000; // 1秒基础延迟
 
     try {
       setLoading(true);
@@ -423,43 +339,27 @@ const VideoDetailComponent: React.FC = () => {
       setIsLoadingSubtitles(true);
       setError(null);
 
-      // 检查是否被取消
       if (abortController.signal.aborted) {
         throw new Error('请求已被取消');
       }
 
-      // 第一阶段：参数验证
-      currentState = LoadingState.VALIDATING;
       if (!videoId || !trackId) {
         throw new Error('缺少必要参数：视频ID或轨道ID为空');
       }
 
-      // 再次检查video对象（防止在执行过程中被重置）
       if (!currentVideo) {
-        console.error('参数验证失败：video对象为null', {
-          videoId,
-          trackId,
-          timestamp: new Date().toISOString()
-        });
         throw new Error('视频对象不存在，无法加载字幕');
-      }
-
-      // 检查video对象的关键属性
-      if (!currentVideo.id && !(currentVideo as any).backendId) {
-        throw new Error('视频对象缺少有效ID，无法加载字幕');
       }
 
       if (!window.electronAPI) {
         throw new Error('无法访问Electron API，请检查应用环境');
       }
 
-      // 获取轨道信息
       const track = currentVideo.subtitleTracks?.find(t => t.id === trackId);
       if (!track) {
         throw new Error(`未找到字幕轨道 (ID: ${trackId})，请检查轨道配置`);
       }
 
-      // 解析轨道索引
       let trackIndex = 0;
       if ((track as any).backendIndex !== undefined) {
         trackIndex = (track as any).backendIndex;
@@ -473,257 +373,118 @@ const VideoDetailComponent: React.FC = () => {
       const apiPort = '8000';
       console.log('开始加载字幕:', { videoId, trackId, trackIndex });
 
-      // 第二阶段：确保视频在后端存在
-      currentState = LoadingState.CHECKING_VIDEO;
       let verifiedVideoId = videoId;
-
       const checkVideoExists = async (): Promise<boolean> => {
         const checkUrl = `http://localhost:${apiPort}/api/videos/${verifiedVideoId}`;
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            const response = await fetch(checkUrl);
-            if (response.ok) {
-              return true;
-            }
-            if (response.status === 404) {
-              return false; // 明确的404，不需要重试
-            }
-            // 其他错误状态，可能是临时问题，继续重试
-            throw new Error(`服务器响应错误: ${response.status}`);
-          } catch (error) {
-            if (attempt === maxRetries - 1) {
-              throw error;
-            }
-            console.warn(`检查视频存在性失败 (尝试 ${attempt + 1}/${maxRetries}):`, error);
-            await new Promise(resolve => setTimeout(resolve, baseRetryDelay * Math.pow(2, attempt)));
-          }
-        }
-        return false;
+        const response = await fetch(checkUrl);
+        return response.ok;
       };
 
       const videoExists = await checkVideoExists();
-
-      // 如果视频不存在，尝试重新上传
       if (!videoExists) {
         if (!currentVideo.filePath) {
           throw new Error('视频在后端不存在，且缺少本地文件路径，无法重新上传');
         }
 
-        currentState = LoadingState.UPLOADING_VIDEO;
         console.log('视频不存在于后端，开始重新上传...');
-
-        const uploadVideo = async () => {
-          for (let attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                             const uploadResponse = await window.electronAPI!.uploadVideo(currentVideo.filePath);
-              
-              if (uploadResponse?.success && uploadResponse?.data?.id) {
-                console.log('视频重新上传成功:', uploadResponse.data.id);
-                
-                // 保存ID映射
-                const backendId = uploadResponse.data.id;
-                const frontendId = currentVideo.id;
-                
-                if (frontendId !== backendId) {
-                  try {
-                    const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
-                    idMappings[frontendId] = backendId;
-                    localStorage.setItem('videoIdMappings', JSON.stringify(idMappings));
-                  } catch (storageErr) {
-                    console.warn('保存ID映射失败:', storageErr);
-                  }
-                }
-
-                // 更新视频对象
-                const updatedVideo = {
-                  ...currentVideo,
-                  id: backendId,
-                  backendId: backendId
-                };
-                setVideo(updatedVideo);
-                // 同步更新videoRef
-                videoRef.current = updatedVideo;
-
-                return backendId;
-              } else {
-                throw new Error(`上传失败: ${uploadResponse?.error || '未知错误'}`);
-              }
-            } catch (error) {
-              if (attempt === maxRetries - 1) {
-                throw error;
-              }
-              console.warn(`视频上传失败 (尝试 ${attempt + 1}/${maxRetries}):`, error);
-              await new Promise(resolve => setTimeout(resolve, baseRetryDelay * Math.pow(2, attempt)));
-            }
-          }
-          throw new Error('视频上传重试次数已用完');
-        };
-
-        verifiedVideoId = await uploadVideo();
+        const uploadResponse = await window.electronAPI.uploadVideo(currentVideo.filePath);
+        
+        if (uploadResponse?.success && uploadResponse?.data?.id) {
+          console.log('视频重新上传成功:', uploadResponse.data.id);
+          verifiedVideoId = uploadResponse.data.id;
+          
+          const updatedVideo = {
+            ...currentVideo,
+            id: uploadResponse.data.id,
+            backendId: uploadResponse.data.id
+          };
+          setVideo(updatedVideo);
+          videoRef.current = updatedVideo;
+        } else {
+          throw new Error(`上传失败: ${uploadResponse?.error || '未知错误'}`);
+        }
       }
 
-      // 第三阶段：获取字幕内容（带指数退避重试）
-      currentState = LoadingState.FETCHING_SUBTITLES;
-      const fetchSubtitleContent = async () => {
-        const url = `http://localhost:${apiPort}/api/videos/${verifiedVideoId}/subtitles/${trackIndex}/content`;
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            currentState = attempt > 0 ? LoadingState.RETRYING : LoadingState.FETCHING_SUBTITLES;
-            retryCount = attempt;
-            
-            if (attempt > 0) {
-              console.log(`字幕获取重试 ${attempt}/${maxRetries}...`);
-              // 指数退避：1s, 2s, 4s
-              await new Promise(resolve => setTimeout(resolve, baseRetryDelay * Math.pow(2, attempt - 1)));
-            }
+      const url = `http://localhost:${apiPort}/api/videos/${verifiedVideoId}/subtitles/${trackIndex}/content`;
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        signal: abortController.signal
+      });
 
-            // 使用Promise.race实现超时
-            const timeoutPromise = new Promise((_, reject) => {
-              setTimeout(() => reject(new Error('请求超时')), 15000);
-            });
-            
-            const fetchPromise = fetch(url, {
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-              signal: abortController.signal
-            });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
-            const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(`API错误: ${result.error || '未知错误'}`);
+      }
 
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
+      if (!result.data?.lines || !Array.isArray(result.data.lines)) {
+        throw new Error('返回的字幕数据格式无效');
+      }
 
-            const result = await response.json();
-            
-            if (!result.success) {
-              throw new Error(`API错误: ${result.error || '未知错误'}`);
-            }
-
-            if (!result.data?.lines || !Array.isArray(result.data.lines)) {
-              throw new Error('返回的字幕数据格式无效');
-            }
-
-            // 数据转换和验证
-            const subtitleItems = result.data.lines.map((line: any, index: number) => {
-              if (typeof line.index !== 'number' || typeof line.start_ms !== 'number' || 
-                  typeof line.end_ms !== 'number' || typeof line.text !== 'string') {
-                console.warn(`字幕行数据格式异常 (索引: ${index}):`, line);
-              }
-              
-              return {
-                id: (line.index ?? index).toString(),
-                startTime: Math.max(0, (line.start_ms ?? 0) / 1000),
-                endTime: Math.max(0, (line.end_ms ?? 0) / 1000),
-                text: line.text ?? ''
-              };
-            });
-
-            currentState = LoadingState.SUCCESS;
-            console.log(`字幕加载成功，共 ${subtitleItems.length} 行`);
-            setSubtitles(subtitleItems);
-            
-            // 保存到缓存
-            subtitleCacheRef.current.set(cacheKey, subtitleItems);
-            
-            return;
-
-          } catch (error) {
-            // 检查是否被取消
-            if (abortController.signal.aborted) {
-              console.log('字幕获取请求被取消');
-              return;
-            }
-            
-            console.error(`字幕获取失败 (尝试 ${attempt + 1}/${maxRetries}):`, error);
-            
-            if (attempt === maxRetries - 1) {
-              throw new Error(`字幕获取失败，已重试 ${maxRetries} 次: ${error.message}`);
-            }
-          }
+      const subtitleItems = result.data.lines.map((line: any, index: number) => {
+        if (typeof line.index !== 'number' || typeof line.start_ms !== 'number' || 
+            typeof line.end_ms !== 'number' || typeof line.text !== 'string') {
+          console.warn(`字幕行数据格式异常 (索引: ${index}):`, line);
         }
-      };
+        
+        return {
+          id: (line.index ?? index).toString(),
+          startTime: Math.max(0, (line.start_ms ?? 0) / 1000),
+          endTime: Math.max(0, (line.end_ms ?? 0) / 1000),
+          text: line.text ?? ''
+        };
+      });
 
-      await fetchSubtitleContent();
+      console.log(`字幕加载成功，共 ${subtitleItems.length} 行`);
+      setSubtitles(subtitleItems);
+      subtitleCacheRef.current.set(cacheKey, subtitleItems);
 
     } catch (error: any) {
-      // 检查是否被取消
       if (abortController.signal.aborted) {
         console.log('字幕加载请求被取消');
         return;
       }
       
-      currentState = LoadingState.FAILED;
       const errorMessage = error instanceof Error ? error.message : '未知错误';
-      
-      console.error('字幕加载过程失败:', {
-        state: currentState,
-        retryCount,
-        error: errorMessage,
-        videoId,
-        trackId
-      });
+      console.error('字幕加载过程失败:', errorMessage);
+      setError(`字幕加载失败: ${errorMessage}`);
 
-      // 根据错误类型提供不同的错误信息
-      let userFriendlyMessage = '';
-      if (currentState === LoadingState.VALIDATING) {
-        userFriendlyMessage = `参数验证失败: ${errorMessage}`;
-      } else if (currentState === LoadingState.CHECKING_VIDEO) {
-        userFriendlyMessage = `视频检查失败: ${errorMessage}`;
-      } else if (currentState === LoadingState.UPLOADING_VIDEO) {
-        userFriendlyMessage = `视频上传失败: ${errorMessage}`;
-      } else if (currentState === LoadingState.FETCHING_SUBTITLES || currentState === LoadingState.RETRYING) {
-        userFriendlyMessage = `字幕获取失败 (已重试${retryCount}次): ${errorMessage}`;
-      } else {
-        userFriendlyMessage = `字幕加载失败: ${errorMessage}`;
-      }
-
-      setError(userFriendlyMessage);
-
-      // 只有在真正无法获取数据时才使用mock数据，并明确标识
-      if (currentState === LoadingState.FAILED) {
-        console.warn('所有获取字幕的尝试都失败，显示模拟数据作为备选方案');
-        const mockSubtitles = [
-          { id: 'mock-1', startTime: 0, endTime: 5, text: '[模拟数据] 字幕加载失败，这是示例内容' },
-          { id: 'mock-2', startTime: 6, endTime: 10, text: '[模拟数据] 请检查网络连接或联系技术支持' },
-          { id: 'mock-3', startTime: 11, endTime: 15, text: '[模拟数据] 可以尝试点击"刷新字幕"按钮重新加载' }
-        ];
-        setSubtitles(mockSubtitles);
-      } else {
-        // 其他情况下设置空数组，避免显示旧数据
-        setSubtitles([]);
-      }
+      const mockSubtitles = [
+        { id: 'mock-1', startTime: 0, endTime: 5, text: '[模拟数据] 字幕加载失败，这是示例内容' },
+        { id: 'mock-2', startTime: 6, endTime: 10, text: '[模拟数据] 请检查网络连接或联系技术支持' },
+        { id: 'mock-3', startTime: 11, endTime: 15, text: '[模拟数据] 可以尝试点击"刷新字幕"按钮重新加载' }
+      ];
+      setSubtitles(mockSubtitles);
 
     } finally {
       setLoading(false);
       setIsRefreshing(false);
       setIsLoadingSubtitles(false);
     }
-  }, []); // 移除isLoadingSubtitles依赖，使用内部状态检查避免函数重新创建
+  }, [isLoadingSubtitles]);
 
   // 加载字幕内容
   useEffect(() => {
     if (video && selectedTrack && !isLoadingSubtitles) {
-      // 同步更新videoRef，确保loadSubtitleContent能访问到最新状态
       videoRef.current = video;
-      
-      // 使用视频ID（这是后端生成的ID）和字幕轨道ID（这是轨道索引）
       const videoId = (video as any).backendId || video.id;
       loadSubtitleContent(videoId, selectedTrack.id);
     }
-  }, [video, selectedTrack, isLoadingSubtitles]); // 移除loadSubtitleContent依赖，避免循环依赖
+  }, [video, selectedTrack, isLoadingSubtitles, loadSubtitleContent]);
 
-  // 使用useMemo缓存计算结果
+  // 计算属性
   const videoId = useMemo(() => {
     return video ? ((video as any).backendId || video.id) : null;
   }, [video]);
 
-  // 使用useMemo缓存字幕轨道选项
   const trackOptions = useMemo(() => {
     if (!video?.subtitleTracks) return [];
     return video.subtitleTracks.map(track => ({
@@ -733,11 +494,9 @@ const VideoDetailComponent: React.FC = () => {
     }));
   }, [video?.subtitleTracks]);
 
-  // 使用useMemo缓存字幕数据处理
   const processedSubtitles = useMemo(() => {
     if (!subtitles || subtitles.length === 0) return [];
     
-    // 对字幕数据进行排序和验证
     return [...subtitles]
       .sort((a, b) => a.startTime - b.startTime)
       .map((subtitle, index) => ({
@@ -749,31 +508,27 @@ const VideoDetailComponent: React.FC = () => {
       }));
   }, [subtitles]);
 
-  // 使用useMemo缓存当前播放的字幕
   const currentSubtitle = useMemo(() => {
     return processedSubtitles.find(
       subtitle => currentTime >= subtitle.startTime && currentTime <= subtitle.endTime
     ) || null;
   }, [processedSubtitles, currentTime]);
 
-  // 处理轨道选择变化
+  // 事件处理
   const handleTrackChange = useCallback((event: SelectChangeEvent) => {
     const trackId = event.target.value;
     const track = video?.subtitleTracks?.find(t => t.id === trackId) || null;
     setSelectedTrack(track);
   }, [video?.subtitleTracks]);
 
-  // 处理视频时间更新
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
   }, []);
 
-  // 返回上一页
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  // 格式化时间为 HH:MM:SS.mmm
   const formatTime = useCallback((seconds: number): string => {
     const date = new Date(0);
     date.setSeconds(seconds);
@@ -789,17 +544,12 @@ const VideoDetailComponent: React.FC = () => {
     try {
       if (!video || !selectedTrack || !videoId) return;
 
-      // 尝试调用后端 API 保存字幕
       const apiPort = '8000';
-      // 使用轨道的后端索引
       let trackIndex = 0;
 
-      // 如果轨道有backendIndex属性，直接使用
       if ((selectedTrack as any).backendIndex !== undefined) {
         trackIndex = (selectedTrack as any).backendIndex;
-        console.log('使用轨道的backendIndex:', trackIndex);
       } else {
-        // 否则尝试将轨道ID转换为数字
         try {
           const parsedIndex = parseInt(selectedTrack.id);
           if (!isNaN(parsedIndex) && parsedIndex >= 0) {
@@ -812,7 +562,6 @@ const VideoDetailComponent: React.FC = () => {
 
       const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/edit`;
 
-      // 将前端数据转换为后端需要的格式
       const payload = {
         index: parseInt(subtitle.id),
         start_ms: Math.round(subtitle.startTime * 1000),
@@ -831,7 +580,6 @@ const VideoDetailComponent: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // 更新字幕列表
           setSubtitles(prev =>
             prev.map(item => item.id === subtitle.id ? subtitle : item)
           );
@@ -839,7 +587,6 @@ const VideoDetailComponent: React.FC = () => {
         }
       }
 
-      // 如果 API 调用失败，回退到模拟保存
       console.warn('调用保存字幕API失败，使用模拟保存');
       await new Promise(resolve => setTimeout(resolve, 500));
       setSubtitles(prev =>
@@ -847,7 +594,6 @@ const VideoDetailComponent: React.FC = () => {
       );
     } catch (error) {
       console.error('保存字幕失败:', error);
-      // 模拟保存成功
       await new Promise(resolve => setTimeout(resolve, 500));
       setSubtitles(prev =>
         prev.map(item => item.id === subtitle.id ? subtitle : item)
@@ -860,17 +606,12 @@ const VideoDetailComponent: React.FC = () => {
     try {
       if (!video || !selectedTrack || !videoId) return;
 
-      // 尝试调用后端 API 删除字幕
       const apiPort = '8000';
-      // 使用轨道的后端索引
       let trackIndex = 0;
 
-      // 如果轨道有backendIndex属性，直接使用
       if ((selectedTrack as any).backendIndex !== undefined) {
         trackIndex = (selectedTrack as any).backendIndex;
-        console.log('使用轨道的backendIndex:', trackIndex);
       } else {
-        // 否则尝试将轨道ID转换为数字
         try {
           const parsedIndex = parseInt(selectedTrack.id);
           if (!isNaN(parsedIndex) && parsedIndex >= 0) {
@@ -890,19 +631,16 @@ const VideoDetailComponent: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // 更新字幕列表
           setSubtitles(prev => prev.filter(item => item.id !== id));
           return;
         }
       }
 
-      // 如果 API 调用失败，回退到模拟删除
       console.warn('调用删除字幕API失败，使用模拟删除');
       await new Promise(resolve => setTimeout(resolve, 500));
       setSubtitles(prev => prev.filter(item => item.id !== id));
     } catch (error) {
       console.error('删除字幕失败:', error);
-      // 模拟删除成功
       await new Promise(resolve => setTimeout(resolve, 500));
       setSubtitles(prev => prev.filter(item => item.id !== id));
     }
@@ -911,239 +649,380 @@ const VideoDetailComponent: React.FC = () => {
   // 创建防抖的刷新字幕函数
   const debouncedRefreshSubtitles = useDebouncedCallback(
     async () => {
-      // 重新检查所有必要条件
       if (video && selectedTrack && !isRefreshing && !loading && !isLoadingSubtitles && videoId) {
         console.log('执行防抖刷新字幕', { videoId, trackId: selectedTrack.id });
-        // 确保videoRef是最新的
         videoRef.current = video;
         await loadSubtitleContent(videoId, selectedTrack.id);
-      } else {
-        console.log('防抖刷新字幕跳过执行', {
-          hasVideo: !!video,
-          hasSelectedTrack: !!selectedTrack,
-          isRefreshing,
-          loading,
-          isLoadingSubtitles,
-          hasVideoId: !!videoId
-        });
       }
     },
-    300 // 300ms防抖延迟
+    300
   );
 
-  // 刷新字幕的点击处理函数
   const handleRefreshSubtitles = useCallback(() => {
     if (isRefreshing || loading || !video || !selectedTrack || !videoId) {
-      return; // 如果正在刷新或加载中，直接返回
+      return;
     }
     debouncedRefreshSubtitles();
   }, [video, selectedTrack, videoId, isRefreshing, loading, debouncedRefreshSubtitles]);
 
   if (!video) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        {loading ? (
-          <CircularProgress />
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <Typography>未找到视频信息</Typography>
-        )}
-      </Box>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          {loading ? (
+            <Box>
+              <CircularProgress size={60} sx={{ mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                正在加载视频信息...
+              </Typography>
+            </Box>
+          ) : error ? (
+            <Alert severity="error" sx={{ maxWidth: 600, mx: 'auto' }}>
+              {error}
+            </Alert>
+          ) : (
+            <Typography variant="h6" color="text.secondary">
+              未找到视频信息
+            </Typography>
+          )}
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* 顶部导航栏 */}
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-        <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" component="h1">
-          {video.fileName}
-        </Typography>
-      </Box>
+      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
+        <Box sx={{ mb: 3 }}>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Tooltip title="返回视频列表">
+              <IconButton 
+                onClick={handleBack}
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                  }
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </Tooltip>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography 
+                variant="h4" 
+                component="h1"
+                sx={{ 
+                  fontWeight: 600,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                {video.fileName}
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                <Chip 
+                  icon={<VideoFileIcon fontSize="small" />}
+                  label={video.format || '未知格式'} 
+                  size="small" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  icon={<SubtitlesIcon fontSize="small" />}
+                  label={`${video.subtitleTracks?.length || 0} 个字幕轨道`} 
+                  size="small" 
+                  variant="outlined"
+                  color={video.subtitleTracks?.length ? 'success' : 'default'}
+                />
+                {video.duration > 0 && (
+                  <Chip 
+                    icon={<PlayCircleIcon fontSize="small" />}
+                    label={formatTime(video.duration)} 
+                    size="small" 
+                    variant="outlined" 
+                  />
+                )}
+              </Stack>
+            </Box>
+          </Stack>
+        </Box>
+      </Slide>
 
-      <Grid container spacing={2}>
+      {/* 主内容区域 */}
+      <Grid container spacing={3}>
         {/* 左侧：视频播放区域 */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, mb: 2 }}>
-            {/* 视频播放器 */}
-            {video.filePath ? (
+        <Grid item xs={12} lg={8}>
+          <Fade in={true} timeout={600}>
+            <Card sx={{ mb: 3, overflow: 'hidden' }}>
               <VideoPlayer
                 src={video.filePath}
                 onTimeUpdate={handleTimeUpdate}
+                poster=""
+                autoPlay={false}
+                muted={false}
               />
-            ) : (
-              <Box
-                sx={{
-                  width: '100%',
-                  height: 0,
-                  paddingBottom: '56.25%', // 16:9 宽高比
-                  bgcolor: 'black',
-                  position: 'relative'
-                }}
-              >
-                <Typography
-                  sx={{
-                    color: 'white',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  无法加载视频
-                </Typography>
-              </Box>
-            )}
+            </Card>
+          </Fade>
 
-            {/* 时间信息显示 */}
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="body2">
-                当前时间: {formatTime(currentTime)}
-              </Typography>
-            </Box>
-          </Paper>
+          {/* 视频信息标签页 */}
+          <Fade in={true} timeout={800}>
+            <Card>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+                  <Tab icon={<InfoIcon />} label="视频信息" {...a11yProps(0)} />
+                  <Tab icon={<SettingsIcon />} label="设置" {...a11yProps(1)} />
+                </Tabs>
+              </Box>
+              
+              <TabPanel value={tabValue} index={0}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      基本信息
+                    </Typography>
+                    <Stack spacing={1}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">文件名</Typography>
+                        <Typography variant="body1">{video.fileName}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">格式</Typography>
+                        <Typography variant="body1">{video.format || '未知'}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">时长</Typography>
+                        <Typography variant="body1">{formatTime(video.duration)}</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      字幕状态
+                    </Typography>
+                    <Stack spacing={1}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">内嵌字幕</Typography>
+                        <Chip 
+                          label={video.hasEmbeddedSubtitles ? '是' : '否'} 
+                          color={video.hasEmbeddedSubtitles ? 'success' : 'default'}
+                          size="small"
+                        />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">外部字幕</Typography>
+                        <Chip 
+                          label={video.hasExternalSubtitles ? '是' : '否'} 
+                          color={video.hasExternalSubtitles ? 'success' : 'default'}
+                          size="small"
+                        />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">字幕轨道数</Typography>
+                        <Typography variant="body1">{video.subtitleTracks?.length || 0}</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </TabPanel>
+              
+              <TabPanel value={tabValue} index={1}>
+                <Typography variant="body1" color="text.secondary">
+                  视频设置功能开发中...
+                </Typography>
+              </TabPanel>
+            </Card>
+          </Fade>
         </Grid>
 
         {/* 右侧：字幕编辑区域 */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, height: '100%' }}>
-            {/* 字幕轨道选择 */}
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="subtitle-track-label">字幕轨道</InputLabel>
-              <Select
-                labelId="subtitle-track-label"
-                value={selectedTrack?.id || ''}
-                label="字幕轨道"
-                onChange={handleTrackChange}
-                disabled={trackOptions.length === 0}
-              >
-                {trackOptions.map((option) => (
-                  <MenuItem key={option.id} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+        <Grid item xs={12} lg={4}>
+          <Fade in={true} timeout={1000}>
+            <Card sx={{ height: 'fit-content', minHeight: 600 }}>
+              <CardContent sx={{ p: 3 }}>
+                {/* 字幕轨道选择 */}
+                <Box sx={{ mb: 3 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id="subtitle-track-label">字幕轨道</InputLabel>
+                    <Select
+                      labelId="subtitle-track-label"
+                      value={selectedTrack?.id || ''}
+                      label="字幕轨道"
+                      onChange={handleTrackChange}
+                      disabled={trackOptions.length === 0}
+                    >
+                      {trackOptions.map((option) => (
+                        <MenuItem key={option.id} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-            <Divider sx={{ mb: 2 }} />
+                  {/* 当前播放时间和字幕显示 */}
+                  <Paper 
+                    variant="outlined" 
+                    sx={{ 
+                      p: 2, 
+                      mb: 2,
+                      background: alpha(theme.palette.primary.main, 0.02),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                      当前播放时间
+                    </Typography>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      {formatTime(currentTime)}
+                    </Typography>
+                    {currentSubtitle && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          当前字幕
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontStyle: 'italic',
+                            p: 1,
+                            backgroundColor: alpha(theme.palette.info.main, 0.1),
+                            borderRadius: 1,
+                            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                          }}
+                        >
+                          {currentSubtitle.text}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Paper>
+                </Box>
 
-            {/* 字幕内容区域 */}
-            <Box sx={{ height: 400 }}>
-              <SubtitleEditor
-                subtitles={processedSubtitles as SubtitleItem[]}
-                currentTime={currentTime}
-                loading={loading}
-                error={error}
-                onSave={handleSaveSubtitle}
-                onDelete={handleDeleteSubtitle}
-              />
-            </Box>
+                <Divider sx={{ mb: 3 }} />
 
-            {/* 操作按钮 */}
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                disabled={!selectedTrack || isRefreshing || loading}
-                onClick={handleRefreshSubtitles}
-                startIcon={(loading || isRefreshing) ? <CircularProgress size={20} /> : null}
-              >
-                {isRefreshing ? '刷新中...' : '刷新字幕'}
-              </Button>
+                {/* 字幕内容区域 */}
+                <Box sx={{ height: 400, mb: 3 }}>
+                  <SubtitleEditor
+                    subtitles={processedSubtitles as SubtitleItem[]}
+                    currentTime={currentTime}
+                    loading={loading || isLoadingSubtitles}
+                    error={error}
+                    onSave={handleSaveSubtitle}
+                    onDelete={handleDeleteSubtitle}
+                  />
+                </Box>
 
-              <Box>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  disabled={!selectedTrack}
-                  sx={{ mr: 1 }}
-                >
-                  导出字幕
-                </Button>
+                {/* 操作按钮 */}
+                <Stack spacing={2}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    startIcon={isRefreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+                    onClick={handleRefreshSubtitles}
+                    disabled={!selectedTrack || isRefreshing || loading}
+                  >
+                    {isRefreshing ? '刷新中...' : '刷新字幕'}
+                  </Button>
 
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  disabled={!selectedTrack}
-                  sx={{ mr: 1 }}
-                  startIcon={<TranslateIcon />}
-                  onClick={() => {
-                    if (video && id) {
-                      navigate(`/videos/${id}/translate`);
-                    }
-                  }}
-                >
-                  翻译字幕
-                </Button>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<DownloadIcon />}
+                      disabled={!selectedTrack}
+                      sx={{ flex: 1 }}
+                    >
+                      导出
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<TranslateIcon />}
+                      disabled={!selectedTrack}
+                      color="secondary"
+                      onClick={() => {
+                        if (video && id) {
+                          navigate(`/videos/${id}/translate`);
+                        }
+                      }}
+                      sx={{ flex: 1 }}
+                    >
+                      翻译
+                    </Button>
+                  </Stack>
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  disabled={!selectedTrack}
-                  onClick={async () => {
-                    try {
-                      if (!video || !selectedTrack || !videoId) return;
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    startIcon={<SaveIcon />}
+                    disabled={!selectedTrack}
+                    onClick={async () => {
+                      try {
+                        if (!video || !selectedTrack || !videoId) return;
 
-                      // 尝试调用后端 API 保存所有字幕
-                      const apiPort = '8000';
-                      // 使用轨道的后端索引
-                      let trackIndex = 0;
+                        const apiPort = '8000';
+                        let trackIndex = 0;
 
-                      // 如果轨道有backendIndex属性，直接使用
-                      if ((selectedTrack as any).backendIndex !== undefined) {
-                        trackIndex = (selectedTrack as any).backendIndex;
-                        console.log('使用轨道的backendIndex:', trackIndex);
-                      } else {
-                        // 否则尝试将轨道ID转换为数字
-                        try {
-                          const parsedIndex = parseInt(selectedTrack.id);
-                          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                            trackIndex = parsedIndex;
+                        if ((selectedTrack as any).backendIndex !== undefined) {
+                          trackIndex = (selectedTrack as any).backendIndex;
+                        } else {
+                          try {
+                            const parsedIndex = parseInt(selectedTrack.id);
+                            if (!isNaN(parsedIndex) && parsedIndex >= 0) {
+                              trackIndex = parsedIndex;
+                            }
+                          } catch (e) {
+                            console.warn('轨道ID转换为索引失败，使用默认值0:', e);
                           }
-                        } catch (e) {
-                          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
                         }
-                      }
 
-                      const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
+                        const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
 
-                      const response = await fetch(url, {
-                        method: 'POST'
-                      });
+                        const response = await fetch(url, {
+                          method: 'POST'
+                        });
 
-                      if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                          alert('字幕保存成功');
-                          return;
+                        if (response.ok) {
+                          const result = await response.json();
+                          if (result.success) {
+                            setError('字幕保存成功');
+                            return;
+                          }
                         }
-                      }
 
-                      // 如果 API 调用失败，显示模拟成功消息
-                      console.warn('调用保存字幕API失败，显示模拟成功消息');
-                      alert('字幕保存成功');
-                    } catch (error) {
-                      console.error('保存字幕失败:', error);
-                      alert('字幕保存失败，请重试');
-                    }
-                  }}
-                >
-                  保存所有修改
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
+                        console.warn('调用保存字幕API失败，显示模拟成功消息');
+                        setError('字幕保存成功');
+                      } catch (error) {
+                        console.error('保存字幕失败:', error);
+                        setError('字幕保存失败，请重试');
+                      }
+                    }}
+                    sx={{ 
+                      borderRadius: 2,
+                      py: 1.5
+                    }}
+                  >
+                    保存所有修改
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Fade>
         </Grid>
       </Grid>
-    </Box>
+
+      {/* 错误提示 */}
+      <ErrorSnackbar
+        message={error}
+        severity={error?.includes('成功') ? 'success' : 'error'}
+        onClose={() => setError(null)}
+      />
+    </Container>
   );
 };
 
-// 使用React.memo优化组件，避免不必要的重渲染
 const VideoDetail = React.memo(VideoDetailComponent);
 
 export default VideoDetail;

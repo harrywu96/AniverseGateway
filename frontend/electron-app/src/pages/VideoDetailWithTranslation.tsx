@@ -1,943 +1,924 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Button,
-  IconButton,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Divider,
+  LinearProgress,
   CircularProgress,
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Paper,
+  Chip,
+  Stack,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  Divider,
   Alert,
+  AlertTitle,
+  Fade,
+  Slide,
+  Zoom,
+  Container,
+  useTheme,
+  alpha,
+  IconButton,
+  Tooltip,
+  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  LinearProgress,
-  SelectChangeEvent,
-  Radio,
-  RadioGroup,
-  FormControlLabel
+  TextField
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import TranslateIcon from '@mui/icons-material/Translate';
+import {
+  ArrowBack as ArrowBackIcon,
+  Translate as TranslateIcon,
+  PlayArrow as PlayIcon,
+  Download as DownloadIcon,
+  Refresh as RefreshIcon,
+  Settings as SettingsIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Language as LanguageIcon,
+  Upload as UploadIcon,
+  Preview as PreviewIcon,
+  Save as SaveIcon,
+  Stop as StopIcon
+} from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
-import { VideoInfo, SubtitleTrack, TRANSLATION_SERVICE_TYPES } from '../shared';
+import { VideoInfo } from '@subtranslate/shared';
 import VideoPlayer from '../components/VideoPlayer';
-import SubtitleEditor, { SubtitleItem } from '../components/SubtitleEditor';
-import TranslationConfig from '../components/TranslationConfig';
 import ErrorSnackbar from '../components/ErrorSnackbar';
-import { translateSubtitleLine, translateSubtitleFile } from '../services/api';
 
-/**
- * 视频详情页组件（带翻译功能）
- */
+// 翻译步骤枚举
+const TRANSLATION_STEPS = [
+  { key: 'setup', label: '配置翻译', description: '选择源语言和目标语言' },
+  { key: 'process', label: '执行翻译', description: '调用AI模型进行翻译' },
+  { key: 'review', label: '预览结果', description: '查看和编辑翻译结果' },
+  { key: 'save', label: '保存文件', description: '保存翻译后的字幕文件' }
+];
+
+// 支持的语言列表
+const SUPPORTED_LANGUAGES = [
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' }
+];
+
+// 翻译状态枚举
+enum TranslationStatus {
+  IDLE = 'idle',
+  CONFIGURING = 'configuring',
+  TRANSLATING = 'translating',
+  COMPLETED = 'completed',
+  ERROR = 'error',
+  CANCELLED = 'cancelled'
+}
+
+interface TranslationProgress {
+  current: number;
+  total: number;
+  percentage: number;
+  currentItem?: string;
+  estimatedTimeRemaining?: number;
+}
+
+interface TranslationResult {
+  original: string;
+  translated: string;
+  startTime: number;
+  endTime: number;
+  confidence?: number;
+}
+
 const VideoDetailWithTranslation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const theme = useTheme();
   const { state } = useAppContext();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  // 主要状态
   const [video, setVideo] = useState<VideoInfo | null>(null);
-  const [selectedTrack, setSelectedTrack] = useState<SubtitleTrack | null>(null);
-  const [subtitles, setSubtitles] = useState<SubtitleItem[]>([]);
-  const [currentTime, setCurrentTime] = useState(0);
-
-  // 翻译相关状态
-  const [translationServiceType, setTranslationServiceType] = useState('network_provider');
-  const [translationConfig, setTranslationConfig] = useState<any>({
-    provider: 'siliconflow',
-    model: '',
-    sourceLanguage: 'en',
-    targetLanguage: 'zh',
-    style: 'natural'
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeStep, setActiveStep] = useState(0);
+  
+  // 翻译配置状态
+  const [sourceLanguage, setSourceLanguage] = useState('zh');
+  const [targetLanguage, setTargetLanguage] = useState('en');
+  const [selectedTrackId, setSelectedTrackId] = useState<string>('');
+  const [translationModel, setTranslationModel] = useState('gpt-4');
+  
+  // 翻译执行状态
+  const [translationStatus, setTranslationStatus] = useState<TranslationStatus>(TranslationStatus.IDLE);
+  const [translationProgress, setTranslationProgress] = useState<TranslationProgress>({
+    current: 0,
+    total: 0,
+    percentage: 0
   });
-  const [translationDialogOpen, setTranslationDialogOpen] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [translationProgress, setTranslationProgress] = useState(0);
-
-  // 错误提示状态
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [statusSeverity, setStatusSeverity] = useState<'error' | 'success' | 'info' | 'warning'>('error');
-
-  // 加载设置
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        if (window.electronAPI) {
-          const settings = await window.electronAPI.getSettings();
-          if (settings && settings.translationServiceType) {
-            setTranslationServiceType(settings.translationServiceType);
-          }
-        }
-      } catch (error) {
-        console.error('加载翻译服务设置出错:', error);
-      }
-    };
-
-    loadSettings();
-  }, []);
+  const [translationResults, setTranslationResults] = useState<TranslationResult[]>([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  
+  // 设置对话框状态
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
+  
+  // WebSocket连接引用
+  const wsRef = useRef<WebSocket | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // 加载视频信息
   useEffect(() => {
-    const loadVideoInfo = async () => {
+    const loadVideo = async () => {
       if (!id) return;
-
+      
+      setLoading(true);
       try {
-        setLoading(true);
-        setError(null);
-
-        const apiPort = '8000';
-        
-        // 首先尝试直接使用ID从后端获取视频信息
-        let videoUrl = `http://localhost:${apiPort}/api/videos/${id}`;
-        console.log('尝试获取视频信息:', videoUrl);
-
-        let response;
-        try {
-          response = await fetch(videoUrl);
-        } catch (fetchError) {
-          console.warn('初次获取视频失败，尝试重试机制:', fetchError);
-          // 添加重试机制
-          let retryCount = 0;
-          const maxRetries = 3;
-
-          while (retryCount < maxRetries) {
-            try {
-              await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-              response = await fetch(videoUrl);
-              break;
-            } catch (retryError) {
-              retryCount++;
-              console.warn(`重试获取视频信息失败 (${retryCount}/${maxRetries}):`, retryError);
-              if (retryCount >= maxRetries) {
-                throw retryError;
-              }
-            }
-          }
-        }
-
-        // 如果直接获取失败，尝试从本地ID映射查找
-        if (!response || !response.ok) {
-          console.log('直接获取失败，检查本地ID映射');
+        // 从全局状态查找视频
+        const foundVideo = state.videos.find(v => v.id === id);
+        if (foundVideo) {
+          setVideo(foundVideo);
           
-          try {
-            // 检查本地存储的ID映射
-            const idMappings = JSON.parse(localStorage.getItem('videoIdMappings') || '{}');
-            const mappedId = idMappings[id];
-            
-            if (mappedId && mappedId !== id) {
-              console.log(`找到ID映射: ${id} -> ${mappedId}`);
-              videoUrl = `http://localhost:${apiPort}/api/videos/${mappedId}`;
-              response = await fetch(videoUrl);
-            }
-          } catch (mappingError) {
-            console.warn('检查ID映射失败:', mappingError);
-          }
-        }
-
-        // 如果还是失败，尝试通过前端ID查询
-        if (!response || !response.ok) {
-          console.log('尝试通过前端ID查询');
-          try {
-            const frontendIdUrl = `http://localhost:${apiPort}/api/videos/by-frontend-id/${id}`;
-            response = await fetch(frontendIdUrl);
-            
-            if (response && response.ok) {
-              console.log('通过前端ID查询成功');
-            }
-          } catch (frontendIdError) {
-            console.warn('通过前端ID查询失败:', frontendIdError);
-          }
-        }
-
-        // 检查最终响应结果
-        if (!response || !response.ok) {
-          throw new Error(`获取视频信息失败: ${response?.status || 'Unknown'} ${response?.statusText || ''}`);
-        }
-
-        const result = await response.json();
-        if (result.success && result.data) {
-          // 处理后端返回的字幕轨道数据
-          const processedData = {
-            ...result.data,
-            subtitleTracks: (result.data.subtitle_tracks || []).map((track: any) => ({
-              id: track.index.toString(),
-              language: track.language || 'unknown',
-              title: track.title || '',
-              format: track.codec || 'unknown',
-              isExternal: false,
-              backendTrackId: track.id,
-              backendIndex: track.index
-            }))
-          };
-
-          setVideo(processedData);
-
-          // 如果有字幕轨道，默认选择第一个
-          if (processedData.subtitleTracks && processedData.subtitleTracks.length > 0) {
-            setSelectedTrack(processedData.subtitleTracks[0]);
+          // 默认选择第一个字幕轨道
+          if (foundVideo.subtitleTracks && foundVideo.subtitleTracks.length > 0) {
+            setSelectedTrackId(foundVideo.subtitleTracks[0].id);
           }
         } else {
-          throw new Error(result.message || '获取视频信息失败');
+          // 尝试从后端获取
+          const apiPort = '8000';
+          const response = await fetch(`http://localhost:${apiPort}/api/videos/${id}`);
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              const videoData = {
+                id: result.data.id,
+                fileName: result.data.filename,
+                filePath: result.data.path,
+                format: result.data.format || '',
+                duration: result.data.duration || 0,
+                hasEmbeddedSubtitles: result.data.has_embedded_subtitle || false,
+                hasExternalSubtitles: result.data.external_subtitles?.length > 0 || false,
+                subtitleTracks: (result.data.subtitle_tracks || []).map((track: any) => ({
+                  id: track.index.toString(),
+                  language: track.language || 'unknown',
+                  title: track.title || '',
+                  format: track.codec || 'unknown',
+                  isExternal: false,
+                  backendTrackId: track.id,
+                  backendIndex: track.index
+                }))
+              };
+              
+              setVideo(videoData);
+              if (videoData.subtitleTracks.length > 0) {
+                setSelectedTrackId(videoData.subtitleTracks[0].id);
+              }
+            }
+          } else {
+            throw new Error('视频未找到');
+          }
         }
-      } catch (error: any) {
-        console.error('加载视频信息出错:', error);
-        setError(`加载视频信息出错: ${error.message}`);
-        setErrorMessage(`加载视频信息出错: ${error instanceof Error ? error.message : '未知错误'}`);
-        setStatusSeverity('error');
+      } catch (err) {
+        console.error('加载视频失败:', err);
+        setError(`加载视频失败: ${err instanceof Error ? err.message : '未知错误'}`);
       } finally {
         setLoading(false);
       }
     };
 
-    loadVideoInfo();
-  }, [id]);
+    loadVideo();
+  }, [id, state.videos]);
 
-  // 当选择字幕轨道时，加载字幕内容
-  useEffect(() => {
-    if (video && selectedTrack) {
-      const videoId = (video as any).backendId || video.id;
-      loadSubtitleContent(videoId, selectedTrack.id);
+  // 可用字幕轨道选项
+  const trackOptions = useMemo(() => {
+    if (!video?.subtitleTracks) return [];
+    return video.subtitleTracks.map(track => ({
+      value: track.id,
+      label: `${track.language || '未知语言'} - ${track.title || track.format}`,
+      track: track
+    }));
+  }, [video?.subtitleTracks]);
+
+  // 当前字幕轨道
+  const selectedTrack = useMemo(() => {
+    return video?.subtitleTracks?.find(track => track.id === selectedTrackId) || null;
+  }, [video?.subtitleTracks, selectedTrackId]);
+
+  // 翻译配置是否完整
+  const isConfigComplete = useMemo(() => {
+    return sourceLanguage && targetLanguage && selectedTrackId && translationModel;
+  }, [sourceLanguage, targetLanguage, selectedTrackId, translationModel]);
+
+  // 处理返回
+  const handleBack = useCallback(() => {
+    navigate(`/videos/${id}`);
+  }, [navigate, id]);
+
+  // 处理步骤变更
+  const handleStepChange = useCallback((step: number) => {
+    if (step <= activeStep + 1) {
+      setActiveStep(step);
     }
-  }, [video, selectedTrack]);
+  }, [activeStep]);
 
-  // 处理翻译配置变化
-  const handleTranslationConfigChange = (config: any) => {
-    setTranslationConfig(config);
-  };
+  // 开始翻译
+  const startTranslation = useCallback(async () => {
+    if (!video || !selectedTrack || !isConfigComplete) {
+      setError('配置不完整，无法开始翻译');
+      return;
+    }
 
-  // 加载字幕内容
-  const loadSubtitleContent = async (videoId: string, trackId: string) => {
     try {
-      setLoading(true);
+      setTranslationStatus(TranslationStatus.TRANSLATING);
+      setActiveStep(1);
       setError(null);
+      
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
-      // 添加状态调试日志
-      console.log('loadSubtitleContent开始:', {
-        videoId,
-        trackId,
-        hasVideo: !!video,
-        hasSelectedTrack: !!selectedTrack,
-        videoSubtitleTracks: video?.subtitleTracks?.length || 0
+      // 调用后端翻译API
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/translation/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          trackId: selectedTrack.id,
+          sourceLanguage,
+          targetLanguage,
+          model: translationModel,
+          customPrompt: customPrompt || undefined,
+          apiKey: apiKey || undefined
+        }),
+        signal: abortController.signal
       });
 
-      // 检查参数有效性
-      if (!videoId || !trackId) {
-        throw new Error('无效的视频ID或轨道ID');
-      }
-
-      // 检查视频对象是否存在
-      if (!video) {
-        throw new Error('视频对象不存在');
-      }
-
-      // 获取轨道信息
-      const track = video.subtitleTracks?.find(t => t.id === trackId);
-      if (!track) {
-        throw new Error(`找不到ID为 ${trackId} 的字幕轨道`);
-      }
-
-      // 获取轨道索引
-      let trackIndex = 0;
-      if ((track as any).backendIndex !== undefined) {
-        trackIndex = (track as any).backendIndex;
-      } else {
-        try {
-          const parsedIndex = parseInt(track.id);
-          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-            trackIndex = parsedIndex;
-          }
-        } catch (e) {
-          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-        }
-      }
-
-      // 构建请求字幕内容的URL
-      const apiPort = '8000';
-      const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/content`;
-
-      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`获取字幕内容失败: ${response.status} ${response.statusText}`);
+        throw new Error(`翻译请求失败: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('字幕API返回数据:', result);
       
-      if (result.success && result.data) {
-        // 检查数据格式并进行适当转换
-        let subtitleItems: SubtitleItem[] = [];
-        
-        if (result.data.lines && Array.isArray(result.data.lines)) {
-          // 正确格式：result.data.lines (与VideoDetail.tsx一致)
-          subtitleItems = result.data.lines.map((line: any, index: number) => {
-            // 数据验证和转换
-            if (typeof line.index !== 'number' || typeof line.start_ms !== 'number' || 
-                typeof line.end_ms !== 'number' || typeof line.text !== 'string') {
-              console.warn(`字幕行数据格式异常 (索引: ${index}):`, line);
-            }
-            
-            return {
-              id: (line.index ?? index).toString(),
-              startTime: Math.max(0, (line.start_ms ?? 0) / 1000),
-              endTime: Math.max(0, (line.end_ms ?? 0) / 1000),
-              text: line.text ?? ''
-            };
-          });
-        } else if (result.data.subtitles && Array.isArray(result.data.subtitles)) {
-          // 备用格式：result.data.subtitles
-          subtitleItems = result.data.subtitles.map((item: any) => ({
-            id: item.id ? item.id.toString() : Math.random().toString(),
-            startTime: item.start_time || item.startTime || 0,
-            endTime: item.end_time || item.endTime || 0,
-            text: item.text || item.content || ''
-          }));
-        } else if (Array.isArray(result.data)) {
-          // 备用格式：result.data 直接是数组
-          subtitleItems = result.data.map((item: any) => ({
-            id: item.id ? item.id.toString() : Math.random().toString(),
-            startTime: item.start_time || item.startTime || 0,
-            endTime: item.end_time || item.endTime || 0,
-            text: item.text || item.content || ''
-          }));
-        } else {
-          console.warn('未识别的字幕数据格式:', result.data);
-          throw new Error('返回的字幕数据格式不正确');
-        }
-
-        console.log(`成功转换字幕数据，共 ${subtitleItems.length} 条`);
-        setSubtitles(subtitleItems);
-
-        // 添加加载完成后的状态调试
-        console.log('字幕加载完成后的状态:', {
-          hasVideo: !!video,
-          hasSelectedTrack: !!selectedTrack,
-          subtitleCount: subtitleItems.length,
-          videoFileName: video?.fileName
-        });
-      } else {
-        throw new Error(result.message || '获取字幕内容失败');
+      if (!result.success) {
+        throw new Error(result.message || '翻译请求失败');
       }
-    } catch (error: any) {
-      console.error('加载字幕内容出错:', error);
-      setError(`加载字幕内容出错: ${error.message}`);
-      setErrorMessage(`加载字幕内容出错: ${error instanceof Error ? error.message : '未知错误'}`);
-      setStatusSeverity('error');
+
+      const taskId = result.data.taskId;
+      
+      // 建立WebSocket连接监听进度
+      const ws = new WebSocket(`ws://localhost:${apiPort}/api/translation/ws/${taskId}`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('翻译WebSocket连接已建立');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'progress') {
+          setTranslationProgress({
+            current: data.current || 0,
+            total: data.total || 0,
+            percentage: data.percentage || 0,
+            currentItem: data.currentItem,
+            estimatedTimeRemaining: data.estimatedTime
+          });
+        } else if (data.type === 'completed') {
+          setTranslationStatus(TranslationStatus.COMPLETED);
+          setTranslationResults(data.results || []);
+          setActiveStep(2);
+          console.log('翻译完成，共', data.results?.length || 0, '条结果');
+        } else if (data.type === 'error') {
+          setTranslationStatus(TranslationStatus.ERROR);
+          setError(`翻译失败: ${data.message || '未知错误'}`);
+        }
+      };
+
+      ws.onerror = (event) => {
+        console.error('翻译WebSocket错误:', event);
+        setTranslationStatus(TranslationStatus.ERROR);
+        setError('WebSocket连接错误');
+      };
+
+      ws.onclose = () => {
+        console.log('翻译WebSocket连接已关闭');
+        wsRef.current = null;
+      };
+
+    } catch (err) {
+      if (abortControllerRef.current?.signal.aborted) {
+        setTranslationStatus(TranslationStatus.CANCELLED);
+      } else {
+        setTranslationStatus(TranslationStatus.ERROR);
+        setError(`翻译失败: ${err instanceof Error ? err.message : '未知错误'}`);
+      }
+    }
+  }, [video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, translationModel, customPrompt, apiKey]);
+
+  // 停止翻译
+  const stopTranslation = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+    setTranslationStatus(TranslationStatus.CANCELLED);
+  }, []);
+
+  // 保存翻译结果
+  const saveTranslation = useCallback(async () => {
+    if (!video || !translationResults.length) {
+      setError('没有翻译结果可保存');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const apiPort = '8000';
+      
+      const response = await fetch(`http://localhost:${apiPort}/api/translation/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          results: translationResults,
+          targetLanguage,
+          fileName: `${video.fileName}_${targetLanguage}`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`保存失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setActiveStep(3);
+        setError('翻译文件保存成功！');
+      } else {
+        throw new Error(result.message || '保存失败');
+      }
+    } catch (err) {
+      setError(`保存失败: ${err instanceof Error ? err.message : '未知错误'}`);
     } finally {
       setLoading(false);
-
-      // 添加最终状态调试
-      console.log('loadSubtitleContent结束时状态:', {
-        hasVideo: !!video,
-        hasSelectedTrack: !!selectedTrack,
-        loading: false
-      });
     }
-  };
+  }, [video, translationResults, targetLanguage]);
 
-  // 处理单行翻译
-  const handleTranslateLine = async (id: string, config: any) => {
-    try {
-      if (!video || !selectedTrack) return;
-
-      // 查找要翻译的字幕
-      const subtitle = subtitles.find(s => s.id === id);
-      if (!subtitle) return;
-
-      // 先将字幕状态设置为翻译中
-      setSubtitles(prev =>
-        prev.map(item =>
-          item.id === id
-            ? { ...item, translating: true }
-            : item
-        )
-      );
-
-      // 准备翻译请求
-      const request = {
-        text: subtitle.text,
-        provider: config.provider,
-        model: config.model,
-        source_language: config.sourceLanguage,
-        target_language: config.targetLanguage,
-        style: config.style,
-        preserve_formatting: true,
-        context_preservation: true,
-        service_type: translationServiceType // 添加服务类型
-      };
-
-      // 添加重试逻辑
-      const maxRetries = 3;
-      let retryCount = 0;
-      let lastError;
-
-      while (retryCount < maxRetries) {
-        try {
-          // 调用翻译API
-          const response = await translateSubtitleLine(request);
-
-          if (response.success && response.data) {
-            // 更新字幕列表
-            setSubtitles(prev =>
-              prev.map(item =>
-                item.id === id
-                  ? { ...item, translated: response.data.translated, translating: false }
-                  : item
-              )
-            );
-            return; // 成功后退出函数
-          } else {
-            throw new Error(response.message || '翻译失败');
-          }
-        } catch (error) {
-          lastError = error;
-          retryCount++;
-
-          if (retryCount < maxRetries) {
-            // 等待一段时间后重试
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-            console.log(`翻译重试 ${retryCount}/${maxRetries}...`);
-          }
-        }
-      }
-
-      // 如果所有重试都失败，抛出最后一个错误
-      throw lastError;
-    } catch (error) {
-      console.error('翻译字幕失败:', error);
-      // 更新字幕状态
-      setSubtitles(prev =>
-        prev.map(item =>
-          item.id === id
-            ? { ...item, translating: false }
-            : item
-        )
-      );
-      // 显示错误消息
-      const errorMsg = '翻译失败: ' + (error instanceof Error ? error.message : '未知错误');
-      setErrorMessage(errorMsg);
-      setStatusSeverity('error');
+  // 格式化时间
+  const formatTime = useCallback((seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 1000);
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
     }
-  };
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+  }, []);
 
-  // 处理全文翻译
-  const handleTranslateAll = async () => {
-    try {
-      if (!video || !selectedTrack) return;
-
-      setTranslating(true);
-      setTranslationProgress(0);
-
-      // 获取视频ID和轨道索引
-      const videoId = (video as any).backendId || video.id;
-      let trackIndex = 0;
-
-      // 如果轨道有backendIndex属性，直接使用
-      if ((selectedTrack as any).backendIndex !== undefined) {
-        trackIndex = (selectedTrack as any).backendIndex;
-      } else {
-        // 否则尝试将轨道ID转换为数字
-        try {
-          const parsedIndex = parseInt(selectedTrack.id);
-          if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-            trackIndex = parsedIndex;
-          }
-        } catch (e) {
-          console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-        }
-      }
-
-      // 准备翻译请求
-      const request = {
-        video_id: videoId,
-        track_index: trackIndex,
-        provider: translationConfig.provider,
-        model: translationConfig.model,
-        source_language: translationConfig.sourceLanguage,
-        target_language: translationConfig.targetLanguage,
-        style: translationConfig.style,
-        preserve_formatting: true,
-        context_preservation: true,
-        service_type: translationServiceType // 添加服务类型
-      };
-
-      // 添加重试逻辑
-      const maxRetries = 3;
-      let retryCount = 0;
-      let lastError;
-
-      while (retryCount < maxRetries) {
-        try {
-          // 调用翻译API
-          const response = await translateSubtitleFile(request);
-
-          if (response.success && response.data) {
-            // 获取任务ID
-            const taskId = response.data.task_id;
-
-            // 创建WebSocket连接监听进度
-            return new Promise<void>((resolve, reject) => {
-              const socket = new WebSocket(`ws://localhost:8000/api/ws/tasks/${taskId}`);
-
-              // 设置超时
-              const timeout = setTimeout(() => {
-                socket.close();
-                reject(new Error('翻译任务超时'));
-              }, 5 * 60 * 1000); // 5分钟超时
-
-              socket.onopen = () => {
-                console.log('WebSocket连接已建立，开始监听翻译进度');
-              };
-
-              socket.onmessage = (event) => {
-                try {
-                  const data = JSON.parse(event.data);
-                  console.log('收到WebSocket消息:', data);
-
-                  if (data.type === 'progress') {
-                    setTranslationProgress(data.progress * 100);
-                  } else if (data.type === 'completed') {
-                    // 翻译完成，刷新字幕
-                    clearTimeout(timeout);
-                    loadSubtitleContent(videoId, selectedTrack.id);
-                    setTranslating(false);
-                    setTranslationDialogOpen(false);
-                    // 显示成功消息
-                    setErrorMessage('字幕翻译成功！');
-                    setStatusSeverity('success');
-                    socket.close();
-                    resolve();
-                  } else if (data.type === 'failed') {
-                    clearTimeout(timeout);
-                    socket.close();
-                    reject(new Error(data.message || '翻译失败'));
-                  }
-                } catch (error) {
-                  console.error('处理WebSocket消息出错:', error);
-                  clearTimeout(timeout);
-                  socket.close();
-                  reject(error);
-                }
-              };
-
-              socket.onerror = (error) => {
-                console.error('WebSocket错误:', error);
-                clearTimeout(timeout);
-                reject(new Error('翻译进度监听失败'));
-              };
-
-              socket.onclose = () => {
-                console.log('WebSocket连接已关闭');
-                clearTimeout(timeout);
-              };
-            });
-          } else {
-            throw new Error(response.message || '翻译任务创建失败');
-          }
-        } catch (error) {
-          lastError = error;
-          retryCount++;
-
-          if (retryCount < maxRetries) {
-            // 等待一段时间后重试
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-            console.log(`翻译任务创建重试 ${retryCount}/${maxRetries}...`);
-          }
-        }
-      }
-
-      // 如果所有重试都失败，抛出最后一个错误
-      throw lastError;
-    } catch (error) {
-      console.error('翻译全部字幕失败:', error);
-      setTranslating(false);
-      const errorMsg = '翻译失败: ' + (error instanceof Error ? error.message : '未知错误');
-      setErrorMessage(errorMsg);
-      setStatusSeverity('error');
+  // 格式化预计剩余时间
+  const formatEstimatedTime = useCallback((seconds: number): string => {
+    if (seconds < 60) {
+      return `${Math.ceil(seconds)}秒`;
+    } else if (seconds < 3600) {
+      return `${Math.ceil(seconds / 60)}分钟`;
+    } else {
+      return `${Math.ceil(seconds / 3600)}小时`;
     }
-  };
+  }, []);
 
-  // 渲染翻译对话框
-  const renderTranslationDialog = () => (
-    <Dialog
-      open={translationDialogOpen}
-      onClose={() => !translating && setTranslationDialogOpen(false)}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>翻译配置</DialogTitle>
-      <DialogContent>
-        <TranslationConfig
-          onChange={handleTranslationConfigChange}
-          defaultConfig={translationConfig}
-        />
+  // 清理连接
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
-        {translating && (
-          <Box sx={{ width: '100%', mt: 2 }}>
-            <Typography variant="body2" gutterBottom>
-              翻译进度: {Math.round(translationProgress)}%
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={translationProgress}
-              sx={{ height: 10, borderRadius: 5 }}
-            />
-          </Box>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setTranslationDialogOpen(false)}
-          disabled={translating}
-        >
-          取消
-        </Button>
-        <Button
-          onClick={handleTranslateAll}
-          variant="contained"
-          color="primary"
-          disabled={translating || !translationConfig.model}
-        >
-          {translating ? '翻译中...' : '开始翻译'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+  if (loading && !video) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={60} sx={{ mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            正在加载视频信息...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!video) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <ErrorIcon sx={{ fontSize: 64, color: theme.palette.error.main, mb: 2 }} />
+          <Typography variant="h6" color="error">
+            {error || '未找到视频信息'}
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{ mt: 2 }}
+          >
+            返回视频详情
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
-    <Box sx={{ 
-      p: 2, 
-      height: 'calc(100vh - 64px)', 
-      display: 'flex', 
-      flexDirection: 'column',
-      overflow: 'hidden' // 防止整体页面溢出
-    }}>
-      {/* 页面标题和返回按钮 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexShrink: 0 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" component="h1">
-          {video?.fileName || '视频详情'}
-        </Typography>
-      </Box>
-
-      {/* 主要内容区域 */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
-        {/* 视频播放器 */}
-        <Box sx={{ 
-          height: '40%', // 减少视频播放器高度，为控制区域留出更多空间
-          minHeight: 250, 
-          flexShrink: 0 
-        }}>
-          {video ? (
-            <VideoPlayer
-              src={video.filePath}
-              onTimeUpdate={setCurrentTime}
-            />
-          ) : (
-            <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              {loading ? <CircularProgress /> : <Typography>未找到视频</Typography>}
-            </Box>
-          )}
-        </Box>
-
-        {/* 控制区域 - 确保始终可见 */}
-        <Box sx={{ flexShrink: 0 }}>
-          {/* 字幕轨道选择 */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2, 
-            mb: 1,
-            minHeight: 56 // 确保足够的高度
-          }}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>字幕轨道</InputLabel>
-              <Select
-                value={selectedTrack?.id || ''}
-                label="字幕轨道"
-                onChange={(e: SelectChangeEvent) => {
-                  const trackId = e.target.value;
-                  const track = video?.subtitleTracks?.find(t => t.id === trackId) || null;
-                  console.log('选择字幕轨道:', { trackId, track });
-                  setSelectedTrack(track);
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* 顶部导航 */}
+      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
+        <Box sx={{ mb: 3 }}>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Tooltip title="返回视频详情">
+              <IconButton 
+                onClick={handleBack}
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                  }
                 }}
-                disabled={!video || !video.subtitleTracks || video.subtitleTracks.length === 0}
               >
-                {video?.subtitleTracks?.map((track) => (
-                  <MenuItem key={track.id} value={track.id}>
-                    {track.language} - {track.title || `轨道 ${track.id}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            {/* 翻译服务类型选择 */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="subtitle1" sx={{ mr: 2 }}>
-                当前翻译服务：
+                <ArrowBackIcon />
+              </IconButton>
+            </Tooltip>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography 
+                variant="h4" 
+                component="h1"
+                sx={{ 
+                  fontWeight: 600,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                <TranslateIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                字幕翻译
               </Typography>
-              <FormControl component="fieldset" size="small">
-                <RadioGroup
-                  value={translationServiceType}
-                  onChange={(e) => setTranslationServiceType(e.target.value)}
-                  row
-                >
-                  {TRANSLATION_SERVICE_TYPES.map((type) => (
-                    <FormControlLabel
-                      key={type.id}
-                      value={type.id}
-                      control={<Radio size="small" />}
-                      label={type.name}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
+              <Typography variant="h6" color="text.secondary">
+                {video.fileName}
+              </Typography>
             </Box>
-          </Box>
-
-          <Divider sx={{ my: 1 }} />
-
-          {/* 操作按钮区域 */}
-          <Box sx={{ 
-            mb: 2, 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            minHeight: 48 // 确保按钮区域有足够高度
-          }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              disabled={!selectedTrack}
-              onClick={() => {
-                console.log('点击刷新字幕按钮:', { hasVideo: !!video, hasSelectedTrack: !!selectedTrack });
-                if (video && selectedTrack) {
-                  const videoId = (video as any).backendId || video.id;
-                  loadSubtitleContent(videoId, selectedTrack.id);
-                }
-              }}
-              startIcon={loading ? <CircularProgress size={20} /> : null}
-            >
-              刷新字幕
-            </Button>
-
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                disabled={!selectedTrack}
-              >
-                导出字幕
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="primary"
-                disabled={!selectedTrack}
-                onClick={() => setTranslationDialogOpen(true)}
-                startIcon={<TranslateIcon />}
-              >
-                翻译字幕
-              </Button>
-
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!selectedTrack}
-                onClick={async () => {
-                  try {
-                    if (!video || !selectedTrack) return;
-
-                    // 尝试调用后端 API 保存所有字幕
-                    const apiPort = '8000';
-                    const videoId = (video as any).backendId || video.id;
-                    // 使用轨道的后端索引
-                    let trackIndex = 0;
-
-                    // 如果轨道有backendIndex属性，直接使用
-                    if ((selectedTrack as any).backendIndex !== undefined) {
-                      trackIndex = (selectedTrack as any).backendIndex;
-                    } else {
-                      // 否则尝试将轨道ID转换为数字
-                      try {
-                        const parsedIndex = parseInt(selectedTrack.id);
-                        if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                          trackIndex = parsedIndex;
-                        }
-                      } catch (e) {
-                        console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                      }
-                    }
-
-                    const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/save`;
-
-                    const response = await fetch(url, {
-                      method: 'POST'
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      if (result.success) {
-                        setErrorMessage('字幕保存成功');
-                        setStatusSeverity('success');
-                        return;
-                      }
-                    }
-
-                    // 如果 API 调用失败，显示模拟成功消息
-                    console.warn('调用保存字幕API失败，显示模拟成功消息');
-                    setErrorMessage('字幕保存成功');
-                    setStatusSeverity('success');
-                  } catch (error) {
-                    console.error('保存字幕失败:', error);
-                    setErrorMessage('字幕保存失败，请重试');
-                    setStatusSeverity('error');
+            <Tooltip title="翻译设置">
+              <IconButton 
+                onClick={() => setSettingsOpen(true)}
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.2)
                   }
                 }}
               >
-                保存所有修改
-              </Button>
-            </Box>
-          </Box>
+                <SettingsIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Box>
+      </Slide>
 
-        {/* 字幕编辑区域 */}
-        <Box sx={{ 
-          flexGrow: 1, 
-          overflow: 'hidden', 
-          display: 'flex', 
-          flexDirection: 'column',
-          minHeight: 0 // 确保可以正确收缩
-        }}>
-          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <SubtitleEditor
-              subtitles={subtitles}
-              currentTime={currentTime}
-              loading={loading}
-              error={error}
-              onTranslate={handleTranslateLine}
-              translationConfig={translationConfig}
-              onSave={async (subtitle) => {
-                try {
-                  if (!video || !selectedTrack) return;
+      <Grid container spacing={3}>
+        {/* 左侧：视频播放器 */}
+        <Grid item xs={12} lg={6}>
+          <Fade in={true} timeout={600}>
+            <Card sx={{ mb: 3 }}>
+              <VideoPlayer
+                src={video.filePath}
+                onTimeUpdate={setCurrentTime}
+                poster=""
+                autoPlay={false}
+                muted={false}
+              />
+            </Card>
+          </Fade>
 
-                  // 实现保存单个字幕的逻辑
-                  const apiPort = '8000';
-                  const videoId = (video as any).backendId || video.id;
-                  let trackIndex = 0;
-
-                  if ((selectedTrack as any).backendIndex !== undefined) {
-                    trackIndex = (selectedTrack as any).backendIndex;
-                  } else {
-                    try {
-                      const parsedIndex = parseInt(selectedTrack.id);
-                      if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                        trackIndex = parsedIndex;
-                      }
-                    } catch (e) {
-                      console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                    }
+          {/* 翻译结果预览 */}
+          {translationResults.length > 0 && (
+            <Fade in={true} timeout={800}>
+              <Card>
+                <CardHeader
+                  title={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <PreviewIcon color="primary" />
+                      <Typography variant="h6">翻译结果预览</Typography>
+                      <Chip 
+                        label={`${translationResults.length} 条`} 
+                        size="small" 
+                        color="primary" 
+                      />
+                    </Stack>
                   }
+                />
+                <CardContent>
+                  <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    {translationResults.slice(0, 10).map((result, index) => (
+                      <Paper 
+                        key={index} 
+                        variant="outlined" 
+                        sx={{ p: 2, mb: 2 }}
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          {formatTime(result.startTime)} → {formatTime(result.endTime)}
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Typography variant="body2" sx={{ mb: 1, opacity: 0.7 }}>
+                            原文: {result.original}
+                          </Typography>
+                          <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
+                            译文: {result.translated}
+                          </Typography>
+                          {result.confidence && (
+                            <Chip 
+                              label={`可信度: ${Math.round(result.confidence * 100)}%`}
+                              size="small"
+                              color={result.confidence > 0.8 ? 'success' : result.confidence > 0.6 ? 'warning' : 'error'}
+                              sx={{ mt: 1 }}
+                            />
+                          )}
+                        </Box>
+                      </Paper>
+                    ))}
+                    {translationResults.length > 10 && (
+                      <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
+                        还有 {translationResults.length - 10} 条结果未显示...
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Fade>
+          )}
+        </Grid>
 
-                  const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/line`;
-
-                  const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      id: subtitle.id,
-                      start_time: subtitle.startTime,
-                      end_time: subtitle.endTime,
-                      text: subtitle.text
-                    })
-                  });
-
-                  if (!response.ok) {
-                    throw new Error(`保存字幕失败: ${response.status} ${response.statusText}`);
-                  }
-
-                  const result = await response.json();
-                  if (!result.success) {
-                    throw new Error(result.message || '保存字幕失败');
-                  }
-
-                  // 更新字幕列表
-                  setSubtitles(prev =>
-                    prev.map(item =>
-                      item.id === subtitle.id ? subtitle : item
-                    )
-                  );
-                } catch (error) {
-                  console.error('保存字幕失败:', error);
-                  alert('保存字幕失败: ' + (error instanceof Error ? error.message : '未知错误'));
+        {/* 右侧：翻译配置和进度 */}
+        <Grid item xs={12} lg={6}>
+          <Fade in={true} timeout={1000}>
+            <Card>
+              <CardHeader
+                title={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <LanguageIcon color="primary" />
+                    <Typography variant="h6">翻译流程</Typography>
+                  </Stack>
                 }
-              }}
-              onDelete={async (id) => {
-                try {
-                  if (!video || !selectedTrack) return;
+              />
+              <CardContent>
+                <Stepper activeStep={activeStep} orientation="vertical">
+                  {TRANSLATION_STEPS.map((step, index) => (
+                    <Step key={step.key}>
+                      <StepLabel
+                        optional={
+                          <Typography variant="caption">
+                            {step.description}
+                          </Typography>
+                        }
+                        onClick={() => handleStepChange(index)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {step.label}
+                      </StepLabel>
+                      <StepContent>
+                        {/* 步骤0：配置翻译 */}
+                        {index === 0 && (
+                          <Box sx={{ mb: 2 }}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                  <InputLabel>字幕轨道</InputLabel>
+                                  <Select
+                                    value={selectedTrackId}
+                                    onChange={(e) => setSelectedTrackId(e.target.value)}
+                                    label="字幕轨道"
+                                  >
+                                    {trackOptions.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              
+                              <Grid item xs={6}>
+                                <FormControl fullWidth>
+                                  <InputLabel>源语言</InputLabel>
+                                  <Select
+                                    value={sourceLanguage}
+                                    onChange={(e) => setSourceLanguage(e.target.value)}
+                                    label="源语言"
+                                  >
+                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                      <MenuItem key={lang.code} value={lang.code}>
+                                        {lang.flag} {lang.name}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              
+                              <Grid item xs={6}>
+                                <FormControl fullWidth>
+                                  <InputLabel>目标语言</InputLabel>
+                                  <Select
+                                    value={targetLanguage}
+                                    onChange={(e) => setTargetLanguage(e.target.value)}
+                                    label="目标语言"
+                                  >
+                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                      <MenuItem key={lang.code} value={lang.code}>
+                                        {lang.flag} {lang.name}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              
+                              <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                  <InputLabel>翻译模型</InputLabel>
+                                  <Select
+                                    value={translationModel}
+                                    onChange={(e) => setTranslationModel(e.target.value)}
+                                    label="翻译模型"
+                                  >
+                                    <MenuItem value="gpt-4">GPT-4 (推荐)</MenuItem>
+                                    <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
+                                    <MenuItem value="claude-3">Claude-3</MenuItem>
+                                    <MenuItem value="gemini-pro">Gemini Pro</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            </Grid>
+                            
+                            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                              <Button
+                                variant="contained"
+                                startIcon={<PlayIcon />}
+                                onClick={startTranslation}
+                                disabled={!isConfigComplete || translationStatus === TranslationStatus.TRANSLATING}
+                                sx={{ flex: 1 }}
+                              >
+                                开始翻译
+                              </Button>
+                            </Box>
+                          </Box>
+                        )}
 
-                  // 实现删除字幕的逻辑
-                  const apiPort = '8000';
-                  const videoId = (video as any).backendId || video.id;
-                  let trackIndex = 0;
+                        {/* 步骤1：执行翻译 */}
+                        {index === 1 && (
+                          <Box sx={{ mb: 2 }}>
+                            {translationStatus === TranslationStatus.TRANSLATING && (
+                              <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                  <CircularProgress size={24} sx={{ mr: 2 }} />
+                                  <Typography variant="body1">
+                                    正在翻译中...
+                                  </Typography>
+                                </Box>
+                                
+                                <LinearProgress 
+                                  variant="determinate" 
+                                  value={translationProgress.percentage} 
+                                  sx={{ mb: 2, height: 8, borderRadius: 4 }}
+                                />
+                                
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    进度: {translationProgress.current} / {translationProgress.total}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {Math.round(translationProgress.percentage)}%
+                                  </Typography>
+                                </Box>
+                                
+                                {translationProgress.currentItem && (
+                                  <Typography variant="body2" sx={{ mb: 1 }}>
+                                    当前处理: {translationProgress.currentItem}
+                                  </Typography>
+                                )}
+                                
+                                {translationProgress.estimatedTimeRemaining && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    预计剩余时间: {formatEstimatedTime(translationProgress.estimatedTimeRemaining)}
+                                  </Typography>
+                                )}
+                                
+                                <Button
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<StopIcon />}
+                                  onClick={stopTranslation}
+                                  sx={{ mt: 2 }}
+                                >
+                                  停止翻译
+                                </Button>
+                              </Box>
+                            )}
+                            
+                            {translationStatus === TranslationStatus.COMPLETED && (
+                              <Alert severity="success" sx={{ mb: 2 }}>
+                                <AlertTitle>翻译完成</AlertTitle>
+                                成功翻译了 {translationResults.length} 条字幕
+                              </Alert>
+                            )}
+                            
+                            {translationStatus === TranslationStatus.ERROR && (
+                              <Alert severity="error" sx={{ mb: 2 }}>
+                                <AlertTitle>翻译失败</AlertTitle>
+                                {error}
+                              </Alert>
+                            )}
+                          </Box>
+                        )}
 
-                  if ((selectedTrack as any).backendIndex !== undefined) {
-                    trackIndex = (selectedTrack as any).backendIndex;
-                  } else {
-                    try {
-                      const parsedIndex = parseInt(selectedTrack.id);
-                      if (!isNaN(parsedIndex) && parsedIndex >= 0) {
-                        trackIndex = parsedIndex;
-                      }
-                    } catch (e) {
-                      console.warn('轨道ID转换为索引失败，使用默认值0:', e);
-                    }
-                  }
+                        {/* 步骤2：预览结果 */}
+                        {index === 2 && translationResults.length > 0 && (
+                          <Box sx={{ mb: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                              <AlertTitle>预览完成</AlertTitle>
+                              请查看左侧的翻译结果预览，确认无误后可以保存文件
+                            </Alert>
+                            
+                            <Stack direction="row" spacing={2}>
+                              <Button
+                                variant="contained"
+                                startIcon={<SaveIcon />}
+                                onClick={saveTranslation}
+                                disabled={loading}
+                              >
+                                保存翻译文件
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                startIcon={<DownloadIcon />}
+                                onClick={() => {
+                                  // 触发下载
+                                  const blob = new Blob([
+                                    translationResults.map((result, index) => 
+                                      `${index + 1}\n${formatTime(result.startTime)} --> ${formatTime(result.endTime)}\n${result.translated}\n`
+                                    ).join('\n')
+                                  ], { type: 'text/plain' });
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `${video.fileName}_${targetLanguage}.srt`;
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+                                }}
+                              >
+                                下载字幕文件
+                              </Button>
+                            </Stack>
+                          </Box>
+                        )}
 
-                  const url = `http://localhost:${apiPort}/api/videos/${videoId}/subtitles/${trackIndex}/line/${id}`;
+                        {/* 步骤3：保存文件 */}
+                        {index === 3 && (
+                          <Box sx={{ mb: 2 }}>
+                            <Alert severity="success" sx={{ mb: 2 }}>
+                              <AlertTitle>翻译任务完成</AlertTitle>
+                              翻译文件已成功保存到服务器
+                            </Alert>
+                            
+                            <Stack direction="row" spacing={2}>
+                              <Button
+                                variant="outlined"
+                                startIcon={<RefreshIcon />}
+                                onClick={() => {
+                                  setActiveStep(0);
+                                  setTranslationStatus(TranslationStatus.IDLE);
+                                  setTranslationResults([]);
+                                  setTranslationProgress({ current: 0, total: 0, percentage: 0 });
+                                }}
+                              >
+                                重新翻译
+                              </Button>
+                              <Button
+                                variant="contained"
+                                startIcon={<ArrowBackIcon />}
+                                onClick={handleBack}
+                              >
+                                返回视频详情
+                              </Button>
+                            </Stack>
+                          </Box>
+                        )}
+                      </StepContent>
+                    </Step>
+                  ))}
+                </Stepper>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
+      </Grid>
 
-                  const response = await fetch(url, {
-                    method: 'DELETE'
-                  });
+      {/* 翻译设置对话框 */}
+      <Dialog 
+        open={settingsOpen} 
+        onClose={() => setSettingsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>翻译设置</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="API密钥"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            margin="normal"
+            helperText="用于调用翻译模型的API密钥"
+          />
+          <TextField
+            fullWidth
+            label="自定义提示词"
+            multiline
+            rows={4}
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            margin="normal"
+            helperText="可选：自定义翻译的提示词以获得更好的翻译效果"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSettingsOpen(false)}>
+            取消
+          </Button>
+          <Button 
+            onClick={() => setSettingsOpen(false)}
+            variant="contained"
+          >
+            保存设置
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                  if (!response.ok) {
-                    throw new Error(`删除字幕失败: ${response.status} ${response.statusText}`);
-                  }
-
-                  const result = await response.json();
-                  if (!result.success) {
-                    throw new Error(result.message || '删除字幕失败');
-                  }
-
-                  // 更新字幕列表
-                  setSubtitles(prev => prev.filter(item => item.id !== id));
-                } catch (error) {
-                  console.error('删除字幕失败:', error);
-                  alert('删除字幕失败: ' + (error instanceof Error ? error.message : '未知错误'));
-                }
-              }}
-            />
-          </Box>
-        </Box>
-      </Box>
-
-      {/* 翻译对话框 */}
-      {renderTranslationDialog()}
+      {/* 浮动操作按钮 */}
+      {translationStatus === TranslationStatus.IDLE && (
+        <Zoom in={true}>
+          <Fab
+            color="primary"
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 1000
+            }}
+            onClick={startTranslation}
+            disabled={!isConfigComplete}
+          >
+            <PlayIcon />
+          </Fab>
+        </Zoom>
+      )}
 
       {/* 错误提示 */}
       <ErrorSnackbar
-        message={errorMessage}
-        severity={statusSeverity}
-        onClose={() => setErrorMessage(null)}
+        message={error}
+        severity={error?.includes('成功') ? 'success' : 'error'}
+        onClose={() => setError(null)}
       />
-    </Box>
+    </Container>
   );
 };
 

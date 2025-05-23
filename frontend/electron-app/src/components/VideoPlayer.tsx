@@ -1,99 +1,192 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Box, Slider, IconButton, Typography, Paper } from '@mui/material';
+import { 
+  Box, 
+  Slider, 
+  IconButton, 
+  Typography, 
+  Paper, 
+  Fade,
+  Tooltip,
+  useTheme,
+  alpha,
+  Stack,
+  Chip
+} from '@mui/material';
 import {
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
   VolumeUp as VolumeUpIcon,
   VolumeOff as VolumeOffIcon,
-  Fullscreen as FullscreenIcon
+  VolumeDown as VolumeDownIcon,
+  Fullscreen as FullscreenIcon,
+  FullscreenExit as FullscreenExitIcon,
+  FastRewind as FastRewindIcon,
+  FastForward as FastForwardIcon,
+  Settings as SettingsIcon,
+  ClosedCaption as SubtitlesIcon
 } from '@mui/icons-material';
 import { throttle } from '../utils/performanceUtils';
 
 interface VideoPlayerProps {
   src: string;
   onTimeUpdate?: (currentTime: number) => void;
+  autoPlay?: boolean;
+  muted?: boolean;
+  poster?: string;
+  className?: string;
+  showSubtitles?: boolean;
+  onSubtitleToggle?: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  src, 
+  onTimeUpdate,
+  autoPlay = false,
+  muted = false,
+  poster,
+  className,
+  showSubtitles = false,
+  onSubtitleToggle
+}) => {
+  const theme = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 播放器状态
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const [muted, setMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(muted);
   const [seeking, setSeeking] = useState(false);
+  const [buffered, setBuffered] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 控制栏显示/隐藏的计时器
+  const controlsTimeoutRef = useRef<number>();
+
+  // 重置控制栏隐藏计时器
+  const resetControlsTimeout = useCallback(() => {
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    setShowControls(true);
+    
+    if (playing) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  }, [playing]);
 
   // 加载视频元数据
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // 处理元数据加载
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      setLoading(false);
       console.log('视频元数据加载成功:', { duration: video.duration });
     };
 
-    // 处理加载错误
+    const handleLoadStart = () => {
+      setLoading(true);
+      setError(null);
+    };
+
     const handleError = (e: Event) => {
       console.error('视频加载错误:', e);
-      console.error('视频元素错误代码:', video.error?.code);
-      console.error('视频元素错误消息:', video.error?.message);
+      setError(video.error?.message || '视频加载失败');
+      setLoading(false);
+    };
+
+    const handleProgress = () => {
+      if (video.buffered.length > 0) {
+        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        const bufferedPercent = (bufferedEnd / video.duration) * 100;
+        setBuffered(bufferedPercent);
+      }
+    };
+
+    const handleCanPlay = () => {
+      setLoading(false);
+    };
+
+    const handleWaiting = () => {
+      setLoading(true);
+    };
+
+    const handleCanPlayThrough = () => {
+      setLoading(false);
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('loadstart', handleLoadStart);
     video.addEventListener('error', handleError);
+    video.addEventListener('progress', handleProgress);
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('canplaythrough', handleCanPlayThrough);
 
-    // 在Electron中加载本地文件需要特殊处理
+    // 处理视频路径
     if (src) {
       console.log('加载视频:', src);
-
-      // 处理视频路径
       try {
-        // 尝试使用标准格式的file://URL
         if (src.startsWith('file://')) {
-          // 确保路径格式正确，应该是 file:///C:/path/to/video.mp4
           let formattedSrc = src;
-
-          // 如果是Windows路径但缺少正确的斜杠数量
           if (src.match(/^file:\/\/[A-Za-z]:/)) {
-            // 添加缺失的斜杠，应该是 file:///C:/path 而不是 file://C:/path
             formattedSrc = src.replace(/^file:\/\/([A-Za-z]:)/, 'file:///$1');
           }
-
           console.log('格式化后的视频URL:', formattedSrc);
           video.src = formattedSrc;
         } else {
-          // 如果是其他URL或直接是本地路径，尝试转换为URL
           if (!src.includes('://')) {
-            // 如果是绝对路径但没有协议前缀，添加file://前缀
             const fileUrl = `file:///${src.replace(/\\/g, '/')}`;
             console.log('转换为URL:', fileUrl);
             video.src = fileUrl;
           } else {
-            // 其他URL直接使用
             video.src = src;
           }
         }
       } catch (error) {
         console.error('处理视频URL错误:', error);
-        // 出错时直接使用原始路径
         video.src = src;
       }
     }
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('loadstart', handleLoadStart);
       video.removeEventListener('error', handleError);
+      video.removeEventListener('progress', handleProgress);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('canplaythrough', handleCanPlayThrough);
     };
   }, [src]);
+
+  // 全屏状态监听
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // 创建节流版本的时间更新处理函数
   const throttledTimeUpdate = useCallback(
     throttle((time: number) => {
       setCurrentTime(time);
       onTimeUpdate && onTimeUpdate(time);
-    }, 100), // 100ms的节流时间，可以根据需要调整
+    }, 100),
     [onTimeUpdate]
   );
 
@@ -108,14 +201,37 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
       }
     };
 
+    const handlePlay = () => {
+      setPlaying(true);
+      resetControlsTimeout();
+    };
+
+    const handlePause = () => {
+      setPlaying(false);
+      setShowControls(true);
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+
     video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
     };
-  }, [seeking, throttledTimeUpdate]);
+  }, [seeking, throttledTimeUpdate, resetControlsTimeout]);
+
+  // 鼠标移动处理
+  const handleMouseMove = useCallback(() => {
+    resetControlsTimeout();
+  }, [resetControlsTimeout]);
 
   // 播放/暂停切换
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
@@ -124,8 +240,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
     } else {
       video.play();
     }
-    setPlaying(!playing);
-  };
+  }, [playing]);
 
   // 进度条拖动
   const handleSeek = useCallback((_event: Event, newValue: number | number[]) => {
@@ -134,8 +249,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
 
     const seekTime = typeof newValue === 'number' ? newValue : newValue[0];
     video.currentTime = seekTime;
-
-    // 在拖动过程中只更新本地状态，不触发外部更新
     setCurrentTime(seekTime);
   }, []);
 
@@ -147,8 +260,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
   // 结束拖动
   const handleSeekEnd = useCallback(() => {
     setSeeking(false);
-
-    // 拖动结束后，手动触发一次时间更新，确保外部状态同步
     const video = videoRef.current;
     if (video && onTimeUpdate) {
       onTimeUpdate(video.currentTime);
@@ -156,56 +267,161 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
   }, [onTimeUpdate]);
 
   // 音量调节
-  const handleVolumeChange = (_event: Event, newValue: number | number[]) => {
+  const handleVolumeChange = useCallback((_event: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
 
     const newVolume = typeof newValue === 'number' ? newValue : newValue[0];
     video.volume = newVolume;
     setVolume(newVolume);
-    setMuted(newVolume === 0);
-  };
+    setIsMuted(newVolume === 0);
+  }, []);
 
   // 静音切换
-  const handleMuteToggle = () => {
+  const handleMuteToggle = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = !muted;
-    setMuted(!muted);
-  };
+    const newMuted = !isMuted;
+    video.muted = newMuted;
+    setIsMuted(newMuted);
+  }, [isMuted]);
 
-  // 全屏
-  const handleFullscreen = () => {
+  // 快退
+  const handleRewind = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
+    video.currentTime = Math.max(0, video.currentTime - 10);
+  }, []);
 
-    if (video.requestFullscreen) {
-      video.requestFullscreen();
+  // 快进
+  const handleFastForward = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = Math.min(video.duration, video.currentTime + 10);
+  }, []);
+
+  // 全屏切换
+  const handleFullscreen = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (isFullscreen) {
+      document.exitFullscreen();
+    } else {
+      container.requestFullscreen();
     }
-  };
+  }, [isFullscreen]);
 
-  // 格式化时间为 MM:SS
-  const formatTime = (seconds: number): string => {
+  // 格式化时间
+  const formatTime = useCallback((seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }, []);
+
+  // 获取音量图标
+  const getVolumeIcon = () => {
+    if (isMuted || volume === 0) return <VolumeOffIcon />;
+    if (volume < 0.5) return <VolumeDownIcon />;
+    return <VolumeUpIcon />;
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box 
+      ref={containerRef}
+      className={className}
+      sx={{ 
+        width: '100%', 
+        position: 'relative',
+        backgroundColor: '#000',
+        borderRadius: 2,
+        overflow: 'hidden',
+        aspectRatio: '16/9',
+        '&:fullscreen': {
+          borderRadius: 0,
+        }
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => {
+        if (playing && !seeking) {
+          setShowControls(false);
+        }
+      }}
+    >
       {/* 视频元素 */}
-      <Box sx={{ position: 'relative', width: '100%', bgcolor: 'black' }}>
-        <video
-          ref={videoRef}
-          style={{ width: '100%', display: 'block' }}
-          onClick={handlePlayPause}
-          controls={false}
-          preload="metadata"
-          playsInline
-        />
-        {/* 加载错误显示 */}
-        {videoRef.current?.error && (
+      <video
+        ref={videoRef}
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          display: 'block',
+          objectFit: 'contain'
+        }}
+        onClick={handlePlayPause}
+        autoPlay={autoPlay}
+        muted={muted}
+        poster={poster}
+        playsInline
+      />
+
+      {/* 加载指示器 */}
+      {loading && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            zIndex: 2
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              border: '3px solid rgba(255,255,255,0.3)',
+              borderTop: '3px solid white',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              '@keyframes spin': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg)' }
+              }
+            }}
+          />
+        </Box>
+      )}
+
+      {/* 错误显示 */}
+      {error && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 2,
+            textAlign: 'center',
+            zIndex: 3
+          }}
+        >
+          <Typography variant="body1">
+            {error}
+          </Typography>
+        </Box>
+      )}
+
+      {/* 播放按钮覆盖层 */}
+      {!playing && !loading && !error && (
+        <Fade in={!playing}>
           <Box
             sx={{
               position: 'absolute',
@@ -216,69 +432,215 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, onTimeUpdate }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'white',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              padding: 2,
-              textAlign: 'center'
+              backgroundColor: alpha('#000', 0.3),
+              cursor: 'pointer',
+              zIndex: 2
             }}
+            onClick={handlePlayPause}
           >
-            <Typography variant="body1">
-              视频加载失败: {videoRef.current.error.message || '未知错误'}
-            </Typography>
+            <IconButton
+              sx={{
+                width: 80,
+                height: 80,
+                backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.main,
+                  transform: 'scale(1.1)'
+                },
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <PlayIcon sx={{ fontSize: 48 }} />
+            </IconButton>
           </Box>
-        )}
-      </Box>
+        </Fade>
+      )}
 
       {/* 控制栏 */}
-      <Paper sx={{ p: 1, mt: 1 }}>
-        {/* 进度条 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Typography variant="caption" sx={{ mr: 1, minWidth: '40px' }}>
-            {formatTime(currentTime)}
-          </Typography>
-          <Slider
-            value={currentTime}
-            max={duration || 100}
-            onChange={handleSeek}
-            onMouseDown={handleSeekStart}
-            onMouseUp={handleSeekEnd}
-            aria-label="视频进度"
-            size="small"
-            sx={{ mx: 1 }}
-          />
-          <Typography variant="caption" sx={{ ml: 1, minWidth: '40px' }}>
-            {formatTime(duration)}
-          </Typography>
-        </Box>
-
-        {/* 控制按钮 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handlePlayPause} size="small">
-              {playing ? <PauseIcon /> : <PlayIcon />}
-            </IconButton>
-            <IconButton onClick={handleMuteToggle} size="small">
-              {muted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-            </IconButton>
-            <Slider
-              value={muted ? 0 : volume}
-              onChange={handleVolumeChange}
-              aria-label="音量"
-              min={0}
-              max={1}
-              step={0.01}
-              size="small"
-              sx={{ width: 80, mx: 1 }}
-            />
+      <Fade in={showControls}>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: `linear-gradient(transparent, ${alpha('#000', 0.8)})`,
+            padding: 2,
+            paddingTop: 4,
+            zIndex: 4
+          }}
+        >
+          {/* 进度条区域 */}
+          <Box sx={{ mb: 2 }}>
+            {/* 缓冲进度背景 */}
+            <Box
+              sx={{
+                position: 'relative',
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: alpha('#fff', 0.2),
+                overflow: 'hidden'
+              }}
+            >
+              {/* 缓冲进度 */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  height: '100%',
+                  width: `${buffered}%`,
+                  backgroundColor: alpha('#fff', 0.4),
+                  transition: 'width 0.3s ease'
+                }}
+              />
+              
+              {/* 播放进度滑块 */}
+              <Slider
+                value={currentTime}
+                max={duration || 100}
+                onChange={handleSeek}
+                onMouseDown={handleSeekStart}
+                onMouseUp={handleSeekEnd}
+                sx={{
+                  position: 'absolute',
+                  top: -3,
+                  left: 0,
+                  right: 0,
+                  color: theme.palette.primary.main,
+                  height: 6,
+                  '& .MuiSlider-track': {
+                    backgroundColor: theme.palette.primary.main,
+                    border: 'none',
+                    height: 6
+                  },
+                  '& .MuiSlider-rail': {
+                    backgroundColor: 'transparent',
+                    height: 6
+                  },
+                  '& .MuiSlider-thumb': {
+                    width: 16,
+                    height: 16,
+                    backgroundColor: '#fff',
+                    '&:hover': {
+                      boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
+                    },
+                    '&.Mui-active': {
+                      boxShadow: `0 0 0 14px ${alpha(theme.palette.primary.main, 0.16)}`
+                    }
+                  }
+                }}
+              />
+            </Box>
           </Box>
-          <IconButton onClick={handleFullscreen} size="small">
-            <FullscreenIcon />
-          </IconButton>
+
+          {/* 控制按钮区域 */}
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            {/* 左侧控制组 */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              {/* 播放/暂停 */}
+              <Tooltip title={playing ? '暂停' : '播放'}>
+                <IconButton 
+                  onClick={handlePlayPause}
+                  sx={{ color: 'white' }}
+                >
+                  {playing ? <PauseIcon /> : <PlayIcon />}
+                </IconButton>
+              </Tooltip>
+
+              {/* 快退 */}
+              <Tooltip title="快退 10 秒">
+                <IconButton 
+                  onClick={handleRewind}
+                  sx={{ color: 'white' }}
+                >
+                  <FastRewindIcon />
+                </IconButton>
+              </Tooltip>
+
+              {/* 快进 */}
+              <Tooltip title="快进 10 秒">
+                <IconButton 
+                  onClick={handleFastForward}
+                  sx={{ color: 'white' }}
+                >
+                  <FastForwardIcon />
+                </IconButton>
+              </Tooltip>
+
+              {/* 音量控制 */}
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Tooltip title={isMuted ? '取消静音' : '静音'}>
+                  <IconButton 
+                    onClick={handleMuteToggle}
+                    sx={{ color: 'white' }}
+                  >
+                    {getVolumeIcon()}
+                  </IconButton>
+                </Tooltip>
+
+                <Slider
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  sx={{
+                    width: 80,
+                    color: 'white',
+                    '& .MuiSlider-thumb': {
+                      width: 12,
+                      height: 12
+                    }
+                  }}
+                />
+              </Stack>
+
+              {/* 时间显示 */}
+              <Typography variant="body2" sx={{ color: 'white', ml: 2 }}>
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </Typography>
+            </Stack>
+
+            {/* 右侧控制组 */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              {/* 字幕切换 */}
+              {onSubtitleToggle && (
+                <Tooltip title="切换字幕">
+                  <IconButton 
+                    onClick={onSubtitleToggle}
+                    sx={{ 
+                      color: showSubtitles ? theme.palette.primary.main : 'white'
+                    }}
+                  >
+                    <SubtitlesIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {/* 设置 */}
+              <Tooltip title="设置">
+                <IconButton sx={{ color: 'white' }}>
+                  <SettingsIcon />
+                </IconButton>
+              </Tooltip>
+
+              {/* 全屏 */}
+              <Tooltip title={isFullscreen ? '退出全屏' : '全屏'}>
+                <IconButton 
+                  onClick={handleFullscreen}
+                  sx={{ color: 'white' }}
+                >
+                  {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
         </Box>
-      </Paper>
+      </Fade>
     </Box>
   );
 };
 
-// 使用React.memo包装组件，避免不必要的重新渲染
 export default memo(VideoPlayer);
