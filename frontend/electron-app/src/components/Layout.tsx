@@ -135,7 +135,6 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [ripplePosition, setRipplePosition] = useState<{ x: number; y: number } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -237,19 +236,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const isSelected = location.pathname === item.path;
     const isHovered = hoveredItem === item.path;
 
-    const handleMouseEnter = (event: React.MouseEvent) => {
-      setHoveredItem(item.path);
-      const rect = event.currentTarget.getBoundingClientRect();
-      setRipplePosition({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-      });
-    };
-
     return (
       <ListItem sx={{ px: 2, py: 0.5 }}>
         <Paper
-          elevation={isSelected || isHovered ? 12 : 0}
+          elevation={isSelected || isHovered ? 8 : 0}
           sx={{
             width: '100%',
             borderRadius: 3,
@@ -258,53 +248,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               : isHovered 
                 ? 'rgba(255,255,255,0.08)'
                 : 'transparent',
-            transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            transition: 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             transform: isHovered 
-              ? 'translateX(12px) scale(1.03) rotateX(2deg)' 
-              : 'translateX(0) scale(1) rotateX(0deg)',
+              ? 'translateY(-2px)' 
+              : 'translateY(0)',
             border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
             position: 'relative',
             overflow: 'hidden',
             boxShadow: isSelected 
-              ? `${item.glow}, 0 8px 32px rgba(0,0,0,0.3)` 
+              ? `${item.glow}, 0 4px 16px rgba(0,0,0,0.2)` 
               : isHovered 
-                ? '0 12px 40px rgba(0,0,0,0.2)'
+                ? '0 6px 20px rgba(0,0,0,0.15)'
                 : 'none',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: isHovered 
-                ? 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
-                : 'transparent',
-              transition: 'all 0.3s ease',
-            },
-            ...(ripplePosition && isHovered && {
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                left: ripplePosition.x - 20,
-                top: ripplePosition.y - 20,
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.3)',
-                animation: `${rippleEffect} 0.6s ease-out`,
-                pointerEvents: 'none',
-              }
-            }),
           }}
         >
           <ListItemButton
             onClick={() => handleNavigation(item.path)}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={() => {
-              setHoveredItem(null);
-              setRipplePosition(null);
-            }}
+            onMouseEnter={() => setHoveredItem(item.path)}
+            onMouseLeave={() => setHoveredItem(null)}
             sx={{
               borderRadius: 3,
               py: 1.5,
@@ -318,13 +279,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               sx={{
                 minWidth: 48,
                 color: isSelected ? 'white' : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: isHovered 
-                  ? 'scale(1.3) rotate(10deg) translateZ(0)' 
-                  : 'scale(1) rotate(0deg) translateZ(0)',
-                filter: isHovered 
-                  ? 'drop-shadow(0 0 8px rgba(255,255,255,0.8))'
-                  : 'none',
+                  ? 'scale(1.1)' 
+                  : 'scale(1)',
               }}
             >
               {item.icon}
@@ -338,36 +296,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     color: isSelected ? 'white' : 'rgba(255,255,255,0.9)',
                     fontWeight: isSelected ? 600 : 500,
                     fontSize: '0.95rem',
-                    transition: 'all 0.3s ease',
-                    transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   }
                 }}
                 secondaryTypographyProps={{
                   sx: {
                     color: isSelected ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)',
                     fontSize: '0.75rem',
-                    transition: 'all 0.3s ease',
-                    transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   }
                 }}
               />
             </Box>
-            {isSelected && (
-              <Zoom in={isSelected} timeout={300}>
-                <Chip
-                  size="small"
-                  label="●"
-                  sx={{
-                    background: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    minWidth: 8,
-                    height: 8,
-                    '& .MuiChip-label': { px: 0.5 },
-                    animation: `${glowPulse} 2s ease-in-out infinite`,
-                  }}
-                />
-              </Zoom>
-            )}
           </ListItemButton>
         </Paper>
       </ListItem>

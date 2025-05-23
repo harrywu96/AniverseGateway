@@ -690,72 +690,201 @@ const Settings: React.FC = () => {
               title="AI服务配置"
               description="配置和管理AI翻译模型"
               icon={AIIcon}
-              variant="elevated"
+              variant="outlined"
             >
-              <Box sx={{ display: 'flex', height: 'auto', minHeight: 500 }}>
-                <Box sx={{ mr: 2, width: '350px', flexShrink: 0 }}>
-                  <ProviderList
-                    providers={providers}
-                    selectedProvider={currentProviderId || ''}
-                    onSelectProvider={(id) => dispatch(setCurrentProviderId(id))}
-                    onToggleProviderActive={async (providerId: string, newActiveState: boolean) => {
-                      dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
-                      persistor.persist();
-                      setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  gap: 3,
+                  flexDirection: { xs: 'column', lg: 'row' },
+                  minHeight: 'auto'
+                }}
+              >
+                {/* 左侧：提供商列表 */}
+                <Card
+                  variant="outlined"
+                  sx={{
+                    width: { xs: '100%', lg: '380px' },
+                    flexShrink: 0,
+                    background: 'linear-gradient(135deg, rgba(103, 58, 183, 0.03) 0%, rgba(63, 81, 181, 0.03) 100%)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      borderColor: alpha(theme.palette.primary.main, 0.25),
+                      boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.12)}`,
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      background: 'linear-gradient(135deg, rgba(103, 58, 183, 0.08) 0%, rgba(63, 81, 181, 0.05) 100%)',
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      px: 3,
+                      py: 2
                     }}
-                    onAddProvider={() => {
-                      setCustomProviderToEdit(null);
-                      setCustomProviderDialogOpen(true);
-                    }}
-                    onAddLocalModel={() => {
-                      setLocalModelToEdit(null);
-                      setLocalModelDialogOpen(true);
-                    }}
-                    onConfigureOllama={() => {
-                      setOllamaDialogOpen(true);
-                    }}
-                    onRefreshProviders={() => fetchProviders(currentProviderId || undefined)}
-                    loading={loadingProviders}
-                  />
-                </Box>
-
-                <Box sx={{ flexGrow: 1 }}>
-                  <ProviderDetail
-                    provider={providers.find(p => p.id === currentProviderId) || null}
-                    apiKeyInput={currentApiKeyInput}
-                    baseUrlInput={currentBaseUrlInput}
-                    onApiKeyInputChange={setCurrentApiKeyInput}
-                    onBaseUrlInputChange={setCurrentBaseUrlInput}
-                    onSaveProviderDetails={() => {
-                      if (currentProviderId) {
-                        dispatch(updateProviderAction({
-                          id: currentProviderId,
-                          apiKey: currentApiKeyInput,
-                          apiHost: currentBaseUrlInput,
-                          is_configured: !!currentApiKeyInput
-                        }));
-                        setStatusMessage({message: 'Provider details updated successfully.', type: 'success'});
-                      }
-                    }}
-                    selectedModelId={currentModelId || ''}
-                    onSelectModel={(id) => dispatch(setCurrentModelId(id))}
-                    onEditProvider={() => {
-                      const providerToEdit = providers.find(p => p.id === currentProviderId);
-                      if (providerToEdit && !providerToEdit.isSystem) {
-                        setCustomProviderToEdit(providerToEdit);
+                  >
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #673ab7 0%, #3f51b5 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: '1rem'
+                      }}
+                    >
+                      AI服务提供商
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        display: 'block',
+                        mt: 0.5
+                      }}
+                    >
+                      选择您的专业AI翻译服务
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ p: 0 }}>
+                    <ProviderList
+                      providers={providers}
+                      selectedProvider={currentProviderId || ''}
+                      onSelectProvider={(id) => dispatch(setCurrentProviderId(id))}
+                      onToggleProviderActive={async (providerId: string, newActiveState: boolean) => {
+                        dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
+                        persistor.persist();
+                        setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
+                      }}
+                      onAddProvider={() => {
+                        setCustomProviderToEdit(null);
                         setCustomProviderDialogOpen(true);
-                      }
+                      }}
+                      onAddLocalModel={() => {
+                        setLocalModelToEdit(null);
+                        setLocalModelDialogOpen(true);
+                      }}
+                      onConfigureOllama={() => {
+                        setOllamaDialogOpen(true);
+                      }}
+                      onRefreshProviders={() => fetchProviders(currentProviderId || undefined)}
+                      loading={loadingProviders}
+                    />
+                  </Box>
+                </Card>
+
+                {/* 右侧：提供商详情 */}
+                <Card
+                  variant="outlined"
+                  sx={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      borderColor: alpha(theme.palette.primary.main, 0.2),
+                      boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.08)}`,
+                      transform: 'translateY(-1px)'
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)',
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      px: 3,
+                      py: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
                     }}
-                    onDeleteProvider={currentProviderId && !providers.find(p=>p.id === currentProviderId)?.isSystem ? () => {
-                      dispatch(removeProviderAction(currentProviderId));
-                      persistor.persist();
-                      setStatusMessage({ message: `提供商 ${currentProviderId} 已删除`, type: 'success'});
-                    } : undefined}
-                    onRefreshModels={() => currentProviderId && fetchModels(currentProviderId)}
-                    loadingModels={loadingModels}
-                    onModelParamsChange={handleModelParamsChange}
-                  />
-                </Box>
+                  >
+                    <Box>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: 'text.primary',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        服务配置详情
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'text.secondary',
+                          display: 'block',
+                          mt: 0.5
+                        }}
+                      >
+                        配置您的专业AI翻译参数
+                      </Typography>
+                    </Box>
+                    
+                    <Box
+                      sx={{
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)',
+                        color: 'white',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
+                      }}
+                    >
+                      Pro
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ p: 3 }}>
+                    <ProviderDetail
+                      provider={providers.find(p => p.id === currentProviderId) || null}
+                      apiKeyInput={currentApiKeyInput}
+                      baseUrlInput={currentBaseUrlInput}
+                      onApiKeyInputChange={setCurrentApiKeyInput}
+                      onBaseUrlInputChange={setCurrentBaseUrlInput}
+                      onSaveProviderDetails={() => {
+                        if (currentProviderId) {
+                          dispatch(updateProviderAction({
+                            id: currentProviderId,
+                            apiKey: currentApiKeyInput,
+                            apiHost: currentBaseUrlInput,
+                            is_configured: !!currentApiKeyInput
+                          }));
+                          setStatusMessage({message: 'Provider details updated successfully.', type: 'success'});
+                        }
+                      }}
+                      selectedModelId={currentModelId || ''}
+                      onSelectModel={(id) => dispatch(setCurrentModelId(id))}
+                      onEditProvider={() => {
+                        const providerToEdit = providers.find(p => p.id === currentProviderId);
+                        if (providerToEdit && !providerToEdit.isSystem) {
+                          setCustomProviderToEdit(providerToEdit);
+                          setCustomProviderDialogOpen(true);
+                        }
+                      }}
+                      onDeleteProvider={currentProviderId && !providers.find(p=>p.id === currentProviderId)?.isSystem ? () => {
+                        dispatch(removeProviderAction(currentProviderId));
+                        persistor.persist();
+                        setStatusMessage({ message: `提供商 ${currentProviderId} 已删除`, type: 'success'});
+                      } : undefined}
+                      onRefreshModels={() => currentProviderId && fetchModels(currentProviderId)}
+                      loadingModels={loadingModels}
+                      onModelParamsChange={handleModelParamsChange}
+                    />
+                  </Box>
+                </Card>
               </Box>
             </ConfigSection>
           </Box>
@@ -993,7 +1122,7 @@ const Settings: React.FC = () => {
                 title="外观设置"
                 description="自定义应用外观和主题"
                 icon={AppearanceIcon}
-                variant="elevated"
+                variant="outlined"
               >
                 <FormControlLabel
                   control={

@@ -80,7 +80,7 @@ const ProviderList: React.FC<ProviderListProps> = ({
   };
 
   return (
-    <Paper sx={{ width: 250, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6">提供商</Typography>
         <Box>
@@ -188,7 +188,7 @@ const ProviderList: React.FC<ProviderListProps> = ({
           </Button>
         )}
       </Box>
-    </Paper>
+    </Box>
   );
 };
 

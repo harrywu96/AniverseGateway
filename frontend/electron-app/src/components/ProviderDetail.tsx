@@ -89,11 +89,11 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
 
   if (!provider) {
     return (
-      <Paper sx={{ flexGrow: 1, p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ flexGrow: 1, p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Typography variant="subtitle1" color="text.secondary">
           请选择一个提供商
         </Typography>
-      </Paper>
+      </Box>
     );
   }
 
@@ -229,7 +229,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
   };
 
   return (
-    <Paper sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6">{provider.name}</Typography>
         <Box>
@@ -589,7 +589,7 @@ const ProviderDetail: React.FC<ProviderDetailProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Paper>
+    </Box>
   );
 };
 
