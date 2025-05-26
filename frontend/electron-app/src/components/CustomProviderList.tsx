@@ -167,7 +167,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
   // 删除提供商
   const handleDelete = async () => {
     if (!providerToDelete) return;
-    
+
     try {
       const response = await deleteCustomProvider(providerToDelete.id);
       if (response.success) {
@@ -205,10 +205,10 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
       .join('')
       .toUpperCase()
       .substring(0, 2);
-    
+
     const isActive = provider.is_active;
     const isHovered = hoveredProvider === provider.id;
-    
+
     return (
       <Avatar
         sx={{
@@ -216,14 +216,13 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           width: 48,
           height: 48,
           border: '2px solid rgba(255,255,255,0.2)',
-          transition: 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-          animation: isActive ? `${pulseGlow} 3s ease-in-out infinite` : 'none',
-          transform: isHovered ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
-          boxShadow: isActive 
-            ? modernTheme.primary.glow 
-            : isHovered 
-              ? modernTheme.accent.glow 
-              : '0 4px 12px rgba(0,0,0,0.3)',
+          transition: 'all 0.2s ease-in-out',  // 简化transition
+          transform: isHovered ? 'scale(1.05)' : 'scale(1)',  // 移除rotation，减少scale幅度
+          boxShadow: isActive
+            ? '0 4px 16px rgba(33, 150, 243, 0.4)'  // 简化阴影效果
+            : isHovered
+              ? '0 6px 20px rgba(0,0,0,0.2)'
+              : '0 2px 8px rgba(0,0,0,0.1)',
           fontWeight: 700,
           fontSize: '0.9rem',
           color: '#ddd',
@@ -246,20 +245,20 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           sx={{
             mb: 2,
             borderRadius: 3,
-            background: isActive 
+            background: isActive
               ? `linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)`
-              : isHovered 
+              : isHovered
                 ? modernTheme.surface.cardHover
                 : modernTheme.surface.card,
             backdropFilter: 'blur(10px)',
-            border: isActive 
-              ? '2px solid rgba(102, 126, 234, 0.3)' 
+            border: isActive
+              ? '2px solid rgba(102, 126, 234, 0.3)'
               : '1px solid rgba(255,255,255,0.1)',
             transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             transform: isHovered ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
-            boxShadow: isActive 
-              ? `${modernTheme.primary.glow}, 0 8px 32px rgba(0,0,0,0.3)` 
-              : isHovered 
+            boxShadow: isActive
+              ? `${modernTheme.primary.glow}, 0 8px 32px rgba(0,0,0,0.3)`
+              : isHovered
                 ? '0 12px 40px rgba(0,0,0,0.2)'
                 : '0 4px 16px rgba(0,0,0,0.1)',
             position: 'relative',
@@ -272,7 +271,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
               left: 0,
               right: 0,
               bottom: 0,
-              background: isHovered 
+              background: isHovered
                 ? 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
                 : 'transparent',
               transition: 'all 0.3s ease',
@@ -302,7 +301,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
             <ListItemAvatar sx={{ mr: 2 }}>
               {getProviderAvatar(provider)}
             </ListItemAvatar>
-            
+
             <ListItemText
               primary={
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
@@ -369,7 +368,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                 </Box>
               }
             />
-            
+
             <ListItemSecondaryAction>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Tooltip title="编辑提供商" arrow>
@@ -421,11 +420,11 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
   };
 
   return (
-    <Paper 
-      sx={{ 
-        width: '100%', 
-        height: '100%', 
-        display: 'flex', 
+    <Paper
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         background: modernTheme.surface.dark,
         backdropFilter: 'blur(20px)',
@@ -446,11 +445,11 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
       }}
     >
       {/* 现代化头部 */}
-      <Box 
-        sx={{ 
-          p: 3, 
-          display: 'flex', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          p: 3,
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
           backdropFilter: 'blur(10px)',
@@ -460,15 +459,15 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <CloudIcon 
-            sx={{ 
-              mr: 2, 
-              color: modernTheme.primary.main, 
+          <CloudIcon
+            sx={{
+              mr: 2,
+              color: modernTheme.primary.main,
               fontSize: 28,
               filter: 'drop-shadow(0 0 8px rgba(102, 126, 234, 0.6))',
-            }} 
+            }}
           />
-          <Typography 
+          <Typography
             variant="h6"
             sx={{
               color: '#ddd',
@@ -483,9 +482,9 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           </Typography>
         </Box>
         <Tooltip title="刷新提供商列表" arrow>
-          <IconButton 
-            size="small" 
-            onClick={fetchProviders} 
+          <IconButton
+            size="small"
+            onClick={fetchProviders}
             disabled={loading}
             sx={{
               background: 'rgba(255,255,255,0.1)',
@@ -500,9 +499,9 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
             }}
           >
             {loading ? (
-              <CircularProgress 
-                size={20} 
-                sx={{ color: '#ddd' }} 
+              <CircularProgress
+                size={20}
+                sx={{ color: '#ddd' }}
               />
             ) : (
               <RefreshIcon />
@@ -510,7 +509,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           </IconButton>
         </Tooltip>
       </Box>
-      
+
       {/* 提供商列表 */}
       <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2, position: 'relative', zIndex: 1 }}>
         {providers.length === 0 ? (
@@ -526,13 +525,13 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
                 p: 4,
               }}
             >
-              <ServerIcon 
-                sx={{ 
-                  fontSize: 64, 
-                  color: 'rgba(255,255,255,0.3)', 
+              <ServerIcon
+                sx={{
+                  fontSize: 64,
+                  color: 'rgba(255,255,255,0.3)',
                   mb: 2,
                   animation: `${floatAnimation} 3s ease-in-out infinite`,
-                }} 
+                }}
               />
               <Typography
                 variant="h6"
@@ -563,10 +562,10 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           </List>
         )}
       </Box>
-      
+
       {/* 现代化底部 */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           p: 2,
           background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
           backdropFilter: 'blur(10px)',
@@ -607,8 +606,8 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
       </Box>
 
       {/* 现代化删除确认对话框 */}
-      <Dialog 
-        open={deleteDialogOpen} 
+      <Dialog
+        open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
@@ -635,7 +634,7 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 1 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialogOpen(false)}
             sx={{
               color: 'rgba(255,255,255,0.7)',
@@ -646,8 +645,8 @@ const CustomProviderList: React.FC<CustomProviderListProps> = ({
           >
             取消
           </Button>
-          <Button 
-            onClick={handleDelete} 
+          <Button
+            onClick={handleDelete}
             variant="contained"
             sx={{
               background: modernTheme.secondary.gradient,

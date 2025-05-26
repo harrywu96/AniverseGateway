@@ -735,6 +735,9 @@ class ProviderService:
                     temperature=0.3,  # 默认值
                     format_type=test_format,
                     model_parameters=parameters or {},
+                    headers={},  # 添加缺失的headers字段
+                    endpoints={},  # 添加缺失的endpoints字段
+                    models=[],  # 添加缺失的models字段
                 )
             elif provider_id == AIProviderType.OPENAI:
                 from backend.schemas.config import OpenAIConfig

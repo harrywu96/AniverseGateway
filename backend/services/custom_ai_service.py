@@ -129,31 +129,72 @@ class CustomResponseParser:
 class EnhancedCustomAPIService(AIService):
     """增强的自定义API服务实现"""
 
-    def __init__(self, config: CustomAPIConfig):
+    def __init__(self, config):
         """初始化增强的自定义API服务
 
         Args:
-            config: 自定义API配置
+            config: 自定义API配置，可以是CustomAPIConfig或CustomProviderConfig
         """
+        from backend.schemas.config import (
+            CustomAPIConfig,
+            CustomProviderConfig,
+        )
+
         self.config = config
-        self.api_key = config.api_key.get_secret_value()
-        self.base_url = config.base_url
+
+        # 处理不同类型的配置
+        if isinstance(config, CustomProviderConfig):
+            # 如果是单个提供商配置
+            self.api_key = config.api_key.get_secret_value()
+            self.base_url = config.base_url
+            self.model = config.model
+            self.max_tokens = config.max_tokens
+            self.temperature = config.temperature
+            self.timeout = getattr(config, "timeout", 30)
+            self.max_retries = getattr(config, "max_retries", 3)
+            self.headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+                **getattr(config, "headers", {}),
+            }
+            self.model_parameters = getattr(config, "model_parameters", {})
+            self.format_type = getattr(config, "format_type", "openai")
+            self.endpoints = getattr(config, "endpoints", {})
+            self.custom_parser = getattr(config, "custom_parser", None)
+        elif isinstance(config, CustomAPIConfig):
+            # 如果是多提供商配置，使用激活的提供商
+            active_provider = config.get_active_provider()
+            if not active_provider:
+                raise ValueError("自定义API配置中没有激活的提供商")
+
+            self.api_key = active_provider.api_key.get_secret_value()
+            self.base_url = active_provider.base_url
+            self.model = active_provider.model
+            self.max_tokens = active_provider.max_tokens
+            self.temperature = active_provider.temperature
+            self.timeout = getattr(active_provider, "timeout", 30)
+            self.max_retries = getattr(active_provider, "max_retries", 3)
+            self.headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+                **getattr(active_provider, "headers", {}),
+            }
+            self.model_parameters = getattr(
+                active_provider, "model_parameters", {}
+            )
+            self.format_type = getattr(
+                active_provider, "format_type", "openai"
+            )
+            self.endpoints = getattr(active_provider, "endpoints", {})
+            self.custom_parser = getattr(
+                active_provider, "custom_parser", None
+            )
+        else:
+            raise ValueError(f"不支持的配置类型: {type(config)}")
+
         if not self.base_url:
             raise ValueError("自定义API服务需要提供base_url")
-        self.model = config.model
-        self.max_tokens = config.max_tokens
-        self.temperature = config.temperature
-        self.timeout = config.timeout
-        self.max_retries = config.max_retries
-        self.headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-            **config.headers,
-        }
-        self.model_parameters = config.model_parameters or {}
-        self.format_type = config.format_type
-        self.endpoints = config.endpoints
-        self.custom_parser = config.custom_parser
+
         self.parser = CustomResponseParser()
         self.token_counter = TokenCounter()
 
@@ -431,8 +472,12 @@ class EnhancedCustomAPIService(AIService):
 
         try:
             logger.info(f"发送请求到: {url}")
-            logger.debug(f"请求头: {self.headers}")
-            logger.debug(f"请求体: {json.dumps(payload, ensure_ascii=False)}")
+            logger.info(
+                f"请求头: {dict(self.headers)}"
+            )  # 改为info级别便于调试
+            logger.info(
+                f"请求体: {json.dumps(payload, ensure_ascii=False, indent=2)}"
+            )
 
             async with httpx.AsyncClient(timeout=dynamic_timeout) as client:
                 response = await client.post(
@@ -444,9 +489,14 @@ class EnhancedCustomAPIService(AIService):
                     f"HTTP响应: {response.status_code} {response.reason_phrase}"
                 )
                 response_text = response.text
-                logger.debug(
+                logger.info(
                     f"响应内容: {response_text[:1000]}{'...' if len(response_text) > 1000 else ''}"
                 )
+
+                # 在raise_for_status之前检查具体的错误信息
+                if response.status_code >= 400:
+                    logger.error(f"API返回错误状态码: {response.status_code}")
+                    logger.error(f"错误响应内容: {response_text}")
 
                 response.raise_for_status()
 
@@ -472,18 +522,22 @@ class EnhancedCustomAPIService(AIService):
                 # 解析响应
                 return self._parse_response(data)
         except httpx.HTTPStatusError as e:
-            logger.error(
+            error_detail = (
                 f"HTTP请求错误: {e.response.status_code} - {e.response.text}"
             )
-            raise
+            logger.error(error_detail)
+            # 提供更详细的错误信息
+            if e.response.status_code == 500:
+                error_detail += f"\n请求URL: {url}\n请求头: {dict(self.headers)}\n请求体: {json.dumps(payload, ensure_ascii=False, indent=2)}"
+            raise Exception(error_detail)
         except httpx.RequestError as e:
-            logger.error(f"请求错误: {e}")
-            raise
+            error_detail = f"请求错误: {e}"
+            logger.error(error_detail)
+            raise Exception(error_detail)
         except json.JSONDecodeError as e:
-            logger.error(
-                f"JSON解析错误: {e}, 响应内容: {response_text[:500] if 'response_text' in locals() else '无法获取响应内容'}"
-            )
-            raise
+            error_detail = f"JSON解析错误: {e}, 响应内容: {response_text[:500] if 'response_text' in locals() else '无法获取响应内容'}"
+            logger.error(error_detail)
+            raise Exception(error_detail)
         except Exception as e:
             logger.error(f"自定义API请求失败: {e}", exc_info=True)
             raise

@@ -72,17 +72,40 @@ const providerSlice = createSlice({
       }
     },
     removeProvider: (state, action: PayloadAction<string>) => { // payload 为 Provider ID
-      state.providers = state.providers.filter(p => p.id !== action.payload);
-      // 如果移除了当前选中的 Provider，则清空选择
-      if (state.currentProviderId === action.payload) {
-        state.currentProviderId = null;
-        state.currentModelId = null;
+      const removedProviderId = action.payload;
+      const removedIndex = state.providers.findIndex(p => p.id === removedProviderId);
+
+      // 移除提供商
+      state.providers = state.providers.filter(p => p.id !== removedProviderId);
+
+      // 智能选择下一个提供商
+      if (state.currentProviderId === removedProviderId) {
+        if (state.providers.length > 0) {
+          // 如果删除的不是第一个，选择前一个；否则选择新的第一个
+          const newIndex = removedIndex > 0 ? removedIndex - 1 : 0;
+          const newSelectedProvider = state.providers[newIndex];
+
+          if (newSelectedProvider) {
+            state.currentProviderId = newSelectedProvider.id;
+            // 选择该提供商的默认模型
+            const defaultModel = newSelectedProvider.models.find(m => m.isDefault);
+            state.currentModelId = defaultModel ? defaultModel.id :
+              (newSelectedProvider.models.length > 0 ? newSelectedProvider.models[0].id : null);
+          } else {
+            state.currentProviderId = null;
+            state.currentModelId = null;
+          }
+        } else {
+          // 没有提供商了
+          state.currentProviderId = null;
+          state.currentModelId = null;
+        }
       }
     },
     setCurrentProviderId: (state, action: PayloadAction<string | null>) => {
       state.currentProviderId = action.payload;
       // 当 Provider 切换时，清空已选模型，或根据新 Provider 设置默认模型
-      state.currentModelId = null; 
+      state.currentModelId = null;
       if (action.payload) {
         const provider = state.providers.find(p => p.id === action.payload);
         const defaultModel = provider?.models.find(m => m.isDefault);
@@ -120,4 +143,4 @@ export const {
 } = providerSlice.actions;
 
 // 导出 reducer
-export default providerSlice.reducer; 
+export default providerSlice.reducer;

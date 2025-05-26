@@ -390,6 +390,7 @@ async def load_video(
 )
 async def get_video_info(
     video_id: str,
+    include_subtitles: bool = False,  # 新增参数，控制是否包含字幕信息
     config: SystemConfig = Depends(get_system_config),
     video_storage: VideoStorageService = Depends(get_video_storage),
     extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
@@ -400,6 +401,7 @@ async def get_video_info(
 
     Args:
         video_id: 视频ID
+        include_subtitles: 是否包含字幕轨道信息（默认False，提升响应速度）
         config: 系统配置
         video_storage: 视频存储服务
         extractor: 字幕提取器
@@ -407,7 +409,13 @@ async def get_video_info(
     Returns:
         VideoDetailResponse: 视频详情响应
     """
-    logger.info(f"获取视频信息，ID: {video_id}")
+    import time
+
+    start_time = time.time()
+
+    logger.info(
+        f"获取视频信息，ID: {video_id}, include_subtitles: {include_subtitles}"
+    )
     logger.info(f"VideoStorageService实例ID: {id(video_storage)}")
     logger.info(f"当前存储的视频数量: {len(video_storage.videos)}")
     logger.info(f"当前存储的所有视频ID: {list(video_storage.videos.keys())}")
@@ -417,9 +425,19 @@ async def get_video_info(
         logger.warning(f"视频不存在，ID: {video_id}")
         raise HTTPException(status_code=404, detail="视频不存在")
 
-    # 检查视频是否包含字幕轨道信息，如果没有则提取
+    # 快速返回基本信息，如果不需要字幕信息
+    if not include_subtitles:
+        elapsed_time = time.time() - start_time
+        logger.info(f"快速返回视频基本信息，耗时: {elapsed_time:.3f}秒")
+        return VideoDetailResponse(
+            success=True, message="获取视频信息成功", data=video_info
+        )
+
+    # 如果需要字幕信息且视频信息中没有字幕轨道信息，尝试提取
     if not video_info.subtitle_tracks or len(video_info.subtitle_tracks) == 0:
-        logger.info(f"视频 {video_id} 没有字幕轨道信息，尝试提取")
+        logger.info(f"视频 {video_id} 没有字幕轨道信息，开始提取...")
+        subtitle_start_time = time.time()
+
         try:
             # 提取字幕轨道信息
             subtitle_tracks = await extractor.list_subtitle_tracks(video_info)
@@ -439,15 +457,23 @@ async def get_video_info(
 
                 # 更新存储中的视频信息
                 video_storage.videos[video_id] = video_info
-                logger.info(f"已更新视频 {video_id} 的字幕轨道信息")
+
+                subtitle_elapsed = time.time() - subtitle_start_time
+                logger.info(
+                    f"已更新视频 {video_id} 的字幕轨道信息，字幕提取耗时: {subtitle_elapsed:.3f}秒"
+                )
             else:
                 logger.warning(f"未能提取到字幕轨道信息")
         except Exception as e:
-            logger.error(f"提取字幕轨道信息失败: {e}")
+            subtitle_elapsed = time.time() - subtitle_start_time
+            logger.error(
+                f"提取字幕轨道信息失败: {e}，耗时: {subtitle_elapsed:.3f}秒"
+            )
             # 继续返回视频信息，即使没有字幕轨道
 
+    total_elapsed = time.time() - start_time
     logger.info(
-        f"成功获取视频信息: {video_info.id}, 文件名: {video_info.filename}"
+        f"成功获取视频信息: {video_info.id}, 文件名: {video_info.filename}, 总耗时: {total_elapsed:.3f}秒"
     )
     return VideoDetailResponse(
         success=True, message="获取视频信息成功", data=video_info
