@@ -291,13 +291,26 @@ class EnhancedCustomAPIService(AIService):
 
         messages.append({"role": "user", "content": user_prompt})
 
-        return {
+        # 构建基础请求体
+        request_body = {
             "model": self.model,
             "messages": messages,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
-            **self.model_parameters,
         }
+
+        # 安全地添加模型参数，确保可序列化
+        if self.model_parameters:
+            for key, value in self.model_parameters.items():
+                # 确保值是可JSON序列化的
+                if isinstance(
+                    value, (str, int, float, bool, list, dict, type(None))
+                ):
+                    request_body[key] = value
+                else:
+                    logger.warning(f"跳过不可序列化的参数: {key}={value}")
+
+        return request_body
 
     def _format_anthropic_request(
         self,
@@ -340,14 +353,27 @@ class EnhancedCustomAPIService(AIService):
 
         messages.append({"role": "user", "content": user_prompt})
 
-        return {
+        # 构建基础请求体
+        request_body = {
             "model": self.model,
             "system": system_prompt,
             "messages": messages,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
-            **self.model_parameters,
         }
+
+        # 安全地添加模型参数，确保可序列化
+        if self.model_parameters:
+            for key, value in self.model_parameters.items():
+                # 确保值是可JSON序列化的
+                if isinstance(
+                    value, (str, int, float, bool, list, dict, type(None))
+                ):
+                    request_body[key] = value
+                else:
+                    logger.warning(f"跳过不可序列化的参数: {key}={value}")
+
+        return request_body
 
     def _format_text_completion_request(
         self,
@@ -380,13 +406,26 @@ class EnhancedCustomAPIService(AIService):
 
         prompt += f"User: {user_prompt}\nAssistant:"
 
-        return {
+        # 构建基础请求体
+        request_body = {
             "model": self.model,
             "prompt": prompt,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
-            **self.model_parameters,
         }
+
+        # 安全地添加模型参数，确保可序列化
+        if self.model_parameters:
+            for key, value in self.model_parameters.items():
+                # 确保值是可JSON序列化的
+                if isinstance(
+                    value, (str, int, float, bool, list, dict, type(None))
+                ):
+                    request_body[key] = value
+                else:
+                    logger.warning(f"跳过不可序列化的参数: {key}={value}")
+
+        return request_body
 
     def _parse_response(self, response_data: Dict[str, Any]) -> str:
         """解析响应数据
@@ -475,9 +514,17 @@ class EnhancedCustomAPIService(AIService):
             logger.info(
                 f"请求头: {dict(self.headers)}"
             )  # 改为info级别便于调试
-            logger.info(
-                f"请求体: {json.dumps(payload, ensure_ascii=False, indent=2)}"
-            )
+
+            # 验证请求体是否可以正确序列化为JSON
+            try:
+                payload_json = json.dumps(
+                    payload, ensure_ascii=False, indent=2
+                )
+                logger.info(f"请求体: {payload_json}")
+            except (TypeError, ValueError) as e:
+                logger.error(f"请求体JSON序列化失败: {e}")
+                logger.error(f"原始payload: {payload}")
+                raise Exception(f"请求体JSON序列化失败: {e}")
 
             async with httpx.AsyncClient(timeout=dynamic_timeout) as client:
                 response = await client.post(

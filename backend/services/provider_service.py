@@ -718,8 +718,8 @@ class ProviderService:
                 from backend.schemas.config import CustomProviderConfig
                 import uuid
 
-                # 使用默认模型或提供的模型
-                test_model = model or "default"
+                # 使用默认模型或提供的模型，如果没有提供则使用常见的模型名称
+                test_model = model or "gpt-3.5-turbo"
 
                 # 使用默认格式或提供的格式
                 test_format = format_type or FormatType.OPENAI
