@@ -187,5 +187,27 @@ Associated Protocol: RIPER-5 + Multidimensional + Agent Protocol
     *   Blockers: None
     *   Status: Pending Confirmation
 
+*   2025-01-26 18:30:00
+    *   Step: 1. 最终修复API提供商连接测试 (第三轮 - DeepSeek-R1特殊处理)
+    *   Modifications:
+        - backend/services/custom_ai_service.py: 添加DeepSeek-R1模型的特殊处理逻辑
+        - backend/services/custom_ai_service.py: 自动转换"deepseek-ai/DeepSeek-R1"为"deepseek-reasoner"
+        - backend/services/custom_ai_service.py: 跳过reasoning模型不支持的参数(temperature, top_p等)
+    *   Change Summary: 针对DeepSeek-R1 thinking模型的特殊API要求进行了专门优化
+    *   Reason: 根据DeepSeek API文档，R1模型需要特殊的参数处理
+    *   Blockers: None
+    *   Status: Pending Confirmation
+
+*   2025-01-26 18:45:00
+    *   Step: 1. 最终修复API提供商连接测试 (第四轮 - 保持原始模型名称)
+    *   Modifications:
+        - backend/services/custom_ai_service.py: 保持原始模型名称不变(deepseek-ai/DeepSeek-R1)
+        - backend/services/custom_ai_service.py: 对所有包含"deepseek"的模型跳过不支持的参数
+        - backend/services/custom_ai_service.py: 添加DeepSeek模型reasoning_content字段的解析支持
+    *   Change Summary: 针对自定义提供商的DeepSeek模型进行优化，保持模型名称不变，只处理参数过滤和响应解析
+    *   Reason: 根据用户要求，不修改模型名称，只处理参数兼容性问题
+    *   Blockers: None
+    *   Status: Pending Confirmation
+
 # Final Review (Populated by REVIEW mode)
 [待REVIEW模式填充]

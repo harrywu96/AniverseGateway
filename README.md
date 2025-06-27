@@ -23,9 +23,7 @@ curl -sSf https://install.python-poetry.org | python3 -
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 # 创建并激活虚拟环境
 uv venv
-source .venv/bin/activate  # Linux/macOS
-# 或
-.\.venv\Scripts\Activate.ps1   # Windows
+source .venv/Scripts/activate  # bash
 
 # 安装依赖
 uv pip sync requirements.txt

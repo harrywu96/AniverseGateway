@@ -291,17 +291,41 @@ class EnhancedCustomAPIService(AIService):
 
         messages.append({"role": "user", "content": user_prompt})
 
+        # 检查是否为DeepSeek模型（可能是reasoning model）
+        is_deepseek_model = "deepseek" in self.model.lower()
+
         # 构建基础请求体
         request_body = {
-            "model": self.model,
+            "model": self.model,  # 保持原始模型名称不变
             "messages": messages,
             "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
         }
+
+        # 对于非DeepSeek模型，添加temperature参数
+        if not is_deepseek_model:
+            request_body["temperature"] = self.temperature
+        else:
+            logger.info(
+                f"检测到DeepSeek模型 {self.model}，跳过temperature参数以避免API错误"
+            )
 
         # 安全地添加模型参数，确保可序列化
         if self.model_parameters:
             for key, value in self.model_parameters.items():
+                # 对于DeepSeek模型，跳过不支持的参数
+                if is_deepseek_model and key in [
+                    "temperature",
+                    "top_p",
+                    "presence_penalty",
+                    "frequency_penalty",
+                    "logprobs",
+                    "top_logprobs",
+                ]:
+                    logger.warning(
+                        f"跳过DeepSeek模型不支持的参数: {key}={value}"
+                    )
+                    continue
+
                 # 确保值是可JSON序列化的
                 if isinstance(
                     value, (str, int, float, bool, list, dict, type(None))
@@ -436,6 +460,32 @@ class EnhancedCustomAPIService(AIService):
         Returns:
             str: 响应文本
         """
+        # 检查是否为DeepSeek模型的响应，可能包含reasoning_content
+        is_deepseek_model = "deepseek" in self.model.lower()
+
+        if is_deepseek_model and "choices" in response_data:
+            # 尝试解析DeepSeek模型的特殊响应格式
+            try:
+                choice = response_data["choices"][0]
+                message = choice.get("message", {})
+
+                # 获取reasoning_content和content
+                reasoning_content = message.get("reasoning_content", "")
+                content = message.get("content", "")
+
+                # 如果有reasoning_content，将其与content合并
+                if reasoning_content:
+                    logger.info(
+                        f"检测到DeepSeek模型的reasoning_content，长度: {len(reasoning_content)}"
+                    )
+                    # 可以选择返回reasoning_content + content，或者只返回content
+                    # 这里返回content，reasoning_content作为思考过程不直接显示给用户
+                    return content if content else reasoning_content
+                else:
+                    return content
+            except (KeyError, IndexError) as e:
+                logger.warning(f"解析DeepSeek响应时出错，回退到标准解析: {e}")
+
         # 如果有自定义解析器，使用自定义解析器
         if self.custom_parser:
             return self.parser.execute_custom_parser(

@@ -7,7 +7,6 @@ import {
   Toolbar,
   Typography,
   List,
-  Divider,
   IconButton,
   ListItem,
   ListItemButton,
@@ -17,12 +16,8 @@ import {
   Avatar,
   Chip,
   Fade,
-  Slide,
   useTheme,
   alpha,
-  Zoom,
-  Grow,
-  keyframes,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -33,97 +28,27 @@ import {
   PlayCircle as PlayIcon,
 } from '@mui/icons-material';
 
-// 现代化深色主题
-const modernTheme = {
-  primary: {
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    main: '#667eea',
-    dark: '#764ba2',
-    glow: '0 0 20px rgba(102, 126, 234, 0.6)',
-  },
-  secondary: {
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    main: '#f093fb',
-    dark: '#f5576c',
-    glow: '0 0 20px rgba(240, 147, 251, 0.6)',
-  },
-  accent: {
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    main: '#4facfe',
-    dark: '#00f2fe',
-    glow: '0 0 20px rgba(79, 172, 254, 0.6)',
-  },
-  surface: {
-    dark: 'linear-gradient(135deg, #1e1e2f 0%, #2d1b69 100%)',
-    darker: 'linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%)',
-    glass: 'rgba(255, 255, 255, 0.05)',
-    glassLight: 'rgba(255, 255, 255, 0.1)',
-  }
-};
-
-// 动画关键帧
-const rippleEffect = keyframes`
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-`;
-
-const glowPulse = keyframes`
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.8), 0 0 30px rgba(102, 126, 234, 0.6);
-  }
-`;
-
-const floatingParticles = keyframes`
-  0% {
-    transform: translateY(0px);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateY(-10px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0px);
-    opacity: 0.7;
-  }
-`;
-
 // 抽屉宽度
 const drawerWidth = 280;
 
-// 现代化导航项
+// 简化的导航项
 const navItems = [
-  { 
-    name: '首页', 
-    path: '/', 
-    icon: <HomeIcon />, 
-    gradient: modernTheme.primary.gradient,
-    glow: modernTheme.primary.glow,
+  {
+    name: '首页',
+    path: '/',
+    icon: <HomeIcon />,
     description: '概览与统计'
   },
-  { 
-    name: '视频管理', 
-    path: '/videos', 
-    icon: <VideoIcon />, 
-    gradient: modernTheme.secondary.gradient,
-    glow: modernTheme.secondary.glow,
+  {
+    name: '视频管理',
+    path: '/videos',
+    icon: <VideoIcon />,
     description: '视频库管理'
   },
-  { 
-    name: '设置', 
-    path: '/settings', 
-    icon: <SettingsIcon />, 
-    gradient: modernTheme.accent.gradient,
-    glow: modernTheme.accent.glow,
+  {
+    name: '设置',
+    path: '/settings',
+    icon: <SettingsIcon />,
     description: '系统配置'
   },
 ];
@@ -148,70 +73,42 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setMobileOpen(false);
   };
 
-  // 现代化Logo区域组件
+  // 简化的Logo区域组件
   const LogoSection = () => (
     <Box
       sx={{
-        background: modernTheme.primary.gradient,
+        background: theme.palette.primary.main,
         padding: 3,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
-          zIndex: 1,
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: '200%',
-          height: '200%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          transform: 'translate(-50%, -50%)',
-          animation: `${floatingParticles} 4s ease-in-out infinite`,
-          zIndex: 0,
-        }
       }}
     >
-      <Box sx={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
+      <Box sx={{ textAlign: 'center' }}>
         <Avatar
           sx={{
             width: 48,
             height: 48,
-            background: 'rgba(255,255,255,0.2)',
-            backdropFilter: 'blur(15px)',
-            border: '2px solid rgba(255,255,255,0.3)',
+            background: alpha(theme.palette.common.white, 0.2),
+            border: `2px solid ${alpha(theme.palette.common.white, 0.3)}`,
             mb: 1,
             mx: 'auto',
-            transition: 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-            animation: `${glowPulse} 3s ease-in-out infinite`,
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              transform: 'scale(1.15) rotateY(180deg)',
-              background: 'rgba(255,255,255,0.3)',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 10px rgba(255,255,255,0.1)',
+              transform: 'scale(1.05)',
+              background: alpha(theme.palette.common.white, 0.3),
             }
           }}
         >
-          <TranslateIcon sx={{ color: '#ddd', fontSize: 28 }} />
+          <TranslateIcon sx={{ color: theme.palette.common.white, fontSize: 28 }} />
         </Avatar>
         <Typography
           variant="h6"
           sx={{
-            color: '#ddd',
-            fontWeight: 700,
+            color: theme.palette.common.white,
+            fontWeight: 600,
             fontSize: '1.1rem',
-            textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            letterSpacing: '0.5px',
           }}
         >
           SubTranslate
@@ -219,7 +116,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Typography
           variant="caption"
           sx={{
-            color: 'rgba(255,255,255,0.8)',
+            color: alpha(theme.palette.common.white, 0.8),
             fontSize: '0.75rem',
             display: 'block',
             mt: 0.5,
@@ -231,7 +128,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     </Box>
   );
 
-  // 增强的导航项组件
+  // 简化的导航项组件
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const isSelected = location.pathname === item.path;
     const isHovered = hoveredItem === item.path;
@@ -239,27 +136,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
       <ListItem sx={{ px: 2, py: 0.5 }}>
         <Paper
-          elevation={isSelected || isHovered ? 8 : 0}
+          elevation={0}
           sx={{
             width: '100%',
-            borderRadius: 3,
-            background: isSelected 
-              ? item.gradient 
-              : isHovered 
-                ? 'rgba(255,255,255,0.08)'
+            borderRadius: 2,
+            background: isSelected
+              ? alpha(theme.palette.primary.main, 0.15)
+              : isHovered
+                ? alpha(theme.palette.primary.main, 0.08)
                 : 'transparent',
-            transition: 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isHovered 
-              ? 'translateY(-2px)' 
-              : 'translateY(0)',
-            border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: isSelected 
-              ? `${item.glow}, 0 4px 16px rgba(0,0,0,0.2)` 
-              : isHovered 
-                ? '0 6px 20px rgba(0,0,0,0.15)'
-                : 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            border: `1px solid ${isSelected
+              ? alpha(theme.palette.primary.main, 0.3)
+              : alpha(theme.palette.divider, 0.1)}`,
           }}
         >
           <ListItemButton
@@ -267,7 +156,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             onMouseEnter={() => setHoveredItem(item.path)}
             onMouseLeave={() => setHoveredItem(null)}
             sx={{
-              borderRadius: 3,
+              borderRadius: 2,
               py: 1.5,
               px: 2,
               '&:hover': {
@@ -278,11 +167,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ListItemIcon
               sx={{
                 minWidth: 48,
-                color: isSelected ? '#ddd' : 'rgba(255,255,255,0.7)',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isHovered 
-                  ? 'scale(1.1)' 
-                  : 'scale(1)',
+                color: isSelected
+                  ? theme.palette.primary.main
+                  : theme.palette.text.secondary,
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
               {item.icon}
@@ -293,17 +181,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 secondary={item.description}
                 primaryTypographyProps={{
                   sx: {
-                    color: isSelected ? '#ddd' : 'rgba(255,255,255,0.9)',
+                    color: isSelected
+                      ? theme.palette.primary.main
+                      : theme.palette.text.primary,
                     fontWeight: isSelected ? 600 : 500,
                     fontSize: '0.95rem',
-                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }
                 }}
                 secondaryTypographyProps={{
                   sx: {
-                    color: isSelected ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)',
+                    color: theme.palette.text.secondary,
                     fontSize: '0.75rem',
-                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }
                 }}
               />
@@ -319,29 +209,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <Box
       sx={{
         height: '100%',
-        background: modernTheme.surface.darker,
-        backdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255,255,255,0.1)',
+        background: theme.palette.background.paper,
+        borderRight: `1px solid ${theme.palette.divider}`,
         position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%)',
-          pointerEvents: 'none',
-        }
       }}
     >
       <LogoSection />
-      
+
       <Box sx={{ px: 2, py: 3 }}>
         <Typography
           variant="overline"
           sx={{
-            color: 'rgba(255,255,255,0.5)',
+            color: theme.palette.text.secondary,
             fontSize: '0.7rem',
             fontWeight: 600,
             letterSpacing: '1px',
@@ -352,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           主要功能
         </Typography>
-        
+
         <List sx={{ p: 0 }}>
           {navItems.map((item) => (
             <NavItem key={item.path} item={item} />
@@ -368,7 +247,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           left: 0,
           right: 0,
           height: 60,
-          background: 'linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
+          background: `linear-gradient(0deg, ${alpha(theme.palette.background.default, 0.8)} 0%, transparent 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -377,7 +256,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Typography
           variant="caption"
           sx={{
-            color: 'rgba(255,255,255,0.3)',
+            color: theme.palette.text.disabled,
             fontSize: '0.65rem',
           }}
         >
@@ -388,18 +267,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', background: modernTheme.surface.dark }}>
-      {/* 深色主题AppBar */}
+    <Box sx={{ display: 'flex', height: '100vh', background: theme.palette.background.default }}>
+      {/* 简化的AppBar */}
       <AppBar
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          background: 'rgba(30, 30, 47, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 4px 32px rgba(0,0,0,0.3)',
-          color: '#ddd',
+          background: theme.palette.background.paper,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.shadows[1],
+          color: theme.palette.text.primary,
         }}
       >
         <Toolbar sx={{ minHeight: 72 }}>
@@ -408,39 +286,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             aria-label="打开菜单"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ 
-              mr: 2, 
+            sx={{
+              mr: 2,
               display: { sm: 'none' },
-              background: modernTheme.primary.gradient,
-              color: '#ddd',
-              transition: 'all 0.3s ease',
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'scale(1.1) rotate(90deg)',
-                boxShadow: modernTheme.primary.glow,
+                transform: 'scale(1.05)',
+                background: theme.palette.primary.dark,
               }
             }}
           >
             <MenuIcon />
           </IconButton>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            <PlayIcon 
-              sx={{ 
-                mr: 2, 
-                color: modernTheme.primary.main,
+            <PlayIcon
+              sx={{
+                mr: 2,
+                color: theme.palette.primary.main,
                 fontSize: 28,
-                filter: 'drop-shadow(0 0 8px rgba(102, 126, 234, 0.6))',
-              }} 
+              }}
             />
             <Box>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 700,
-                  background: modernTheme.primary.gradient,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
                   fontSize: '1.25rem',
                 }}
               >
@@ -449,7 +323,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Typography
                 variant="caption"
                 sx={{
-                  color: 'rgba(255,255,255,0.6)',
+                  color: theme.palette.text.secondary,
                   fontSize: '0.75rem',
                   display: 'block',
                   lineHeight: 1,
@@ -466,11 +340,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               label="在线"
               size="small"
               sx={{
-                background: modernTheme.accent.gradient,
-                color: '#ddd',
+                background: theme.palette.success.main,
+                color: theme.palette.success.contrastText,
                 fontWeight: 600,
                 fontSize: '0.7rem',
-                boxShadow: modernTheme.accent.glow,
                 '& .MuiChip-label': { px: 1 },
               }}
             />
@@ -528,7 +401,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           flexGrow: 1,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
-          background: modernTheme.surface.dark,
+          background: theme.palette.background.default,
           position: 'relative',
           overflow: 'auto',
         }}
@@ -550,35 +423,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Box>
         </Fade>
 
-        {/* 深色主题背景装饰 */}
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            width: 300,
-            height: 300,
-            background: 'radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 70%)',
-            borderRadius: '50%',
-            transform: 'translate(150px, -150px)',
-            zIndex: 0,
-            animation: `${floatingParticles} 6s ease-in-out infinite`,
-          }}
-        />
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: '50%',
-            width: 200,
-            height: 200,
-            background: 'radial-gradient(circle, rgba(240, 147, 251, 0.08) 0%, transparent 70%)',
-            borderRadius: '50%',
-            transform: 'translate(-50%, 100px)',
-            zIndex: 0,
-            animation: `${floatingParticles} 8s ease-in-out infinite reverse`,
-          }}
-        />
+  
       </Box>
     </Box>
   );
