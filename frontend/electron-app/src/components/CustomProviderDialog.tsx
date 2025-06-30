@@ -201,7 +201,6 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [error, setError] = useState('');
   const [testModel, setTestModel] = useState<string>('');
-  const [hoveredModel, setHoveredModel] = useState<string | null>(null);
 
   // 添加模型
   const handleAddModel = () => {
@@ -322,30 +321,19 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
 
   // 现代化模型项组件
   const ModelItem = ({ model }: { model: CustomModel }) => {
-    const isHovered = hoveredModel === model.id;
-
     return (
       <Grow in timeout={300}>
         <Paper
-          elevation={isHovered ? 8 : 2}
+          elevation={2}
           sx={{
             mb: 1.5,
             borderRadius: 2,
-            background: isHovered 
-              ? modernTheme.surface.cardHover
-              : modernTheme.surface.card,
+            background: modernTheme.surface.card,
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255,255,255,0.1)',
-            transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-            transform: isHovered ? 'translateY(-2px) scale(1.02)' : 'translateY(0) scale(1)',
-            '&:hover': {
-              boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-            }
           }}
         >
           <ListItem
-            onMouseEnter={() => setHoveredModel(model.id)}
-            onMouseLeave={() => setHoveredModel(null)}
             sx={{ p: 2 }}
           >
             <Avatar
@@ -420,12 +408,6 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 sx={{
                   background: 'rgba(255,255,255,0.1)',
                   color: '#ddd',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    background: modernTheme.secondary.gradient,
-                    transform: 'scale(1.1)',
-                    boxShadow: modernTheme.secondary.glow,
-                  }
                 }}
               >
                 <DeleteIcon fontSize="small" />
