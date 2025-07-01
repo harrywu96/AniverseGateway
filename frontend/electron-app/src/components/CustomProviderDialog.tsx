@@ -272,8 +272,15 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
 
   // 保存提供商
   const handleSave = async () => {
-    if (!name || !apiKey || !baseUrl) {
-      setError('提供商名称、API密钥和基础URL不能为空');
+    // 验证必填字段
+    if (!name || !baseUrl) {
+      setError('提供商名称和基础URL不能为空');
+      return;
+    }
+
+    // 在新建模式下，API Key 是必需的
+    if (!editProvider && !apiKey) {
+      setError('API密钥不能为空');
       return;
     }
 
@@ -295,9 +302,12 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         capabilities: model.capabilities,
       }));
 
+      // 在编辑模式下，如果 API Key 为空，则保持原有的 API Key
+      const finalApiKey = editProvider && !apiKey ? editProvider.apiKey : apiKey;
+
       const providerData: Partial<AIProvider> = {
         name,
-        apiKey,
+        apiKey: finalApiKey,
         apiHost: baseUrl,
         id: editProvider?.id,
         is_active: true,
@@ -628,7 +638,9 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              required
+              placeholder={editProvider ? "留空以保持原有密钥不变" : "输入您的API密钥"}
+              required={!editProvider}
+              helperText={editProvider ? "编辑模式下可留空以保持原有密钥" : ""}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: 'rgba(255,255,255,0.05)',
@@ -638,6 +650,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
                 '& .MuiInputBase-input': { color: '#ddd' },
+                '& .MuiFormHelperText-root': { color: 'rgba(255,255,255,0.5)' },
               }}
             />
             
@@ -942,7 +955,7 @@ const CustomProviderDialog: React.FC<CustomProviderDialogProps> = ({ open, onClo
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={loading || !name || !apiKey || !baseUrl || models.length === 0}
+          disabled={loading || !name || !baseUrl || models.length === 0 || (!editProvider && !apiKey)}
           startIcon={loading ? <CircularProgress size={20} /> : <CheckIcon />}
           sx={{
             background: modernTheme.primary.gradient,
