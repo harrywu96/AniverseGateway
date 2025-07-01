@@ -766,25 +766,31 @@ export async function translateSubtitleLine(request: any) {
 }
 
 /**
- * 翻译字幕文件
+ * 翻译视频字幕轨道
  */
-export async function translateSubtitleFile(request: any) {
+export async function translateVideoSubtitle(request: {
+  video_id: string;
+  track_index: number;
+  source_language: string;
+  target_language: string;
+  style: string;
+  provider_config: any;
+  model_id: string;
+  chunk_size?: number;
+  context_window?: number;
+  context_preservation?: boolean;
+  preserve_formatting?: boolean;
+}) {
   try {
     const apiPort = '8000';
-    const url = `http://localhost:${apiPort}/api/translate/file`;
-
-    // 确保请求中包含服务类型
-    const requestWithServiceType = {
-      ...request,
-      service_type: request.service_type || 'network_provider'
-    };
+    const url = `http://localhost:${apiPort}/api/translate/video-subtitle`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(requestWithServiceType)
+      body: JSON.stringify(request)
     });
 
     if (!response.ok) {
@@ -794,7 +800,7 @@ export async function translateSubtitleFile(request: any) {
 
     return await response.json();
   } catch (error) {
-    console.error('翻译字幕文件失败:', error);
+    console.error('翻译视频字幕失败:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : '未知错误'

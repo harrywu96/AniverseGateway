@@ -16,6 +16,7 @@ from fastapi import (
     UploadFile,
     File,
     Form,
+    WebSocket,
 )
 from pydantic import BaseModel, Field
 
@@ -28,8 +29,13 @@ from backend.schemas.task import (
 from backend.schemas.config import SystemConfig, AIProviderType
 from backend.core.subtitle_translator import SubtitleTranslator
 from backend.services.utils import SRTOptimizer
-from backend.api.dependencies import get_system_config, get_subtitle_translator
+from backend.api.dependencies import (
+    get_system_config,
+    get_subtitle_translator,
+    get_video_storage,
+)
 from backend.api.websocket import manager  # 导入WebSocket管理器
+from backend.services.video_storage import VideoStorageService
 
 
 # 配置日志
@@ -74,27 +80,50 @@ class SectionTranslateRequest(BaseModel):
     config: Optional[TranslationConfig] = Field(None, description="翻译配置")
 
 
-# 文件翻译请求模型
-class FileTranslateRequest(BaseModel):
-    """字幕文件翻译请求模型"""
+# 视频字幕翻译请求模型
+class VideoSubtitleTranslateRequest(BaseModel):
+    """视频字幕翻译请求模型"""
 
+    video_id: str = Field(..., description="视频ID")
+    track_index: int = Field(..., description="字幕轨道索引")
     source_language: str = Field(default="en", description="源语言")
     target_language: str = Field(default="zh", description="目标语言")
     style: TranslationStyle = Field(
         default=TranslationStyle.NATURAL, description="翻译风格"
     )
-    context_preservation: bool = Field(
-        default=True, description="保持上下文一致性"
-    )
-    preserve_formatting: bool = Field(default=True, description="保留原格式")
+    # 提供商配置信息
+    provider_config: Dict[str, Any] = Field(..., description="提供商配置信息")
+    model_id: str = Field(..., description="模型ID")
+    # 翻译参数
     chunk_size: int = Field(default=30, description="字幕分块大小（单位：条）")
     context_window: int = Field(
         default=3, description="上下文窗口大小（单位：条）"
     )
-    service_type: Optional[str] = Field(
-        default="network_provider",
-        description="翻译服务类型，可选值：network_provider, local_ollama",
+    context_preservation: bool = Field(
+        default=True, description="保持上下文一致性"
     )
+    preserve_formatting: bool = Field(default=True, description="保留原格式")
+
+
+# 视频字幕翻译响应模型
+class VideoSubtitleTranslateResponse(APIResponse):
+    """视频字幕翻译响应模型"""
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "字幕翻译任务已提交",
+                "data": {
+                    "task_id": "uuid-string",
+                    "video_id": "video-id",
+                    "track_index": 0,
+                    "source_language": "en",
+                    "target_language": "zh",
+                    "style": "natural",
+                },
+            }
+        }
 
 
 # 翻译响应模型
@@ -118,24 +147,51 @@ class TranslateResponse(APIResponse):
         }
 
 
-# 文件翻译响应模型
-class FileTranslateResponse(APIResponse):
-    """文件翻译响应模型"""
+async def _configure_ai_service_from_provider_config(
+    config: SystemConfig, provider_config: Dict[str, Any], model_id: str
+):
+    """根据提供商配置动态设置AI服务
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "message": "文件翻译任务已提交",
-                "data": {
-                    "task_id": "12345",
-                    "source_language": "en",
-                    "target_language": "zh",
-                    "style": "natural",
-                    "result_path": "/path/to/result.srt",
-                },
-            }
-        }
+    Args:
+        config: 系统配置
+        provider_config: 提供商配置信息
+        model_id: 模型ID
+    """
+    from pydantic import SecretStr
+
+    # 根据提供商类型设置相应的配置
+    provider_id = provider_config.get("id", "")
+    api_key = provider_config.get("apiKey", "")
+    base_url = provider_config.get("apiHost", "")
+
+    if provider_id == "openai" or provider_id.startswith("custom-"):
+        # OpenAI或自定义提供商
+        from backend.schemas.config import OpenAIConfig
+
+        config.ai_service.openai = OpenAIConfig(
+            api_key=SecretStr(api_key),
+            base_url=base_url,
+            model=model_id,
+        )
+        config.ai_service.provider = AIProviderType.OPENAI
+
+    elif provider_id == "siliconflow":
+        # SiliconFlow提供商
+        from backend.schemas.config import SiliconFlowConfig
+
+        config.ai_service.siliconflow = SiliconFlowConfig(
+            api_key=SecretStr(api_key),
+            base_url=base_url or "https://api.siliconflow.cn/v1",
+            model=model_id,
+        )
+        config.ai_service.provider = AIProviderType.SILICONFLOW
+
+    else:
+        # 其他提供商可以在这里添加
+        logger.warning(f"未知的提供商类型: {provider_id}")
+        raise HTTPException(
+            status_code=400, detail=f"不支持的提供商类型: {provider_id}"
+        )
 
 
 async def progress_callback(
@@ -298,253 +354,154 @@ async def translate_section(
 
 
 @router.post(
-    "/file", response_model=FileTranslateResponse, tags=["字幕文件翻译"]
+    "/video-subtitle",
+    response_model=VideoSubtitleTranslateResponse,
+    tags=["视频字幕翻译"],
 )
-async def translate_file(
+async def translate_video_subtitle(
+    request: VideoSubtitleTranslateRequest,
     background_tasks: BackgroundTasks,
-    subtitle_file: UploadFile = File(...),
-    data: str = Form(...),  # JSON序列化的配置数据
     config: SystemConfig = Depends(get_system_config),
     translator: SubtitleTranslator = Depends(get_subtitle_translator),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
-    """翻译整个字幕文件
+    """翻译视频字幕轨道
 
-    上传SRT字幕文件并进行完整翻译，返回任务ID用于跟踪进度。
+    对指定视频的字幕轨道进行翻译，支持自定义提供商配置。
 
     Args:
+        request: 视频字幕翻译请求
         background_tasks: FastAPI后台任务
-        subtitle_file: 上传的SRT字幕文件
-        data: JSON格式的翻译配置参数
         config: 系统配置
         translator: 字幕翻译器
+        video_storage: 视频存储服务
 
     Returns:
-        FileTranslateResponse: 文件翻译响应
+        VideoSubtitleTranslateResponse: 翻译响应
     """
     try:
-        # 解析请求数据
-        import json
-        from pydantic import ValidationError
+        # 验证视频是否存在
+        video_info = video_storage.get_video(request.video_id)
+        if not video_info:
+            raise HTTPException(status_code=404, detail="视频不存在")
 
-        try:
-            request_data = FileTranslateRequest.model_validate(
-                json.loads(data)
-            )
-        except (json.JSONDecodeError, ValidationError) as e:
-            raise HTTPException(
-                status_code=400, detail=f"请求数据格式错误: {str(e)}"
-            )
+        # 验证字幕轨道是否存在
+        if (
+            not video_info.subtitle_tracks
+            or len(video_info.subtitle_tracks) <= request.track_index
+        ):
+            raise HTTPException(status_code=404, detail="字幕轨道不存在")
 
-        # 检查文件类型
-        filename = subtitle_file.filename
-        if not filename.lower().endswith(".srt"):
-            raise HTTPException(
-                status_code=400, detail="仅支持SRT格式字幕文件"
-            )
+        # 生成任务ID
+        task_id = str(uuid.uuid4())
 
-        # 保存上传的文件
+        # 创建临时目录
         temp_dir = config.temp_dir
         os.makedirs(temp_dir, exist_ok=True)
 
-        task_id = str(uuid.uuid4())
-        temp_file_path = os.path.join(temp_dir, f"{task_id}_{filename}")
-
-        # 读取并保存文件内容
-        content = await subtitle_file.read()
-        with open(temp_file_path, "wb") as f:
-            f.write(content)
-
-        logger.info(f"字幕文件已保存: {temp_file_path}")
-
-        # 根据service_type选择不同的翻译服务
-        if request_data.service_type == "local_ollama":
-            # 使用Ollama服务
-            config.ai_service.provider = AIProviderType.OLLAMA
-            logger.info("使用本地Ollama模型进行翻译")
-        elif request_data.service_type == "network_provider":
-            # 使用网络翻译服务
-            logger.info(
-                f"使用网络翻译服务进行翻译: {config.ai_service.provider}"
-            )
-
-        # 创建任务
-        task = SubtitleTranslator.create_task(
-            video_id=task_id,
-            source_path=temp_file_path,
-            source_language=request_data.source_language,
-            target_language=request_data.target_language,
-            style=request_data.style,
-            preserve_formatting=request_data.preserve_formatting,
-            context_preservation=request_data.context_preservation,
-            chunk_size=request_data.chunk_size,
-            context_window=request_data.context_window,
+        logger.info(
+            f"开始翻译视频字幕，视频ID: {request.video_id}, 轨道索引: {request.track_index}"
         )
 
         # 定义异步翻译函数
-        async def process_translation_task():
+        async def process_video_subtitle_translation():
             try:
                 # 设置进度回调
-                callback = (
-                    lambda progress, status, message=None: progress_callback(
-                        task.id, progress, status, message
+                async def callback(
+                    progress: float, status: str, message: Optional[str] = None
+                ):
+                    await progress_callback(task_id, progress, status, message)
+
+                # 获取字幕内容
+                from backend.core.subtitle_extractor import SubtitleExtractor
+                from backend.api.dependencies import get_subtitle_extractor
+                from pathlib import Path
+
+                # 创建字幕提取器实例
+                extractor = SubtitleExtractor(config.ffmpeg)
+
+                # 提取字幕内容到临时文件
+                output_dir = Path(temp_dir) / "subtitles"
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                subtitle_path = extractor.extract_embedded_subtitle(
+                    video_info,
+                    track_index=request.track_index,
+                    output_dir=output_dir,
+                    target_format="srt",
+                )
+
+                if not subtitle_path or not os.path.exists(str(subtitle_path)):
+                    raise Exception("提取字幕内容失败")
+
+                # 创建翻译任务
+                task = SubtitleTranslator.create_task(
+                    video_id=task_id,
+                    source_path=str(subtitle_path),
+                    source_language=request.source_language,
+                    target_language=request.target_language,
+                    style=request.style,
+                    preserve_formatting=request.preserve_formatting,
+                    context_preservation=request.context_preservation,
+                    chunk_size=request.chunk_size,
+                    context_window=request.context_window,
+                )
+
+                # 使用提供商配置创建临时AI服务配置
+                # 这里需要根据provider_config动态配置AI服务
+                original_provider = config.ai_service.provider
+
+                try:
+                    # 根据提供商配置设置AI服务
+                    await _configure_ai_service_from_provider_config(
+                        config, request.provider_config, request.model_id
                     )
-                )
 
-                # 读取字幕内容
-                with open(task.source_path, "r", encoding="utf-8") as f:
-                    srt_content = f.read()
+                    # 执行翻译任务
+                    success = await translator.translate_task(task, callback)
 
-                # 优化字幕内容以减少token使用量
-                logger.info("优化字幕内容以减少token使用量...")
-                optimized_srt, format_map = SRTOptimizer.optimize_srt_content(
-                    srt_content
-                )
-
-                logger.info(f"优化前内容长度: {len(srt_content)} 字符")
-                logger.info(f"优化后内容长度: {len(optimized_srt)} 字符")
-                logger.info(
-                    f"节省: {len(srt_content) - len(optimized_srt)} 字符"
-                )
-
-                # 执行翻译任务
-                success = await translator.translate_task(task, callback)
-
-                if success:
-                    # 如果需要恢复格式
-                    if request_data.preserve_formatting and format_map:
-                        # 读取翻译后的内容
-                        with open(
-                            task.result_path, "r", encoding="utf-8"
-                        ) as f:
-                            translated_content = f.read()
-
-                        # 恢复格式
-                        logger.info("恢复字幕格式...")
-                        restored_content = SRTOptimizer.restore_srt_format(
-                            translated_content, format_map
+                    if success:
+                        await callback(100.0, "completed", "翻译完成")
+                    else:
+                        await callback(
+                            task.progress,
+                            "failed",
+                            task.error_message or "翻译失败",
                         )
 
-                        # 保存恢复格式后的内容
-                        with open(
-                            task.result_path, "w", encoding="utf-8"
-                        ) as f:
-                            f.write(restored_content)
-
-                        logger.info(f"格式已恢复并保存到: {task.result_path}")
-
-                    # 任务完成通知
-                    await callback(100.0, "completed", "翻译完成")
-                else:
-                    # 任务失败通知
-                    await callback(
-                        task.progress,
-                        "failed",
-                        task.error_message or "翻译失败",
-                    )
+                finally:
+                    # 恢复原始提供商配置
+                    config.ai_service.provider = original_provider
 
             except Exception as e:
-                logger.error(f"翻译任务 {task.id} 异常: {e}", exc_info=True)
-                # 通知失败
+                logger.error(
+                    f"视频字幕翻译任务 {task_id} 异常: {e}", exc_info=True
+                )
                 await callback(0.0, "failed", f"任务失败: {str(e)}")
 
         # 添加到后台任务
-        background_tasks.add_task(process_translation_task)
+        background_tasks.add_task(process_video_subtitle_translation)
 
         # 返回任务信息
-        return FileTranslateResponse(
+        return VideoSubtitleTranslateResponse(
             success=True,
-            message="字幕文件翻译任务已提交",
+            message="视频字幕翻译任务已提交",
             data={
-                "task_id": task.id,
-                "source_language": task.source_language,
-                "target_language": task.target_language,
-                "style": task.config.style.value,
-                "file_name": filename,
+                "task_id": task_id,
+                "video_id": request.video_id,
+                "track_index": request.track_index,
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "style": request.style.value,
             },
         )
 
     except Exception as e:
-        logger.error(f"提交字幕文件翻译任务失败: {e}", exc_info=True)
+        logger.error(f"提交视频字幕翻译任务失败: {e}", exc_info=True)
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(
             status_code=500, detail=f"提交翻译任务失败: {str(e)}"
-        )
-
-
-@router.get(
-    "/file/{task_id}", response_model=APIResponse, tags=["字幕文件翻译"]
-)
-async def get_file_translation_status(
-    task_id: str,
-    config: SystemConfig = Depends(get_system_config),
-):
-    """获取文件翻译任务状态
-
-    通过任务ID获取文件翻译的当前状态和进度。
-
-    Args:
-        task_id: 任务ID
-        config: 系统配置
-
-    Returns:
-        APIResponse: 任务状态响应
-    """
-    try:
-        # 检查任务ID格式是否有效
-        try:
-            uuid.UUID(task_id)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="无效的任务ID格式")
-
-        # 构建可能的结果文件路径模式
-        result_path_pattern = os.path.join(
-            config.temp_dir, f"{task_id}_*.srt.translated.srt"
-        )
-
-        # 查找可能的结果文件
-        import glob
-
-        result_files = glob.glob(result_path_pattern)
-
-        if result_files:
-            # 找到结果文件，任务已完成
-            return APIResponse(
-                success=True,
-                message="翻译任务已完成",
-                data={
-                    "task_id": task_id,
-                    "status": "completed",
-                    "progress": 100.0,
-                    "result_path": result_files[0],
-                },
-            )
-
-        # 检查临时文件是否存在
-        temp_file_pattern = os.path.join(config.temp_dir, f"{task_id}_*.srt")
-        temp_files = glob.glob(temp_file_pattern)
-
-        if temp_files:
-            # 找到临时文件，任务可能正在进行中
-            return APIResponse(
-                success=True,
-                message="翻译任务正在进行中",
-                data={
-                    "task_id": task_id,
-                    "status": "processing",
-                    "progress": -1,  # 无法确定具体进度
-                },
-            )
-
-        # 未找到相关文件
-        raise HTTPException(status_code=404, detail=f"未找到任务ID: {task_id}")
-
-    except Exception as e:
-        logger.error(f"获取翻译任务状态失败: {e}", exc_info=True)
-        if isinstance(e, HTTPException):
-            raise
-        raise HTTPException(
-            status_code=500, detail=f"获取任务状态失败: {str(e)}"
         )
 
 
@@ -622,3 +579,22 @@ async def list_templates(
         raise HTTPException(
             status_code=500, detail=f"获取模板列表失败: {str(e)}"
         )
+
+
+@router.websocket("/ws/{task_id}")
+async def websocket_translation_progress(websocket: WebSocket, task_id: str):
+    """WebSocket端点，用于实时推送翻译进度
+
+    Args:
+        websocket: WebSocket连接
+        task_id: 翻译任务ID
+    """
+    await manager.connect(websocket, task_id)
+    try:
+        while True:
+            # 保持连接活跃，等待客户端消息
+            await websocket.receive_text()
+    except Exception as e:
+        logger.info(f"WebSocket连接断开: {task_id}, 原因: {e}")
+    finally:
+        manager.disconnect(websocket, task_id)

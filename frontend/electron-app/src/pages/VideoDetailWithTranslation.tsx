@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../store/hooks';
 import {
   Box,
   Typography,
@@ -36,8 +37,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  TextField
+  DialogActions
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -138,12 +138,27 @@ const VideoDetailWithTranslation: React.FC = () => {
   
   // 设置对话框状态
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [customPrompt, setCustomPrompt] = useState('');
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [selectedModelId, setSelectedModelId] = useState('');
   
+  // 从Redux获取提供商数据
+  const providers = useAppSelector(state => state.provider.providers);
+  const activeProviders = providers.filter(p => p.is_active && p.is_configured);
+
   // WebSocket连接引用
   const wsRef = useRef<WebSocket | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // 初始化提供商选择
+  useEffect(() => {
+    if (activeProviders.length > 0 && !selectedProviderId) {
+      const firstProvider = activeProviders[0];
+      setSelectedProviderId(firstProvider.id);
+      if (firstProvider.models && firstProvider.models.length > 0) {
+        setSelectedModelId(firstProvider.models[0].id);
+      }
+    }
+  }, [activeProviders, selectedProviderId]);
 
   // 加载视频信息
   useEffect(() => {
@@ -223,10 +238,23 @@ const VideoDetailWithTranslation: React.FC = () => {
     return video?.subtitleTracks?.find(track => track.id === selectedTrackId) || null;
   }, [video?.subtitleTracks, selectedTrackId]);
 
+  // 当前选中的提供商和模型
+  const selectedProvider = useMemo(() => {
+    return activeProviders.find(p => p.id === selectedProviderId) || null;
+  }, [activeProviders, selectedProviderId]);
+
+  const availableModels = useMemo(() => {
+    return selectedProvider?.models || [];
+  }, [selectedProvider]);
+
+  const selectedModel = useMemo(() => {
+    return availableModels.find(m => m.id === selectedModelId) || null;
+  }, [availableModels, selectedModelId]);
+
   // 翻译配置是否完整
   const isConfigComplete = useMemo(() => {
-    return sourceLanguage && targetLanguage && selectedTrackId && translationModel;
-  }, [sourceLanguage, targetLanguage, selectedTrackId, translationModel]);
+    return sourceLanguage && targetLanguage && selectedTrackId && selectedProvider && selectedModel;
+  }, [sourceLanguage, targetLanguage, selectedTrackId, selectedProvider, selectedModel]);
 
   // 处理返回
   const handleBack = useCallback(() => {
@@ -242,7 +270,7 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 开始翻译
   const startTranslation = useCallback(async () => {
-    if (!video || !selectedTrack || !isConfigComplete) {
+    if (!video || !selectedTrack || !isConfigComplete || !selectedProvider || !selectedModel) {
       setError('配置不完整，无法开始翻译');
       return;
     }
@@ -255,39 +283,40 @@ const VideoDetailWithTranslation: React.FC = () => {
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
-      // 调用后端翻译API
-      const apiPort = '8000';
-      const response = await fetch(`http://localhost:${apiPort}/api/translation/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          trackId: selectedTrack.id,
-          sourceLanguage,
-          targetLanguage,
-          model: translationModel,
-          customPrompt: customPrompt || undefined,
-          apiKey: apiKey || undefined
-        }),
-        signal: abortController.signal
+      // 导入新的API函数
+      const { translateVideoSubtitle } = await import('../services/api');
+
+      // 构建提供商配置
+      const providerConfig = {
+        id: selectedProvider.id,
+        apiKey: selectedProvider.apiKey,
+        apiHost: selectedProvider.apiHost,
+      };
+
+      // 调用新的翻译API
+      const result = await translateVideoSubtitle({
+        video_id: video.id,
+        track_index: parseInt(selectedTrack.id),
+        source_language: sourceLanguage,
+        target_language: targetLanguage,
+        style: 'natural', // 可以根据需要调整
+        provider_config: providerConfig,
+        model_id: selectedModel.id,
+        chunk_size: 30,
+        context_window: 3,
+        context_preservation: true,
+        preserve_formatting: true,
       });
-
-      if (!response.ok) {
-        throw new Error(`翻译请求失败: ${response.status}`);
-      }
-
-      const result = await response.json();
       
       if (!result.success) {
         throw new Error(result.message || '翻译请求失败');
       }
 
-      const taskId = result.data.taskId;
-      
+      const taskId = result.data.task_id;
+
       // 建立WebSocket连接监听进度
-      const ws = new WebSocket(`ws://localhost:${apiPort}/api/translation/ws/${taskId}`);
+      const apiPort = '8000';
+      const ws = new WebSocket(`ws://localhost:${apiPort}/api/translate/ws/${taskId}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -335,7 +364,7 @@ const VideoDetailWithTranslation: React.FC = () => {
         setError(`翻译失败: ${err instanceof Error ? err.message : '未知错误'}`);
       }
     }
-  }, [video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, translationModel, customPrompt, apiKey]);
+  }, [video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, selectedProvider, selectedModel]);
 
   // 停止翻译
   const stopTranslation = useCallback(() => {
@@ -1018,25 +1047,38 @@ const VideoDetailWithTranslation: React.FC = () => {
       >
         <DialogTitle>翻译设置</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="API密钥"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            margin="normal"
-            helperText="用于调用翻译模型的API密钥"
-          />
-          <TextField
-            fullWidth
-            label="自定义提示词"
-            multiline
-            rows={4}
-            value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
-            margin="normal"
-            helperText="可选：自定义翻译的提示词以获得更好的翻译效果"
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>AI提供商</InputLabel>
+            <Select
+              value={selectedProviderId}
+              onChange={(e) => {
+                setSelectedProviderId(e.target.value);
+                setSelectedModelId(''); // 重置模型选择
+              }}
+              label="AI提供商"
+            >
+              {activeProviders.map((provider) => (
+                <MenuItem key={provider.id} value={provider.id}>
+                  {provider.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="normal" disabled={!selectedProvider}>
+            <InputLabel>翻译模型</InputLabel>
+            <Select
+              value={selectedModelId}
+              onChange={(e) => setSelectedModelId(e.target.value)}
+              label="翻译模型"
+            >
+              {availableModels.map((model) => (
+                <MenuItem key={model.id} value={model.id}>
+                  {model.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSettingsOpen(false)}>
