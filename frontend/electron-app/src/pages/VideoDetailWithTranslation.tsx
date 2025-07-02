@@ -124,7 +124,7 @@ const VideoDetailWithTranslation: React.FC = () => {
   const [sourceLanguage, setSourceLanguage] = useState('zh');
   const [targetLanguage, setTargetLanguage] = useState('en');
   const [selectedTrackId, setSelectedTrackId] = useState<string>('');
-  const [translationModel, setTranslationModel] = useState('gpt-4');
+
   
   // 翻译执行状态
   const [translationStatus, setTranslationStatus] = useState<TranslationStatus>(TranslationStatus.IDLE);
@@ -789,23 +789,40 @@ const VideoDetailWithTranslation: React.FC = () => {
                                     </Select>
                                   </FormControl>
                                 </Grid>
-                                
+
+                                {/* 显示当前选中的提供商和模型 */}
                                 <Grid item xs={12}>
-                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
-                                    <InputLabel>翻译模型</InputLabel>
-                                    <Select
-                                      value={translationModel}
-                                      onChange={(e) => setTranslationModel(e.target.value)}
-                                      label="翻译模型"
-                                      sx={{ borderRadius: 2 }}
-                                    >
-                                      <MenuItem value="gpt-4">GPT-4 (推荐)</MenuItem>
-                                      <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
-                                      <MenuItem value="claude-3">Claude-3</MenuItem>
-                                      <MenuItem value="gemini-pro">Gemini Pro</MenuItem>
-                                    </Select>
-                                  </FormControl>
+                                  <Paper
+                                    variant="outlined"
+                                    sx={{
+                                      p: 2,
+                                      backgroundColor: alpha(theme.palette.info.main, 0.05),
+                                      borderColor: alpha(theme.palette.info.main, 0.2)
+                                    }}
+                                  >
+                                    <Typography variant="subtitle2" color="info.main" gutterBottom>
+                                      当前翻译配置
+                                    </Typography>
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                      <Chip
+                                        label={selectedProvider ? `提供商: ${selectedProvider.name}` : '未选择提供商'}
+                                        color={selectedProvider ? 'success' : 'default'}
+                                        size="small"
+                                      />
+                                      <Chip
+                                        label={selectedModel ? `模型: ${selectedModel.name}` : '未选择模型'}
+                                        color={selectedModel ? 'success' : 'default'}
+                                        size="small"
+                                      />
+                                    </Stack>
+                                    {(!selectedProvider || !selectedModel) && (
+                                      <Typography variant="caption" color="warning.main" sx={{ mt: 1, display: 'block' }}>
+                                        请点击右上角设置按钮配置AI提供商和模型
+                                      </Typography>
+                                    )}
+                                  </Paper>
                                 </Grid>
+
                               </Grid>
                               
                               <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
