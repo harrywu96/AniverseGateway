@@ -106,7 +106,6 @@ def get_app() -> FastAPI:
     app.include_router(
         translate.router,
         prefix="/api/translate",
-        dependencies=[Depends(verify_api_key)],
     )
     app.include_router(
         tasks.router,

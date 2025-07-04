@@ -766,6 +766,39 @@ export async function translateSubtitleLine(request: any) {
 }
 
 /**
+ * 测试视频字幕翻译请求
+ */
+export async function testVideoSubtitleRequest(request: any) {
+  try {
+    const apiPort = '8000';
+    const url = `http://localhost:${apiPort}/api/translate/video-subtitle-test`;
+
+    console.log('发送测试请求:', request);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`测试请求失败 (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('测试请求失败:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
  * 翻译视频字幕轨道
  */
 export async function translateVideoSubtitle(request: {
@@ -785,12 +818,14 @@ export async function translateVideoSubtitle(request: {
     const apiPort = '8000';
     const url = `http://localhost:${apiPort}/api/translate/video-subtitle`;
 
+    console.log('发送翻译请求:', request);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify({ request })
     });
 
     if (!response.ok) {

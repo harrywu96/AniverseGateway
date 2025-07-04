@@ -294,7 +294,7 @@ const VideoDetailWithTranslation: React.FC = () => {
       };
 
       // 调用新的翻译API
-      const result = await translateVideoSubtitle({
+      const requestData = {
         video_id: video.id,
         track_index: parseInt(selectedTrack.id),
         source_language: sourceLanguage,
@@ -306,7 +306,10 @@ const VideoDetailWithTranslation: React.FC = () => {
         context_window: 3,
         context_preservation: true,
         preserve_formatting: true,
-      });
+      };
+
+      console.log('准备发送的翻译请求数据:', requestData);
+      const result = await translateVideoSubtitle(requestData);
       
       if (!result.success) {
         throw new Error(result.message || '翻译请求失败');

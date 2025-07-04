@@ -105,6 +105,40 @@ class VideoSubtitleTranslateRequest(BaseModel):
     preserve_formatting: bool = Field(default=True, description="保留原格式")
 
 
+# Electron应用使用的嵌套请求模型
+class ElectronVideoSubtitleTranslateRequest(BaseModel):
+    """Electron应用使用的视频字幕翻译请求包装模型"""
+
+    request: VideoSubtitleTranslateRequest = Field(
+        ..., description="视频字幕翻译请求"
+    )
+
+    class Config:
+        """模型配置"""
+
+        json_schema_extra = {
+            "example": {
+                "request": {
+                    "video_id": "9016fb62-070e-4352-aec3-39f3d229d0c5",
+                    "track_index": 0,
+                    "source_language": "zh",
+                    "target_language": "en",
+                    "style": "natural",
+                    "provider_config": {
+                        "id": "custom-1751271922983",
+                        "apiKey": "sk-yj5UPzFdIm5Sz7lZnuxt0CT3kyA3aEAbfSdEi8rnbRMMx61i",
+                        "apiHost": "https://tbai.xin",
+                    },
+                    "model_id": "deepseek-v3",
+                    "chunk_size": 30,
+                    "context_window": 3,
+                    "context_preservation": True,
+                    "preserve_formatting": True,
+                }
+            }
+        }
+
+
 # 视频字幕翻译响应模型
 class VideoSubtitleTranslateResponse(APIResponse):
     """视频字幕翻译响应模型"""
@@ -359,7 +393,7 @@ async def translate_section(
     tags=["视频字幕翻译"],
 )
 async def translate_video_subtitle(
-    request: VideoSubtitleTranslateRequest,
+    wrapper_request: ElectronVideoSubtitleTranslateRequest,
     background_tasks: BackgroundTasks,
     config: SystemConfig = Depends(get_system_config),
     translator: SubtitleTranslator = Depends(get_subtitle_translator),
@@ -370,7 +404,7 @@ async def translate_video_subtitle(
     对指定视频的字幕轨道进行翻译，支持自定义提供商配置。
 
     Args:
-        request: 视频字幕翻译请求
+        wrapper_request: 包装的视频字幕翻译请求
         background_tasks: FastAPI后台任务
         config: 系统配置
         translator: 字幕翻译器
@@ -380,6 +414,9 @@ async def translate_video_subtitle(
         VideoSubtitleTranslateResponse: 翻译响应
     """
     try:
+        # 提取实际的请求对象
+        request = wrapper_request.request
+
         # 验证视频是否存在
         video_info = video_storage.get_video(request.video_id)
         if not video_info:

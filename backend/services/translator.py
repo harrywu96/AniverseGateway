@@ -113,7 +113,16 @@ class SubtitleTranslator:
             ai_service_config: AI服务配置
             template_dir: 提示模板目录，默认为None
         """
-        self.ai_service = AIServiceFactory.create_service(ai_service_config)
+        # 根据配置的提供商类型获取相应的配置对象
+        provider_type = ai_service_config.provider.value
+        provider_config = ai_service_config.get_provider_config()
+
+        if not provider_config:
+            raise ValueError(f"未找到提供商 {provider_type} 的配置")
+
+        self.ai_service = AIServiceFactory.create_service(
+            provider_type, provider_config
+        )
         self.template_dir = template_dir
         self.default_templates: Dict[str, PromptTemplate] = (
             self._load_default_templates()

@@ -204,3 +204,6 @@ API_WORKERS=1 python src/run_api_server.py
 
 # python全进程kill
 taskkill /f /im python.exe
+
+# 启动uv环境
+source .venv/Scripts/activate

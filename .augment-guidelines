@@ -56,6 +56,10 @@ Balance these aspects in all responses:
 - Deep thinking vs. Forward momentum
 - Complexity vs. Clarity
 
+### **MCP服务**
+- `Context7`: Query the latest library documentation/examples
+- Prioritize using the MCP service
+
 ## Mode Details
 <a id="mode-details"></a>
 
@@ -69,6 +73,7 @@ Balance these aspects in all responses:
 - Clearly map known/unknown elements
 - Consider broader architectural impacts
 - Identify key technical constraints and requirements
+- Apply context7(mcp server) for additional research
 
 **Allowed**:
 - Reading files
