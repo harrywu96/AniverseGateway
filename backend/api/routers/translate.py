@@ -105,40 +105,6 @@ class VideoSubtitleTranslateRequest(BaseModel):
     preserve_formatting: bool = Field(default=True, description="保留原格式")
 
 
-# Electron应用使用的嵌套请求模型
-class ElectronVideoSubtitleTranslateRequest(BaseModel):
-    """Electron应用使用的视频字幕翻译请求包装模型"""
-
-    request: VideoSubtitleTranslateRequest = Field(
-        ..., description="视频字幕翻译请求"
-    )
-
-    class Config:
-        """模型配置"""
-
-        json_schema_extra = {
-            "example": {
-                "request": {
-                    "video_id": "9016fb62-070e-4352-aec3-39f3d229d0c5",
-                    "track_index": 0,
-                    "source_language": "zh",
-                    "target_language": "en",
-                    "style": "natural",
-                    "provider_config": {
-                        "id": "custom-1751271922983",
-                        "apiKey": "sk-yj5UPzFdIm5Sz7lZnuxt0CT3kyA3aEAbfSdEi8rnbRMMx61i",
-                        "apiHost": "https://tbai.xin",
-                    },
-                    "model_id": "deepseek-v3",
-                    "chunk_size": 30,
-                    "context_window": 3,
-                    "context_preservation": True,
-                    "preserve_formatting": True,
-                }
-            }
-        }
-
-
 # 视频字幕翻译响应模型
 class VideoSubtitleTranslateResponse(APIResponse):
     """视频字幕翻译响应模型"""
@@ -388,15 +354,14 @@ async def translate_section(
 
 
 @router.post(
-    "/video-subtitle",
+    "/video-subtitle-fixed",
     response_model=VideoSubtitleTranslateResponse,
     tags=["视频字幕翻译"],
 )
 async def translate_video_subtitle(
-    wrapper_request: ElectronVideoSubtitleTranslateRequest,
+    request: VideoSubtitleTranslateRequest,
     background_tasks: BackgroundTasks,
     config: SystemConfig = Depends(get_system_config),
-    translator: SubtitleTranslator = Depends(get_subtitle_translator),
     video_storage: VideoStorageService = Depends(get_video_storage),
 ):
     """翻译视频字幕轨道
@@ -404,19 +369,15 @@ async def translate_video_subtitle(
     对指定视频的字幕轨道进行翻译，支持自定义提供商配置。
 
     Args:
-        wrapper_request: 包装的视频字幕翻译请求
+        request: 视频字幕翻译请求
         background_tasks: FastAPI后台任务
         config: 系统配置
-        translator: 字幕翻译器
         video_storage: 视频存储服务
 
     Returns:
         VideoSubtitleTranslateResponse: 翻译响应
     """
     try:
-        # 提取实际的请求对象
-        request = wrapper_request.request
-
         # 验证视频是否存在
         video_info = video_storage.get_video(request.video_id)
         if not video_info:
@@ -443,6 +404,9 @@ async def translate_video_subtitle(
         # 定义异步翻译函数
         async def process_video_subtitle_translation():
             try:
+                # 在函数内部创建SubtitleTranslator实例，避免依赖注入问题
+                translator = SubtitleTranslator(config)
+
                 # 设置进度回调
                 async def callback(
                     progress: float, status: str, message: Optional[str] = None
@@ -451,11 +415,12 @@ async def translate_video_subtitle(
 
                 # 获取字幕内容
                 from backend.core.subtitle_extractor import SubtitleExtractor
-                from backend.api.dependencies import get_subtitle_extractor
+                from backend.core.ffmpeg import FFmpegTool
                 from pathlib import Path
 
                 # 创建字幕提取器实例
-                extractor = SubtitleExtractor(config.ffmpeg)
+                ffmpeg_tool = FFmpegTool()
+                extractor = SubtitleExtractor(ffmpeg_tool)
 
                 # 提取字幕内容到临时文件
                 output_dir = Path(temp_dir) / "subtitles"
@@ -485,13 +450,14 @@ async def translate_video_subtitle(
                 )
 
                 # 使用提供商配置创建临时AI服务配置
-                # 这里需要根据provider_config动态配置AI服务
                 original_provider = config.ai_service.provider
 
                 try:
                     # 根据提供商配置设置AI服务
                     await _configure_ai_service_from_provider_config(
-                        config, request.provider_config, request.model_id
+                        config,
+                        request.provider_config,
+                        request.model_id,
                     )
 
                     # 执行翻译任务
