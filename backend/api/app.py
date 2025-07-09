@@ -31,6 +31,8 @@ from .routers import (
     subtitles,
     videos,
     translate,
+    translate_v2,  # 添加新的独立翻译路由v2
+    translate_fixed,  # 添加修复版翻译路由
     tasks,
     export,
     templates,
@@ -105,6 +107,16 @@ def get_app() -> FastAPI:
     )
     app.include_router(
         translate.router,
+        prefix="/api/translate",
+    )
+    # 添加独立的翻译路由v2，不使用API密钥验证，避免中间件冲突
+    app.include_router(
+        translate_v2.router,
+        prefix="/api/translate",
+    )
+    # 添加修复版翻译路由，解决依赖注入问题
+    app.include_router(
+        translate_fixed.router,
         prefix="/api/translate",
     )
     app.include_router(

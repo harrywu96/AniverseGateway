@@ -729,18 +729,20 @@ export async function saveOllamaConfig(config: any) {
 }
 
 /**
- * 翻译单行字幕
+ * 翻译单行字幕 - 使用v2接口解决422错误
  */
 export async function translateSubtitleLine(request: any) {
   try {
     const apiPort = '8000';
-    const url = `http://localhost:${apiPort}/api/translate/line`;
+    const url = `http://localhost:${apiPort}/api/translate/line-v2`;
 
     // 确保请求中包含服务类型
     const requestWithServiceType = {
       ...request,
       service_type: request.service_type || 'network_provider'
     };
+
+    console.log('调用v2单行翻译接口:', url, requestWithServiceType);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -752,10 +754,13 @@ export async function translateSubtitleLine(request: any) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('v2单行翻译接口错误:', response.status, errorText);
       throw new Error(`翻译失败 (${response.status}): ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('v2单行翻译接口响应:', result);
+    return result;
   } catch (error) {
     console.error('翻译单行字幕失败:', error);
     return {
@@ -799,7 +804,7 @@ export async function testVideoSubtitleRequest(request: any) {
 }
 
 /**
- * 翻译视频字幕轨道
+ * 翻译视频字幕轨道 - 使用v2接口解决422错误
  */
 export async function translateVideoSubtitle(request: {
   video_id: string;
@@ -816,24 +821,27 @@ export async function translateVideoSubtitle(request: {
 }) {
   try {
     const apiPort = '8000';
-    const url = `http://localhost:${apiPort}/api/translate/video-subtitle`;
+    const url = `http://localhost:${apiPort}/api/translate/video-subtitle-v2`;
 
-    console.log('发送翻译请求:', request);
+    console.log('发送v2翻译请求:', url, request);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ request })
+      body: JSON.stringify(request)  // 直接发送request，不包装在{ request }中
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('v2视频字幕翻译接口错误:', response.status, errorText);
       throw new Error(`翻译失败 (${response.status}): ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('v2视频字幕翻译接口响应:', result);
+    return result;
   } catch (error) {
     console.error('翻译视频字幕失败:', error);
     return {

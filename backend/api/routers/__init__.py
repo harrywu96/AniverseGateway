@@ -6,6 +6,8 @@
 from . import subtitles
 from . import videos
 from . import translate
+from . import translate_v2  # 添加新的独立翻译路由v2
+from . import translate_fixed  # 添加修复版翻译路由
 from . import tasks
 from . import export
 from . import templates
