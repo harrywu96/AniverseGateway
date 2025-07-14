@@ -51,14 +51,17 @@ def get_independent_system_config() -> SystemConfig:
 
 
 def get_independent_video_storage() -> VideoStorageService:
-    """获取独立的视频存储服务实例"""
+    """获取独立的视频存储服务实例（实际使用全局共享实例）"""
     try:
-        config = get_independent_system_config()
-        return VideoStorageService(config.temp_dir)
+        # 导入全局依赖项函数
+        from backend.api.dependencies import get_video_storage
+
+        # 使用全局共享的视频存储实例，而不是创建新实例
+        return get_video_storage()
     except Exception as e:
-        logger.error(f"创建视频存储服务失败: {e}", exc_info=True)
+        logger.error(f"获取视频存储服务失败: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"创建视频存储服务失败: {str(e)}"
+            status_code=500, detail=f"获取视频存储服务失败: {str(e)}"
         )
 
 
