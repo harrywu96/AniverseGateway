@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from backend.schemas.config import AIServiceConfig
 from backend.schemas.task import PromptTemplate, SubtitleTask, TranslationStyle
 from backend.services.ai_service import AIServiceFactory
-from backend.utils.validators import (
+from backend.services.validators import (
     TranslationValidator,
     ValidationLevel,
     ValidationResult,
@@ -665,7 +665,11 @@ class SubtitleTranslator:
                 # 更新进度
                 task.update_chunk_progress(i + 1)
                 if progress_callback:
-                    await progress_callback(task.id, task.progress)
+                    await progress_callback(
+                        task.progress,
+                        "processing",
+                        f"正在翻译第 {i + 1}/{total_chunks} 块",
+                    )
 
             # 生成翻译后的SRT内容
             translated_srt = self._generate_translated_content(

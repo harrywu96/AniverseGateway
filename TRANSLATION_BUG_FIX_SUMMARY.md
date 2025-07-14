@@ -5,7 +5,7 @@
 
 ## 问题描述
 
-在视频字幕翻译流程中出现了三个主要问题：
+在视频字幕翻译流程中出现了四个主要问题：
 
 1. **主要错误**：`'dict' object has no attribute 'file_path'`
    - 错误位置：`backend/api/routers/translate_v2.py` 第252行
@@ -15,7 +15,15 @@
    - 错误位置：`backend/api/routers/translate_v2.py` 第144行
    - 错误原因：`config.ai_service.openai` 为 `None`，但代码直接尝试访问其属性
 
-3. **WebSocket错误处理不完善**：
+3. **翻译验证器错误**：`'TranslationValidator' object has no attribute 'validate'`
+   - 错误位置：`backend/services/translator.py` 中的翻译验证逻辑
+   - 错误原因：导入了错误的 `TranslationValidator` 类，该类没有 `validate` 方法
+
+4. **回调函数参数不匹配**：`callback() missing 1 required positional argument: 'message'`
+   - 错误位置：`backend/services/translator.py` 第668行
+   - 错误原因：进度回调函数调用时参数数量不匹配
+
+5. **WebSocket错误处理不完善**：
    - WebSocket 没有正确处理和传递后端错误信息
    - 前端无法接收到错误状态，导致翻译失败时界面无响应
 
@@ -31,7 +39,16 @@
 - 代码直接访问 `config.ai_service.openai.model` 而没有检查对象是否存在
 - 前端发送的字段名（`id`, `apiKey`, `apiHost`）与后端期望的不匹配
 
-### 问题3：WebSocket消息格式不匹配
+### 问题3：翻译验证器导入错误
+- `backend/services/translator.py` 导入了 `backend.utils.validators` 中的 `TranslationValidator`
+- 但该类只有 `validate_single_translation` 方法，没有 `validate` 方法
+- 正确的类在 `backend.services.validators` 中
+
+### 问题4：回调函数参数不匹配
+- `backend/services/translator.py` 中调用 `progress_callback(task.id, task.progress)` 只传递2个参数
+- 但 `translate_v2.py` 中定义的回调函数需要3个参数：`progress`, `status`, `message`
+
+### 问题5：WebSocket消息格式不匹配
 - 后端发送的是 `ProgressUpdateEvent` 格式（包含 `status` 字段）
 - 前端期望的是包含 `type` 字段的消息格式
 - 缺少 WebSocket 端点定义
@@ -109,7 +126,47 @@ if not provider_id:
     provider_id = provider_config.get("provider_type", "openai")
 ```
 
-### 修复3：WebSocket支持和消息格式统一
+### 修复3：翻译验证器导入修复
+**文件**：`backend/services/translator.py`
+
+**修改前**：
+```python
+from backend.utils.validators import (  # ❌ 错误：该类没有validate方法
+    TranslationValidator,
+    ValidationLevel,
+    ValidationResult,
+)
+```
+
+**修改后**：
+```python
+from backend.services.validators import (  # ✅ 正确：该类有validate方法
+    TranslationValidator,
+    ValidationLevel,
+    ValidationResult,
+)
+```
+
+### 修复4：回调函数参数匹配
+**文件**：`backend/services/translator.py`
+
+**修改前**：
+```python
+# 只传递2个参数
+await progress_callback(task.id, task.progress)  # ❌ 错误：参数不匹配
+```
+
+**修改后**：
+```python
+# 传递3个参数，匹配回调函数签名
+await progress_callback(
+    task.progress,
+    "processing",
+    f"正在翻译第 {i + 1}/{total_chunks} 块"
+)  # ✅ 正确：参数匹配
+```
+
+### 修复5：WebSocket支持和消息格式统一
 **文件**：`backend/api/routers/translate_v2.py`
 
 **添加的内容**：
@@ -173,6 +230,7 @@ if not provider_id:
 创建了多个测试脚本验证修复效果：
 - `test_translate_v2_fix.py`：基本功能测试
 - `test_ai_config_fix.py`：AI服务配置测试
+- `test_translation_validator_fix.py`：翻译验证器测试
 
 ### 测试结果
 ```
@@ -195,6 +253,8 @@ if not provider_id:
 ### 后端日志验证
 - ✅ 没有出现 `'dict' object has no attribute 'file_path'` 错误
 - ✅ 没有出现 `'NoneType' object has no attribute 'model'` 错误
+- ✅ 没有出现 `'TranslationValidator' object has no attribute 'validate'` 错误
+- ✅ 没有出现回调函数参数不匹配的错误
 - ✅ 接口正常处理请求并返回预期的 404 错误
 - ✅ 请求解析正常，没有 422 错误
 - ✅ AI服务配置成功，支持多种提供商格式
@@ -221,6 +281,8 @@ if not provider_id:
 此次修复解决了视频字幕翻译流程中的核心问题，确保了：
 - 字幕内容能正确提取和处理
 - AI服务配置能正确初始化和使用
+- 翻译验证器能正确导入和使用
+- 回调函数参数正确匹配
 - 前后端字段名匹配，支持多种提供商格式
 - 错误信息能正确传递给前端
 - WebSocket 连接能正常工作
