@@ -5,13 +5,17 @@
 
 ## 问题描述
 
-在视频字幕翻译流程中出现了两个主要问题：
+在视频字幕翻译流程中出现了三个主要问题：
 
 1. **主要错误**：`'dict' object has no attribute 'file_path'`
    - 错误位置：`backend/api/routers/translate_v2.py` 第252行
    - 错误原因：代码试图访问 `subtitle_track.file_path` 属性，但 `subtitle_track` 是 Pydantic 模型对象，没有 `file_path` 属性
 
-2. **WebSocket错误处理不完善**：
+2. **AI服务配置错误**：`'NoneType' object has no attribute 'model'`
+   - 错误位置：`backend/api/routers/translate_v2.py` 第144行
+   - 错误原因：`config.ai_service.openai` 为 `None`，但代码直接尝试访问其属性
+
+3. **WebSocket错误处理不完善**：
    - WebSocket 没有正确处理和传递后端错误信息
    - 前端无法接收到错误状态，导致翻译失败时界面无响应
 
@@ -22,7 +26,12 @@
 - `PydanticSubtitleTrack` 模型只包含轨道元数据（index, language, title, codec等），不包含实际的字幕文件路径
 - 代码错误地假设轨道对象包含 `file_path` 属性
 
-### 问题2：WebSocket消息格式不匹配
+### 问题2：AI服务配置对象未初始化
+- `SystemConfig.from_env()` 只在环境变量 `AI_PROVIDER` 匹配时才初始化对应的配置对象
+- 代码直接访问 `config.ai_service.openai.model` 而没有检查对象是否存在
+- 前端发送的字段名（`id`, `apiKey`, `apiHost`）与后端期望的不匹配
+
+### 问题3：WebSocket消息格式不匹配
 - 后端发送的是 `ProgressUpdateEvent` 格式（包含 `status` 字段）
 - 前端期望的是包含 `type` 字段的消息格式
 - 缺少 WebSocket 端点定义
@@ -70,7 +79,37 @@ subtitle_path = extractor.extract_embedded_subtitle(
 )
 ```
 
-### 修复2：WebSocket支持和消息格式统一
+### 修复2：AI服务配置初始化和字段名适配
+**文件**：`backend/api/routers/translate_v2.py`
+
+**修改前**：
+```python
+# 直接访问可能为None的配置对象
+config.ai_service.openai.model = model_id  # ❌ 错误：openai可能为None
+
+# 使用不匹配的字段名
+provider_type = provider_config.get("provider_type", "openai")  # ❌ 前端发送的是"id"
+```
+
+**修改后**：
+```python
+# 确保配置对象存在
+if config.ai_service.openai is None:
+    config.ai_service.openai = OpenAIConfig(
+        api_key=SecretStr(""), model=model_id
+    )
+
+# 支持前端字段名
+provider_id = provider_config.get("id", "")  # ✅ 匹配前端发送的字段
+api_key = provider_config.get("apiKey", "")
+api_host = provider_config.get("apiHost", "")
+
+# 也支持标准字段名作为备选
+if not provider_id:
+    provider_id = provider_config.get("provider_type", "openai")
+```
+
+### 修复3：WebSocket支持和消息格式统一
 **文件**：`backend/api/routers/translate_v2.py`
 
 **添加的内容**：
@@ -131,7 +170,9 @@ subtitle_path = extractor.extract_embedded_subtitle(
 ## 测试验证
 
 ### 测试脚本
-创建了 `test_translate_v2_fix.py` 测试脚本，验证修复效果。
+创建了多个测试脚本验证修复效果：
+- `test_translate_v2_fix.py`：基本功能测试
+- `test_ai_config_fix.py`：AI服务配置测试
 
 ### 测试结果
 ```
@@ -153,8 +194,10 @@ subtitle_path = extractor.extract_embedded_subtitle(
 
 ### 后端日志验证
 - ✅ 没有出现 `'dict' object has no attribute 'file_path'` 错误
+- ✅ 没有出现 `'NoneType' object has no attribute 'model'` 错误
 - ✅ 接口正常处理请求并返回预期的 404 错误
 - ✅ 请求解析正常，没有 422 错误
+- ✅ AI服务配置成功，支持多种提供商格式
 
 ## 影响范围
 
@@ -177,8 +220,10 @@ subtitle_path = extractor.extract_embedded_subtitle(
 
 此次修复解决了视频字幕翻译流程中的核心问题，确保了：
 - 字幕内容能正确提取和处理
+- AI服务配置能正确初始化和使用
+- 前后端字段名匹配，支持多种提供商格式
 - 错误信息能正确传递给前端
 - WebSocket 连接能正常工作
 - 翻译进度能实时更新
 
-修复后的系统现在可以正常处理视频字幕翻译请求，并提供良好的用户体验。
+修复后的系统现在可以正常处理视频字幕翻译请求，并提供良好的用户体验。用户可以使用 SiliconFlow、自定义提供商、OpenAI 等多种 AI 服务进行字幕翻译。

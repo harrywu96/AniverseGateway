@@ -132,37 +132,72 @@ async def _configure_ai_service_from_provider_config_v2(
 ):
     """根据提供商配置设置AI服务 v2"""
     try:
+        from pydantic import SecretStr
+        from backend.schemas.config import OpenAIConfig, OllamaConfig
+
         # 根据提供商类型设置配置
-        provider_type = provider_config.get("type", "openai")
+        # 支持前端发送的字段名：id, apiKey, apiHost
+        provider_id = provider_config.get("id", "")
+        api_key = provider_config.get("apiKey", "")
+        api_host = provider_config.get("apiHost", "")
 
-        if provider_type == "openai":
+        # 也支持标准字段名作为备选
+        if not provider_id:
+            provider_id = provider_config.get("provider_type", "openai")
+        if not api_key:
+            api_key = provider_config.get("api_key", "")
+        if not api_host:
+            api_host = provider_config.get("base_url", "")
+
+        # 根据提供商ID确定类型
+        if provider_id in ["openai", "siliconflow"] or provider_id.startswith(
+            "custom-"
+        ):
             config.ai_service.provider = AIProviderType.OPENAI
-            if "api_key" in provider_config:
-                config.ai_service.openai.api_key = provider_config["api_key"]
-            if "base_url" in provider_config:
-                config.ai_service.openai.base_url = provider_config["base_url"]
+
+            # 确保 openai 配置对象存在
+            if config.ai_service.openai is None:
+                config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.openai.base_url = api_host
             config.ai_service.openai.model = model_id
 
-        elif provider_type == "custom":
-            config.ai_service.provider = (
-                AIProviderType.OPENAI
-            )  # 使用OpenAI兼容接口
-            if "api_key" in provider_config:
-                config.ai_service.openai.api_key = provider_config["api_key"]
-            if "base_url" in provider_config:
-                config.ai_service.openai.base_url = provider_config["base_url"]
-            config.ai_service.openai.model = model_id
-
-        elif provider_type == "ollama":
+        elif provider_id == "ollama":
             config.ai_service.provider = AIProviderType.OLLAMA
-            if "base_url" in provider_config:
-                config.ai_service.ollama.base_url = provider_config["base_url"]
+
+            # 确保 ollama 配置对象存在
+            if config.ai_service.ollama is None:
+                config.ai_service.ollama = OllamaConfig(model=model_id)
+
+            # 更新配置
+            if api_host:
+                config.ai_service.ollama.base_url = api_host
             config.ai_service.ollama.model = model_id
 
         else:
-            raise ValueError(f"不支持的提供商类型: {provider_type}")
+            # 默认使用 OpenAI 兼容接口
+            config.ai_service.provider = AIProviderType.OPENAI
 
-        logger.info(f"AI服务配置完成: {provider_type}, 模型: {model_id}")
+            # 确保 openai 配置对象存在
+            if config.ai_service.openai is None:
+                config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.openai.base_url = api_host
+            config.ai_service.openai.model = model_id
+
+        logger.info(f"AI服务配置完成: {provider_id}, 模型: {model_id}")
 
     except Exception as e:
         logger.error(f"配置AI服务失败: {e}", exc_info=True)
