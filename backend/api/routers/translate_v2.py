@@ -15,6 +15,7 @@ from fastapi import (
     HTTPException,
     BackgroundTasks,
     Request,
+    WebSocket,
 )
 from pydantic import BaseModel, Field, ValidationError
 
@@ -28,6 +29,7 @@ from backend.schemas.config import SystemConfig, AIProviderType
 from backend.core.subtitle_translator import SubtitleTranslator
 from backend.services.utils import SRTOptimizer
 from backend.services.video_storage import VideoStorageService
+from backend.api.websocket import manager  # 导入WebSocket管理器
 
 # 配置日志
 logger = logging.getLogger("subtranslate.api.translate_v2")
@@ -233,8 +235,29 @@ async def translate_video_subtitle_v2(
         async def callback(progress: float, status: str, message: str):
             """进度回调函数"""
             try:
-                # 这里可以通过WebSocket发送进度更新
-                # 暂时只记录日志
+                # 根据状态创建前端期望的消息格式
+                if status == "completed":
+                    websocket_message = {
+                        "type": "completed",
+                        "message": message,
+                        "results": [],  # 翻译结果将在这里填充
+                    }
+                elif status == "failed":
+                    websocket_message = {"type": "error", "message": message}
+                else:
+                    # 进行中状态
+                    websocket_message = {
+                        "type": "progress",
+                        "percentage": progress,
+                        "current": 0,  # 当前处理项
+                        "total": 0,  # 总项数
+                        "currentItem": message,
+                        "estimatedTime": None,
+                    }
+
+                # 通过WebSocket广播进度更新
+                await manager.broadcast(task_id, websocket_message)
+
                 logger.info(
                     f"任务 {task_id} 进度: {progress}%, 状态: {status}, 消息: {message}"
                 )
@@ -249,7 +272,33 @@ async def translate_video_subtitle_v2(
                 subtitle_track = video_info.subtitle_tracks[
                     request.track_index
                 ]
-                subtitle_path = subtitle_track.file_path
+
+                # 检查字幕轨道是否存在
+                if not subtitle_track:
+                    raise Exception(
+                        f"字幕轨道索引 {request.track_index} 不存在"
+                    )
+
+                # 提取字幕内容到临时文件
+                from backend.core.subtitle_extractor import SubtitleExtractor
+                from backend.core.ffmpeg import FFmpegTool
+                from pathlib import Path
+
+                # 创建字幕提取器实例
+                ffmpeg_tool = FFmpegTool()
+                extractor = SubtitleExtractor(ffmpeg_tool)
+
+                # 创建临时目录
+                output_dir = Path(config.temp_dir) / "subtitles"
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                # 提取字幕内容
+                subtitle_path = extractor.extract_embedded_subtitle(
+                    video_info,
+                    track_index=request.track_index,
+                    output_dir=output_dir,
+                    target_format="srt",
+                )
 
                 if not subtitle_path or not os.path.exists(str(subtitle_path)):
                     raise Exception("提取字幕内容失败")
@@ -615,3 +664,24 @@ async def debug_parse_request(
             message=f"请求解析失败: {str(e)}",
             data=None,
         )
+
+
+@router.websocket("/ws/{task_id}")
+async def websocket_translation_progress_v2(
+    websocket: WebSocket, task_id: str
+):
+    """WebSocket端点，用于实时推送翻译进度 v2
+
+    Args:
+        websocket: WebSocket连接
+        task_id: 翻译任务ID
+    """
+    await manager.connect(websocket, task_id)
+    try:
+        while True:
+            # 保持连接活跃，等待客户端消息
+            await websocket.receive_text()
+    except Exception as e:
+        logger.info(f"WebSocket连接断开: {task_id}, 原因: {e}")
+    finally:
+        manager.disconnect(websocket, task_id)
