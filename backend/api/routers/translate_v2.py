@@ -6,6 +6,7 @@
 
 import logging
 import os
+import re
 import uuid
 from typing import Optional, Dict, List, Any
 
@@ -75,6 +76,86 @@ def get_independent_subtitle_translator() -> SubtitleTranslator:
         raise HTTPException(
             status_code=500, detail=f"创建字幕翻译器失败: {str(e)}"
         )
+
+
+# SRT解析和时间转换工具函数
+def srt_time_to_seconds(time_str: str) -> float:
+    """SRT时间格式转秒数
+
+    Args:
+        time_str: SRT时间格式字符串，如 "00:01:23,456"
+
+    Returns:
+        float: 秒数，如 83.456
+    """
+    try:
+        # "00:01:23,456" -> 83.456
+        time_part, ms_part = time_str.split(",")
+        hours, minutes, seconds = map(int, time_part.split(":"))
+        milliseconds = int(ms_part)
+
+        return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
+    except Exception as e:
+        logger.error(f"时间格式转换失败: {time_str}, 错误: {e}")
+        return 0.0
+
+
+def parse_srt_content(
+    srt_content: str, original_subtitles: List[Dict] = None
+) -> List[Dict]:
+    """解析SRT内容为前端格式
+
+    Args:
+        srt_content: SRT文件内容（翻译后的）
+        original_subtitles: 原始字幕数据列表
+
+    Returns:
+        List[Dict]: 前端期望的翻译结果格式
+    """
+    results = []
+    try:
+        # SRT格式正则表达式
+        pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+
+        matches = re.findall(pattern, srt_content, re.DOTALL)
+
+        for match in matches:
+            index, start_time, end_time, translated_text = match
+
+            # 转换时间为秒数
+            start_seconds = srt_time_to_seconds(start_time)
+            end_seconds = srt_time_to_seconds(end_time)
+
+            # 获取对应的原文
+            original_text = translated_text.strip()  # 默认值
+            if original_subtitles:
+                # 根据索引或时间匹配原文
+                for orig_sub in original_subtitles:
+                    if orig_sub.get("index") == int(index) or (
+                        abs(orig_sub.get("startTime", 0) - start_seconds) < 0.1
+                        and abs(orig_sub.get("endTime", 0) - end_seconds) < 0.1
+                    ):
+                        original_text = orig_sub.get(
+                            "text", translated_text.strip()
+                        )
+                        break
+
+            results.append(
+                {
+                    "index": int(index),
+                    "startTime": start_seconds,
+                    "endTime": end_seconds,
+                    "startTimeStr": start_time,
+                    "endTimeStr": end_time,
+                    "original": original_text,  # 原始字幕内容
+                    "translated": translated_text.strip(),  # 翻译后的内容
+                }
+            )
+
+    except Exception as e:
+        logger.error(f"解析SRT内容失败: {e}")
+
+    return results
 
 
 # 视频字幕翻译请求模型 - 简化版本
@@ -275,10 +356,40 @@ async def translate_video_subtitle_v2(
             try:
                 # 根据状态创建前端期望的消息格式
                 if status == "completed":
+                    # 获取翻译结果
+                    translation_results = []
+                    try:
+                        # 从翻译任务中获取结果
+                        if (
+                            hasattr(callback, "_current_task")
+                            and callback._current_task
+                        ):
+                            task = callback._current_task
+                            if task.result_path and os.path.exists(
+                                task.result_path
+                            ):
+                                with open(
+                                    task.result_path, "r", encoding="utf-8"
+                                ) as f:
+                                    srt_content = f.read()
+                                    # 获取原始字幕数据
+                                    original_subtitles = getattr(
+                                        callback, "_original_subtitles", None
+                                    )
+                                    translation_results = parse_srt_content(
+                                        srt_content, original_subtitles
+                                    )
+                                    logger.info(
+                                        f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
+                                    )
+                    except Exception as e:
+                        logger.error(f"获取翻译结果失败: {e}")
+                        translation_results = []
+
                     websocket_message = {
                         "type": "completed",
                         "message": message,
-                        "results": [],  # 翻译结果将在这里填充
+                        "results": translation_results,  # ✅ 实际翻译结果
                     }
                 elif status == "failed":
                     websocket_message = {"type": "error", "message": message}
@@ -364,6 +475,11 @@ async def translate_video_subtitle_v2(
                         request.provider_config,
                         request.model_id,
                     )
+
+                    # 设置回调函数的任务引用，以便获取翻译结果
+                    callback._current_task = task
+                    # 保存原始字幕数据到回调函数
+                    callback._original_subtitles = task.subtitles
 
                     # 执行翻译任务
                     success = await translator.translate_task(task, callback)

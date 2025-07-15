@@ -22,8 +22,11 @@ import {
   Translate as TranslateIcon
 } from '@mui/icons-material';
 import { binarySearch } from '../utils/performanceUtils';
+import { UnifiedSubtitleItem } from '@subtranslate/shared';
+import { timeUtils } from '../utils/timeUtils';
+import { subtitleDataUtils } from '../utils/subtitleDataUtils';
 
-// 字幕项接口
+// 字幕项接口（保持向后兼容）
 export interface SubtitleItem {
   id: string;
   startTime: number;
@@ -34,26 +37,28 @@ export interface SubtitleItem {
 }
 
 interface SubtitleEditorProps {
-  subtitles: SubtitleItem[];
+  subtitles: SubtitleItem[] | UnifiedSubtitleItem[]; // 支持新旧两种格式
   currentTime: number;
   loading?: boolean;
   error?: string | null;
-  onSave?: (subtitle: SubtitleItem) => Promise<void>;
+  onSave?: (subtitle: SubtitleItem | UnifiedSubtitleItem) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   onTranslate?: (id: string, config: any) => Promise<void>; // 添加翻译回调
   translationConfig?: any; // 添加翻译配置
+  useUnifiedFormat?: boolean; // 是否使用新的统一格式
 }
 
 // 单独的字幕项组件，使用memo优化渲染性能
 interface SubtitleItemProps {
-  subtitle: SubtitleItem;
+  subtitle: SubtitleItem | UnifiedSubtitleItem;
   isActive: boolean;
-  onEdit: (subtitle: SubtitleItem) => void;
-  onTranslate?: (subtitle: SubtitleItem) => void; // 添加翻译回调
+  onEdit: (subtitle: SubtitleItem | UnifiedSubtitleItem) => void;
+  onTranslate?: (subtitle: SubtitleItem | UnifiedSubtitleItem) => void; // 添加翻译回调
   onDelete: (id: string) => void;
   isDeleting: boolean;
   isSaving: boolean;
   formatTime: (seconds: number) => string;
+  useUnifiedFormat?: boolean;
 }
 
 const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
@@ -64,9 +69,31 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
   onTranslate,
   isDeleting,
   isSaving,
-  formatTime
+  formatTime,
+  useUnifiedFormat = false
 }) => {
   const theme = useTheme();
+
+  // 获取文本内容，支持新旧格式
+  const getText = () => {
+    if (useUnifiedFormat && 'originalText' in subtitle) {
+      return (subtitle as UnifiedSubtitleItem).originalText;
+    }
+    return (subtitle as SubtitleItem).text;
+  };
+
+  // 获取翻译内容，支持新旧格式
+  const getTranslated = () => {
+    if (useUnifiedFormat && 'translatedText' in subtitle) {
+      return (subtitle as UnifiedSubtitleItem).translatedText;
+    }
+    return (subtitle as SubtitleItem).translated;
+  };
+
+  // 获取翻译状态，支持新旧格式
+  const getTranslating = () => {
+    return subtitle.translating || false;
+  };
   
   return (
     <Paper
@@ -139,15 +166,15 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
             <IconButton
               size="small"
               onClick={() => onTranslate(subtitle)}
-              disabled={subtitle.translating}
-              color={subtitle.translated ? "primary" : "default"}
+              disabled={getTranslating()}
+              color={getTranslated() ? "primary" : "default"}
               sx={{
-                color: isActive 
-                  ? (subtitle.translated ? theme.palette.primary.main : theme.palette.secondary.main)
-                  : (subtitle.translated ? theme.palette.primary.main : theme.palette.action.active)
+                color: isActive
+                  ? (getTranslated() ? theme.palette.primary.main : theme.palette.secondary.main)
+                  : (getTranslated() ? theme.palette.primary.main : theme.palette.action.active)
               }}
             >
-              {subtitle.translating ? (
+              {getTranslating() ? (
                 <CircularProgress size={20} />
               ) : (
                 <TranslateIcon fontSize="small" />
@@ -156,21 +183,21 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
           )}
         </Box>
       </Box>
-      <Typography 
+      <Typography
         variant="body1"
         sx={{
-          color: isActive 
+          color: isActive
             ? theme.palette.text.primary
             : theme.palette.text.primary,
           fontWeight: isActive ? 500 : 400,
           lineHeight: 1.6
         }}
       >
-        {subtitle.text}
+        {getText()}
       </Typography>
 
       {/* 显示翻译结果 */}
-      {subtitle.translated && (
+      {getTranslated() && (
         <Box sx={{
           width: '100%',
           mt: 1,
@@ -193,7 +220,7 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
                 : theme.palette.text.secondary
             }}
           >
-            {subtitle.translated}
+            {getTranslated()}
           </Typography>
         </Box>
       )}
@@ -203,14 +230,15 @@ const SubtitleItemComponent: React.FC<SubtitleItemProps> = memo(({
 
 // 字幕列表组件，使用memo优化渲染性能
 interface SubtitleListProps {
-  subtitles: SubtitleItem[];
+  subtitles: SubtitleItem[] | UnifiedSubtitleItem[];
   activeSubtitles: Map<string, boolean>;
-  onEdit: (subtitle: SubtitleItem) => void;
+  onEdit: (subtitle: SubtitleItem | UnifiedSubtitleItem) => void;
   onDelete: (id: string) => void;
-  onTranslate?: (subtitle: SubtitleItem) => void; // 添加翻译回调
+  onTranslate?: (subtitle: SubtitleItem | UnifiedSubtitleItem) => void; // 添加翻译回调
   deletingId: string | null;
   savingId: string | null;
   formatTime: (seconds: number) => string;
+  useUnifiedFormat?: boolean;
 }
 
 const SubtitleList: React.FC<SubtitleListProps> = memo(({
@@ -221,7 +249,8 @@ const SubtitleList: React.FC<SubtitleListProps> = memo(({
   onTranslate,
   deletingId,
   savingId,
-  formatTime
+  formatTime,
+  useUnifiedFormat = false
 }) => {
   return (
     <>
@@ -236,6 +265,7 @@ const SubtitleList: React.FC<SubtitleListProps> = memo(({
           isDeleting={deletingId === subtitle.id}
           isSaving={!!savingId}
           formatTime={formatTime}
+          useUnifiedFormat={useUnifiedFormat}
         />
       ))}
     </>
@@ -250,10 +280,11 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   onSave,
   onDelete,
   onTranslate,
-  translationConfig
+  translationConfig,
+  useUnifiedFormat = false
 }) => {
   // 添加翻译处理函数
-  const handleTranslate = useCallback(async (subtitle: SubtitleItem) => {
+  const handleTranslate = useCallback(async (subtitle: SubtitleItem | UnifiedSubtitleItem) => {
     if (!translationConfig || !onTranslate) return;
 
     try {
@@ -264,13 +295,13 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
       // 错误处理由父组件完成
     }
   }, [onTranslate, translationConfig]);
-  const [editingSubtitle, setEditingSubtitle] = useState<SubtitleItem | null>(null);
+  const [editingSubtitle, setEditingSubtitle] = useState<SubtitleItem | UnifiedSubtitleItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // 打开编辑对话框
-  const handleEdit = useCallback((subtitle: SubtitleItem) => {
+  const handleEdit = useCallback((subtitle: SubtitleItem | UnifiedSubtitleItem) => {
     setEditingSubtitle({ ...subtitle });
     setDialogOpen(true);
   }, []);
@@ -314,10 +345,20 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
   // 更新编辑中的字幕文本
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editingSubtitle) return;
-    setEditingSubtitle({
-      ...editingSubtitle,
-      text: e.target.value
-    });
+
+    if (useUnifiedFormat && 'originalText' in editingSubtitle) {
+      // 新格式
+      setEditingSubtitle({
+        ...editingSubtitle,
+        originalText: e.target.value
+      });
+    } else {
+      // 旧格式
+      setEditingSubtitle({
+        ...editingSubtitle,
+        text: e.target.value
+      });
+    }
   };
 
   // 更新编辑中的字幕开始时间
@@ -410,6 +451,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
             deletingId={deletingId}
             savingId={savingId}
             formatTime={formatTime}
+            useUnifiedFormat={useUnifiedFormat}
           />
         )}
       </Box>
@@ -449,7 +491,11 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({
               </Box>
               <TextField
                 label="字幕文本"
-                value={editingSubtitle.text}
+                value={
+                  useUnifiedFormat && 'originalText' in editingSubtitle
+                    ? (editingSubtitle as UnifiedSubtitleItem).originalText
+                    : (editingSubtitle as SubtitleItem).text
+                }
                 onChange={handleTextChange}
                 fullWidth
                 variant="outlined"

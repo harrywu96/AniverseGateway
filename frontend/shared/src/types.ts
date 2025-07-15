@@ -128,3 +128,6 @@ export interface AppState {
   currentTask?: TranslationTask;
   recentVideos: VideoInfo[];
 }
+
+// 导出新的统一字幕数据模型
+export * from './types/subtitle';

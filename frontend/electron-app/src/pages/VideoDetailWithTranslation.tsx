@@ -436,6 +436,39 @@ const VideoDetailWithTranslation: React.FC = () => {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
   }, []);
 
+  // 虚拟列表状态
+  const [displayedResults, setDisplayedResults] = useState<any[]>([]);
+  const [loadedCount, setLoadedCount] = useState(15);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 初始化显示的结果
+  useEffect(() => {
+    if (translationResults.length > 0) {
+      setDisplayedResults(translationResults.slice(0, Math.min(15, translationResults.length)));
+      setLoadedCount(Math.min(15, translationResults.length));
+    } else {
+      setDisplayedResults([]);
+      setLoadedCount(0);
+    }
+  }, [translationResults]);
+
+  // 处理滚动事件，实现虚拟列表
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const container = event.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+
+    // 检查是否滚动到底部（留一些缓冲区）
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      // 如果还有更多数据可以加载
+      if (loadedCount < translationResults.length) {
+        const nextCount = Math.min(loadedCount + 15, translationResults.length);
+        setDisplayedResults(translationResults.slice(0, nextCount));
+        setLoadedCount(nextCount);
+        console.log(`虚拟列表加载更多: ${loadedCount} -> ${nextCount} / ${translationResults.length}`);
+      }
+    }
+  }, [loadedCount, translationResults]);
+
   // 格式化预计剩余时间
   const formatEstimatedTime = useCallback((seconds: number): string => {
     if (seconds < 60) {
@@ -581,11 +614,15 @@ const VideoDetailWithTranslation: React.FC = () => {
                   }
                 />
                 <CardContent>
-                  <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
-                    {translationResults.slice(0, 10).map((result, index) => (
-                      <Paper 
-                        key={index} 
-                        variant="outlined" 
+                  <Box
+                    ref={scrollContainerRef}
+                    sx={{ maxHeight: 400, overflow: 'auto' }}
+                    onScroll={handleScroll}
+                  >
+                    {displayedResults.map((result, index) => (
+                      <Paper
+                        key={index}
+                        variant="outlined"
                         sx={{ p: 2, mb: 2 }}
                       >
                         <Typography variant="caption" color="text.secondary">
@@ -599,7 +636,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                             译文: {result.translated}
                           </Typography>
                           {result.confidence && (
-                            <Chip 
+                            <Chip
                               label={`可信度: ${Math.round(result.confidence * 100)}%`}
                               size="small"
                               color={result.confidence > 0.8 ? 'success' : result.confidence > 0.6 ? 'warning' : 'error'}
@@ -609,9 +646,19 @@ const VideoDetailWithTranslation: React.FC = () => {
                         </Box>
                       </Paper>
                     ))}
-                    {translationResults.length > 10 && (
+                    {loadedCount < translationResults.length && (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          已显示 {loadedCount} / {translationResults.length} 条结果
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          滚动到底部加载更多...
+                        </Typography>
+                      </Box>
+                    )}
+                    {loadedCount >= translationResults.length && translationResults.length > 15 && (
                       <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-                        还有 {translationResults.length - 10} 条结果未显示...
+                        已显示全部 {translationResults.length} 条结果
                       </Typography>
                     )}
                   </Box>
