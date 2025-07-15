@@ -124,10 +124,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!videoId) return;
 
     try {
-      // 更新编辑状态
-      const newEditedSubtitles = new Map(editedSubtitles);
-      newEditedSubtitles.set(subtitle.id, { ...subtitle, edited: true });
-      setEditedSubtitles(newEditedSubtitles);
+      // 使用函数式更新避免依赖editedSubtitles
+      setEditedSubtitles(prevEditedSubtitles => {
+        const newEditedSubtitles = new Map(prevEditedSubtitles);
+        newEditedSubtitles.set(subtitle.id, { ...subtitle, edited: true });
+        return newEditedSubtitles;
+      });
 
       // 持久化到localStorage
       const storageKey = `edited_subtitles_${videoId}`;
@@ -140,7 +142,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     } catch (error) {
       console.error('保存字幕编辑失败:', error);
     }
-  }, [videoId, editedSubtitles]);
+  }, [videoId]);
 
   // 加载已编辑的字幕
   const loadEditedSubtitles = useCallback(() => {
@@ -280,11 +282,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       // 更新当前活跃字幕
       if (showSubtitles && subtitles.length > 0) {
-        const activeSubtitles = getCurrentSubtitles(time);
+        const activeSubtitles = subtitles.filter(subtitle =>
+          time >= subtitle.startTime && time <= subtitle.endTime
+        );
         setCurrentSubtitles(activeSubtitles);
+      } else {
+        setCurrentSubtitles([]);
       }
     }, 100),
-    [onTimeUpdate, showSubtitles, getCurrentSubtitles]
+    [onTimeUpdate, showSubtitles, subtitles]
   );
 
   // 加载已编辑的字幕
@@ -292,17 +298,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     loadEditedSubtitles();
   }, [loadEditedSubtitles]);
 
-  // 当字幕数据变化时，重新计算当前字幕
+  // 当字幕显示状态变化时，立即更新当前字幕
   useEffect(() => {
-    if (showSubtitles && subtitles.length > 0) {
+    if (!showSubtitles) {
+      setCurrentSubtitles([]);
+    } else if (subtitles.length > 0) {
+      // 只在字幕显示状态改变时更新，时间变化由throttledTimeUpdate处理
       const activeSubtitles = subtitles.filter(subtitle =>
         currentTime >= subtitle.startTime && currentTime <= subtitle.endTime
       );
       setCurrentSubtitles(activeSubtitles);
-    } else {
-      setCurrentSubtitles([]);
     }
-  }, [showSubtitles, subtitles, currentTime]);
+  }, [showSubtitles]); // 只依赖showSubtitles
 
   // 监听视频时间更新
   useEffect(() => {
@@ -362,7 +369,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!video) return;
 
     const seekTime = typeof newValue === 'number' ? newValue : newValue[0];
-    video.currentTime = seekTime;
+    // 只在拖动时更新状态，不更新视频时间
     setCurrentTime(seekTime);
   }, []);
 
@@ -372,11 +379,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, []);
 
   // 结束拖动
-  const handleSeekEnd = useCallback(() => {
-    setSeeking(false);
+  const handleSeekEnd = useCallback((_event: Event | React.SyntheticEvent, value: number | number[]) => {
     const video = videoRef.current;
-    if (video && onTimeUpdate) {
-      onTimeUpdate(video.currentTime);
+    if (!video) return;
+
+    const seekTime = typeof value === 'number' ? value : value[0];
+    // 拖动结束时才更新视频时间
+    video.currentTime = seekTime;
+    setCurrentTime(seekTime);
+    setSeeking(false);
+
+    if (onTimeUpdate) {
+      onTimeUpdate(seekTime);
     }
   }, [onTimeUpdate]);
 
@@ -799,63 +813,86 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         >
           {/* 进度条区域 */}
           <Box sx={{ mb: 2 }}>
-            {/* 缓冲进度背景 */}
+            {/* 进度条容器 - 给thumb留出足够空间 */}
             <Box
               sx={{
                 position: 'relative',
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: alpha('#ddd', 0.2),
-                overflow: 'hidden'
+                height: 20, // 增加高度以容纳thumb
+                display: 'flex',
+                alignItems: 'center',
+                px: 1 // 给thumb在边缘时留出空间
               }}
             >
-              {/* 缓冲进度 */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  height: '100%',
-                  width: `${buffered}%`,
-                  backgroundColor: alpha('#ddd', 0.4),
-                  transition: 'width 0.3s ease'
-                }}
-              />
-              
               {/* 播放进度滑块 */}
               <Slider
                 value={currentTime}
                 max={duration || 100}
                 onChange={handleSeek}
-                onMouseDown={handleSeekStart}
-                onMouseUp={handleSeekEnd}
+                onChangeStart={handleSeekStart}
+                onChangeCommitted={handleSeekEnd}
                 sx={{
-                  position: 'absolute',
-                  top: -3,
-                  left: 0,
-                  right: 0,
+                  width: '100%',
+                  height: 20,
+                  padding: '10px 0 !important', // 强制覆盖默认padding
                   color: theme.palette.primary.main,
-                  height: 6,
+                  '& .MuiSlider-root': {
+                    padding: '10px 0 !important'
+                  },
                   '& .MuiSlider-track': {
                     backgroundColor: theme.palette.primary.main,
                     border: 'none',
-                    height: 6
+                    height: 6,
+                    borderRadius: 3
                   },
                   '& .MuiSlider-rail': {
-                    backgroundColor: 'transparent',
-                    height: 6
+                    backgroundColor: alpha('#ddd', 0.2),
+                    height: 6,
+                    borderRadius: 3,
+                    opacity: 1
                   },
                   '& .MuiSlider-thumb': {
                     width: 16,
                     height: 16,
-                    backgroundColor: '#ddd',
+                    backgroundColor: '#fff',
+                    border: '2px solid #fff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    transition: 'width 0.15s ease-in-out, height 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+                    '&::before': {
+                      display: 'none' // 移除默认的伪元素
+                    },
                     '&:hover': {
-                      boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
+                      width: 18, // 16 * 1.125 = 18px
+                      height: 18,
+                      boxShadow: `0 2px 6px rgba(0,0,0,0.3), 0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
                     },
                     '&.Mui-active': {
-                      boxShadow: `0 0 0 14px ${alpha(theme.palette.primary.main, 0.16)}`
+                      width: 18, // 16 * 1.125 = 18px
+                      height: 18,
+                      boxShadow: `0 2px 6px rgba(0,0,0,0.3), 0 0 0 14px ${alpha(theme.palette.primary.main, 0.16)}`
+                    },
+                    '&.Mui-focusVisible': {
+                      boxShadow: `0 2px 4px rgba(0,0,0,0.2), 0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
                     }
                   }
+                }}
+              />
+
+              {/* 缓冲进度覆盖层 */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 8, // 与slider轨道对齐
+                  right: 8,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: alpha('#ddd', 0.4),
+                  width: `${buffered}%`,
+                  maxWidth: 'calc(100% - 16px)',
+                  transition: 'width 0.3s ease',
+                  pointerEvents: 'none',
+                  zIndex: 1
                 }}
               />
             </Box>
