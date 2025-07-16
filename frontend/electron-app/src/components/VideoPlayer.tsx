@@ -856,18 +856,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     backgroundColor: '#fff',
                     border: '2px solid #fff',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                    transition: 'width 0.15s ease-in-out, height 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+                    transition: 'width 0.15s ease-in-out, height 0.15s ease-in-out, margin-top 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
                     '&::before': {
                       display: 'none' // 移除默认的伪元素
                     },
                     '&:hover': {
                       width: 18, // 16 * 1.125 = 18px
                       height: 18,
+                      marginTop: -1, // 向上补偿1px
                       boxShadow: `0 2px 6px rgba(0,0,0,0.3), 0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
                     },
                     '&.Mui-active': {
                       width: 18, // 16 * 1.125 = 18px
                       height: 18,
+                      marginTop: -1, // 向上补偿1px
                       boxShadow: `0 2px 6px rgba(0,0,0,0.3), 0 0 0 14px ${alpha(theme.palette.primary.main, 0.16)}`
                     },
                     '&.Mui-focusVisible': {

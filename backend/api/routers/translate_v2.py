@@ -89,8 +89,15 @@ def srt_time_to_seconds(time_str: str) -> float:
         float: 秒数，如 83.456
     """
     try:
-        # "00:01:23,456" -> 83.456
-        time_part, ms_part = time_str.split(",")
+        # 处理逗号或点号分隔的毫秒
+        if "," in time_str:
+            time_part, ms_part = time_str.split(",")
+        elif "." in time_str:
+            time_part, ms_part = time_str.split(".")
+        else:
+            time_part = time_str
+            ms_part = "000"
+
         hours, minutes, seconds = map(int, time_part.split(":"))
         milliseconds = int(ms_part)
 
@@ -114,10 +121,15 @@ def parse_srt_content(
     """
     results = []
     try:
-        # SRT格式正则表达式
-        pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+        # SRT格式正则表达式 - 更健壮的版本，处理不同的换行符和空格
+        pattern = r"(\d+)[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})[\r\n]+(.*?)(?=[\r\n]+\d+[\r\n]+|[\r\n]*$)"
 
+        # 记录SRT内容的行数
+        logger.info(f"SRT内容行数: {len(srt_content.splitlines())}")
+
+        # 尝试匹配
         matches = re.findall(pattern, srt_content, re.DOTALL)
+        logger.info(f"正则表达式匹配到 {len(matches)} 条字幕")
 
         for match in matches:
             index, start_time, end_time, translated_text = match
@@ -376,12 +388,29 @@ async def translate_video_subtitle_v2(
                                     original_subtitles = getattr(
                                         callback, "_original_subtitles", None
                                     )
+                                    # 记录原始字幕数据
+                                    logger.info(
+                                        f"原始字幕数据: {original_subtitles[:2] if original_subtitles else None}"
+                                    )
+
+                                    # 记录SRT内容前100个字符
+                                    logger.info(
+                                        f"SRT内容预览: {srt_content[:100] if srt_content else 'Empty'}"
+                                    )
+
+                                    # 解析翻译结果
                                     translation_results = parse_srt_content(
                                         srt_content, original_subtitles
                                     )
+
+                                    # 记录解析结果
                                     logger.info(
                                         f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
                                     )
+                                    if translation_results:
+                                        logger.info(
+                                            f"第一条翻译结果: {translation_results[0]}"
+                                        )
                     except Exception as e:
                         logger.error(f"获取翻译结果失败: {e}")
                         translation_results = []
@@ -391,6 +420,11 @@ async def translate_video_subtitle_v2(
                         "message": message,
                         "results": translation_results,  # ✅ 实际翻译结果
                     }
+
+                    # 记录WebSocket消息
+                    logger.info(
+                        f"准备发送WebSocket消息: type={websocket_message['type']}, results_count={len(translation_results)}"
+                    )
                 elif status == "failed":
                     websocket_message = {"type": "error", "message": message}
                 else:
@@ -478,8 +512,44 @@ async def translate_video_subtitle_v2(
 
                     # 设置回调函数的任务引用，以便获取翻译结果
                     callback._current_task = task
+
+                    # 读取并解析原始字幕数据
+                    original_subtitles = []
+                    try:
+                        if os.path.exists(task.source_path):
+                            with open(
+                                task.source_path, "r", encoding="utf-8"
+                            ) as f:
+                                source_srt_content = f.read()
+                                # 解析原始SRT内容
+                                pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+                                matches = re.findall(
+                                    pattern, source_srt_content, re.DOTALL
+                                )
+
+                                for match in matches:
+                                    index, start_time, end_time, text = match
+                                    original_subtitles.append(
+                                        {
+                                            "index": int(index),
+                                            "startTime": srt_time_to_seconds(
+                                                start_time
+                                            ),
+                                            "endTime": srt_time_to_seconds(
+                                                end_time
+                                            ),
+                                            "text": text.strip(),
+                                        }
+                                    )
+                                logger.info(
+                                    f"成功解析原始字幕，共 {len(original_subtitles)} 条"
+                                )
+                    except Exception as e:
+                        logger.error(f"解析原始字幕失败: {e}")
+                        original_subtitles = []
+
                     # 保存原始字幕数据到回调函数
-                    callback._original_subtitles = task.subtitles
+                    callback._original_subtitles = original_subtitles
 
                     # 执行翻译任务
                     success = await translator.translate_task(task, callback)

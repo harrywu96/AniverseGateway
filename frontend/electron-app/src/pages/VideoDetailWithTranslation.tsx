@@ -328,7 +328,8 @@ const VideoDetailWithTranslation: React.FC = () => {
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
+        console.log('WebSocket收到消息:', data);
+
         if (data.type === 'progress') {
           setTranslationProgress({
             current: data.current || 0,
@@ -338,10 +339,19 @@ const VideoDetailWithTranslation: React.FC = () => {
             estimatedTimeRemaining: data.estimatedTime
           });
         } else if (data.type === 'completed') {
+          console.log('翻译完成消息详情:', {
+            type: data.type,
+            message: data.message,
+            results: data.results,
+            resultsLength: data.results?.length || 0,
+            resultsType: typeof data.results,
+            firstResult: data.results?.[0]
+          });
+
           setTranslationStatus(TranslationStatus.COMPLETED);
           setTranslationResults(data.results || []);
           setActiveStep(2);
-          console.log('翻译完成，共', data.results?.length || 0, '条结果');
+          console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
         } else if (data.type === 'error') {
           setTranslationStatus(TranslationStatus.ERROR);
           setError(`翻译失败: ${data.message || '未知错误'}`);
@@ -443,14 +453,26 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 初始化显示的结果
   useEffect(() => {
+    console.log('虚拟列表初始化，translationResults长度:', translationResults.length);
     if (translationResults.length > 0) {
-      setDisplayedResults(translationResults.slice(0, Math.min(15, translationResults.length)));
+      const initialResults = translationResults.slice(0, Math.min(15, translationResults.length));
+      console.log('设置初始显示结果，数量:', initialResults.length, '第一条:', initialResults[0]);
+      setDisplayedResults(initialResults);
       setLoadedCount(Math.min(15, translationResults.length));
     } else {
       setDisplayedResults([]);
       setLoadedCount(0);
     }
   }, [translationResults]);
+
+  // 调试displayedResults
+  useEffect(() => {
+    console.log('displayedResults状态更新:', {
+      length: displayedResults.length,
+      firstItem: displayedResults[0],
+      loadedCount
+    });
+  }, [displayedResults, loadedCount]);
 
   // 处理滚动事件，实现虚拟列表
   const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
@@ -605,10 +627,10 @@ const VideoDetailWithTranslation: React.FC = () => {
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <PreviewIcon color="primary" />
                       <Typography variant="h6">翻译结果预览</Typography>
-                      <Chip 
-                        label={`${translationResults.length} 条`} 
-                        size="small" 
-                        color="primary" 
+                      <Chip
+                        label={`${translationResults.length} 条 (显示 ${displayedResults.length})`}
+                        size="small"
+                        color="primary"
                       />
                     </Stack>
                   }
@@ -619,6 +641,11 @@ const VideoDetailWithTranslation: React.FC = () => {
                     sx={{ maxHeight: 400, overflow: 'auto' }}
                     onScroll={handleScroll}
                   >
+                    {displayedResults.length === 0 && (
+                      <Typography sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                        正在加载翻译结果...
+                      </Typography>
+                    )}
                     {displayedResults.map((result, index) => (
                       <Paper
                         key={index}
