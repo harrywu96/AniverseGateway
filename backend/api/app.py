@@ -33,6 +33,7 @@ from .routers import (
     translate,
     translate_v2,  # 添加新的独立翻译路由v2
     translate_fixed,  # 添加修复版翻译路由
+    test_translation,  # 添加测试翻译路由
     tasks,
     export,
     templates,
@@ -151,6 +152,7 @@ def get_app() -> FastAPI:
         dependencies=[Depends(verify_api_key)],
     )
     app.include_router(speech_to_text.router)  # 注册speech_to_text路由
+    app.include_router(test_translation.router)  # 注册测试翻译路由
 
     return app
 

@@ -121,51 +121,101 @@ def parse_srt_content(
     """
     results = []
     try:
-        # SRT格式正则表达式 - 更健壮的版本，处理不同的换行符和空格
-        pattern = r"(\d+)[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})[\r\n]+(.*?)(?=[\r\n]+\d+[\r\n]+|[\r\n]*$)"
+        if not srt_content or not srt_content.strip():
+            logger.warning("SRT内容为空")
+            return results
 
-        # 记录SRT内容的行数
+        # 记录SRT内容的行数和前200个字符
         logger.info(f"SRT内容行数: {len(srt_content.splitlines())}")
+        logger.info(f"SRT内容预览: {repr(srt_content[:200])}")
 
-        # 尝试匹配
-        matches = re.findall(pattern, srt_content, re.DOTALL)
-        logger.info(f"正则表达式匹配到 {len(matches)} 条字幕")
+        # 改进的SRT格式正则表达式 - 处理多种格式变体
+        # 支持逗号和点作为毫秒分隔符，支持不同的换行符
+        patterns = [
+            # 标准格式：数字 + 换行 + 时间 + 换行 + 文本
+            r"(\d+)\s*[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*[\r\n]+(.*?)(?=\s*[\r\n]+\d+\s*[\r\n]+|\s*$)",
+            # 紧凑格式：可能没有空行分隔
+            r"(\d+)[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})[\r\n]+(.*?)(?=[\r\n]*\d+[\r\n]+|[\r\n]*$)",
+        ]
 
-        for match in matches:
-            index, start_time, end_time, translated_text = match
+        matches = []
+        for pattern in patterns:
+            matches = re.findall(
+                pattern, srt_content, re.DOTALL | re.MULTILINE
+            )
+            if matches:
+                logger.info(f"使用模式匹配到 {len(matches)} 条字幕")
+                break
 
-            # 转换时间为秒数
-            start_seconds = srt_time_to_seconds(start_time)
-            end_seconds = srt_time_to_seconds(end_time)
+        if not matches:
+            logger.warning("没有匹配到任何字幕条目")
+            # 尝试按行解析
+            lines = srt_content.strip().split("\n")
+            logger.info(f"尝试按行解析，共 {len(lines)} 行")
+            for i, line in enumerate(lines[:5]):  # 只记录前5行
+                logger.info(f"第{i+1}行: {repr(line)}")
+            return results
 
-            # 获取对应的原文
-            original_text = translated_text.strip()  # 默认值
-            if original_subtitles:
-                # 根据索引或时间匹配原文
-                for orig_sub in original_subtitles:
-                    if orig_sub.get("index") == int(index) or (
-                        abs(orig_sub.get("startTime", 0) - start_seconds) < 0.1
-                        and abs(orig_sub.get("endTime", 0) - end_seconds) < 0.1
-                    ):
-                        original_text = orig_sub.get(
-                            "text", translated_text.strip()
-                        )
-                        break
+        for i, match in enumerate(matches):
+            try:
+                index, start_time, end_time, translated_text = match
 
-            results.append(
-                {
+                # 清理文本内容
+                translated_text = translated_text.strip()
+                if not translated_text:
+                    logger.warning(f"第{i+1}条字幕文本为空")
+                    continue
+
+                # 转换时间为秒数
+                start_seconds = srt_time_to_seconds(start_time)
+                end_seconds = srt_time_to_seconds(end_time)
+
+                # 获取对应的原文
+                original_text = "原文未找到"  # 默认值
+                if original_subtitles:
+                    # 优先根据索引匹配
+                    for orig_sub in original_subtitles:
+                        if orig_sub.get("index") == int(index):
+                            original_text = orig_sub.get("text", "原文未找到")
+                            break
+
+                    # 如果索引匹配失败，尝试时间匹配
+                    if original_text == "原文未找到":
+                        for orig_sub in original_subtitles:
+                            orig_start = orig_sub.get("startTime", 0)
+                            orig_end = orig_sub.get("endTime", 0)
+                            if (
+                                abs(orig_start - start_seconds) < 1.0
+                                and abs(orig_end - end_seconds) < 1.0
+                            ):
+                                original_text = orig_sub.get(
+                                    "text", "原文未找到"
+                                )
+                                break
+
+                result_item = {
                     "index": int(index),
                     "startTime": start_seconds,
                     "endTime": end_seconds,
                     "startTimeStr": start_time,
                     "endTimeStr": end_time,
                     "original": original_text,  # 原始字幕内容
-                    "translated": translated_text.strip(),  # 翻译后的内容
+                    "translated": translated_text,  # 翻译后的内容
                 }
-            )
+                results.append(result_item)
+
+                # 记录前几条结果用于调试
+                if i < 3:
+                    logger.info(f"解析结果 {i+1}: {result_item}")
+
+            except Exception as e:
+                logger.error(f"解析第{i+1}条字幕失败: {e}")
+                continue
+
+        logger.info(f"成功解析 {len(results)} 条字幕")
 
     except Exception as e:
-        logger.error(f"解析SRT内容失败: {e}")
+        logger.error(f"解析SRT内容失败: {e}", exc_info=True)
 
     return results
 
@@ -372,47 +422,107 @@ async def translate_video_subtitle_v2(
                     translation_results = []
                     try:
                         # 从翻译任务中获取结果
-                        if (
-                            hasattr(callback, "_current_task")
-                            and callback._current_task
-                        ):
-                            task = callback._current_task
-                            if task.result_path and os.path.exists(
-                                task.result_path
+                        task = getattr(callback, "_current_task", None)
+                        if task:
+                            logger.info(
+                                f"任务对象存在，result_path: {getattr(task, 'result_path', 'None')}"
+                            )
+
+                            # 尝试多种方式获取翻译结果文件
+                            result_file_paths = []
+
+                            # 方式1：从任务对象获取
+                            if (
+                                hasattr(task, "result_path")
+                                and task.result_path
                             ):
-                                with open(
-                                    task.result_path, "r", encoding="utf-8"
-                                ) as f:
-                                    srt_content = f.read()
-                                    # 获取原始字幕数据
-                                    original_subtitles = getattr(
-                                        callback, "_original_subtitles", None
-                                    )
-                                    # 记录原始字幕数据
-                                    logger.info(
-                                        f"原始字幕数据: {original_subtitles[:2] if original_subtitles else None}"
-                                    )
+                                result_file_paths.append(task.result_path)
 
-                                    # 记录SRT内容前100个字符
-                                    logger.info(
-                                        f"SRT内容预览: {srt_content[:100] if srt_content else 'Empty'}"
-                                    )
+                            # 方式2：从临时目录构建路径
+                            if hasattr(task, "id"):
+                                temp_result_file = os.path.join(
+                                    temp_dir, f"{task.id}_result.srt"
+                                )
+                                result_file_paths.append(temp_result_file)
 
-                                    # 解析翻译结果
-                                    translation_results = parse_srt_content(
-                                        srt_content, original_subtitles
-                                    )
+                            # 方式3：使用任务ID构建路径
+                            task_result_file = os.path.join(
+                                temp_dir, f"{task_id}_result.srt"
+                            )
+                            result_file_paths.append(task_result_file)
 
-                                    # 记录解析结果
-                                    logger.info(
-                                        f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
-                                    )
-                                    if translation_results:
-                                        logger.info(
-                                            f"第一条翻译结果: {translation_results[0]}"
+                            # 方式4：查找临时目录中的所有SRT文件
+                            if os.path.exists(temp_dir):
+                                for file in os.listdir(temp_dir):
+                                    if (
+                                        file.endswith(".srt")
+                                        and task_id in file
+                                    ):
+                                        result_file_paths.append(
+                                            os.path.join(temp_dir, file)
                                         )
+
+                            logger.info(
+                                f"尝试的结果文件路径: {result_file_paths}"
+                            )
+
+                            # 尝试读取翻译结果
+                            srt_content = None
+                            used_path = None
+                            for path in result_file_paths:
+                                if path and os.path.exists(path):
+                                    try:
+                                        with open(
+                                            path, "r", encoding="utf-8"
+                                        ) as f:
+                                            srt_content = f.read()
+                                            used_path = path
+                                            logger.info(
+                                                f"成功从 {path} 读取翻译结果"
+                                            )
+                                            break
+                                    except Exception as e:
+                                        logger.warning(
+                                            f"读取文件 {path} 失败: {e}"
+                                        )
+                                        continue
+
+                            if srt_content:
+                                # 获取原始字幕数据
+                                original_subtitles = getattr(
+                                    callback, "_original_subtitles", None
+                                )
+                                logger.info(
+                                    f"原始字幕数据条数: {len(original_subtitles) if original_subtitles else 0}"
+                                )
+                                if (
+                                    original_subtitles
+                                    and len(original_subtitles) > 0
+                                ):
+                                    logger.info(
+                                        f"第一条原始字幕: {original_subtitles[0]}"
+                                    )
+
+                                # 解析翻译结果
+                                translation_results = parse_srt_content(
+                                    srt_content, original_subtitles
+                                )
+
+                                # 记录解析结果
+                                logger.info(
+                                    f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
+                                )
+                                if translation_results:
+                                    logger.info(
+                                        f"第一条翻译结果: {translation_results[0]}"
+                                    )
+                            else:
+                                logger.error("无法找到或读取翻译结果文件")
+                        else:
+                            logger.error("任务对象不存在")
+
                     except Exception as e:
-                        logger.error(f"获取翻译结果失败: {e}")
+                        logger.error(f"获取翻译结果失败: {e}", exc_info=True)
                         translation_results = []
 
                     websocket_message = {
