@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo, forwardRef, useImperativeHandle } from 'react';
 import {
   Box,
   Slider,
@@ -33,6 +33,24 @@ import { UnifiedSubtitleItem, SubtitleStyle } from '@subtranslate/shared';
 import { timeUtils } from '../utils/timeUtils';
 import { subtitleDataUtils } from '../utils/subtitleDataUtils';
 
+/**
+ * VideoPlayer组件的ref接口
+ */
+export interface VideoPlayerRef {
+  /** 跳转到指定时间 */
+  seekTo: (time: number) => void;
+  /** 获取当前播放时间 */
+  getCurrentTime: () => number;
+  /** 获取视频总时长 */
+  getDuration: () => number;
+  /** 播放视频 */
+  play: () => void;
+  /** 暂停视频 */
+  pause: () => void;
+  /** 获取播放状态 */
+  isPlaying: () => boolean;
+}
+
 interface VideoPlayerProps {
   src: string;
   onTimeUpdate?: (currentTime: number) => void;
@@ -52,7 +70,7 @@ interface VideoPlayerProps {
   videoId?: string; // 用于持久化存储
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
+const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(({
   src,
   onTimeUpdate,
   autoPlay = false,
@@ -68,7 +86,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   showMultiTrack = false,
   onMultiTrackToggle,
   videoId
-}) => {
+}, ref) => {
   const theme = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,6 +112,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // 控制栏显示/隐藏的计时器
   const controlsTimeoutRef = useRef<number>();
+
+  // 暴露给父组件的方法
+  useImperativeHandle(ref, () => ({
+    seekTo: (time: number) => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = time;
+        setCurrentTime(time);
+      }
+    },
+    getCurrentTime: () => currentTime,
+    getDuration: () => duration,
+    play: () => {
+      if (videoRef.current) {
+        videoRef.current.play();
+        setPlaying(true);
+      }
+    },
+    pause: () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        setPlaying(false);
+      }
+    },
+    isPlaying: () => playing
+  }), [currentTime, duration, playing]);
 
   // 重置控制栏隐藏计时器
   const resetControlsTimeout = useCallback(() => {
@@ -828,7 +871,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 value={currentTime}
                 max={duration || 100}
                 onChange={handleSeek}
-                onChangeStart={handleSeekStart}
+                onMouseDown={handleSeekStart}
                 onChangeCommitted={handleSeekEnd}
                 sx={{
                   width: '100%',
@@ -1040,6 +1083,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       </Fade>
     </Box>
   );
-};
+});
 
 export default memo(VideoPlayer);

@@ -52,13 +52,17 @@ import {
   Upload as UploadIcon,
   Preview as PreviewIcon,
   Save as SaveIcon,
-  Stop as StopIcon
+  Stop as StopIcon,
+  Edit as EditIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
 import { VideoInfo } from '@subtranslate/shared';
-import VideoPlayer from '../components/VideoPlayer';
+import VideoPlayer, { VideoPlayerRef } from '../components/VideoPlayer';
 import ErrorSnackbar from '../components/ErrorSnackbar';
+import TranslationResultEditor from '../components/TranslationResultEditor';
 import { createModernCardStyles, createModernPaperStyles, createModernFormStyles, createModernAlertStyles, createModernDialogStyles, createModernButtonStyles, createModernContainerStyles, createElegantAreaStyles } from '../utils/modernStyles';
+import { timeUtils } from '../utils/timeUtils';
 
 // 翻译步骤枚举
 const TRANSLATION_STEPS = [
@@ -135,7 +139,15 @@ const VideoDetailWithTranslation: React.FC = () => {
   });
   const [translationResults, setTranslationResults] = useState<TranslationResult[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
-  
+
+  // 编辑模式状态
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [editedCount, setEditedCount] = useState(0);
+
+  // VideoPlayer引用
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
+
   // 设置对话框状态
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedProviderId, setSelectedProviderId] = useState('');
@@ -433,6 +445,115 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, [video, translationResults, targetLanguage]);
 
+  // 处理时间跳转
+  const handleTimeJump = useCallback((time: number) => {
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.seekTo(time);
+    }
+  }, []);
+
+  // 处理编辑状态变化
+  const handleEditStateChange = useCallback((hasChanges: boolean, editedCount: number) => {
+    setHasUnsavedChanges(hasChanges);
+    setEditedCount(editedCount);
+  }, []);
+
+  // 处理编辑结果保存
+  const handleEditedResultsSave = useCallback(async (editedResults: any[]) => {
+    if (!video) {
+      setError('视频信息不存在');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const apiPort = '8000';
+
+      const response = await fetch(`http://localhost:${apiPort}/api/translation/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          results: editedResults,
+          targetLanguage,
+          fileName: `${video.fileName}_${targetLanguage}_edited`,
+          edited: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`保存失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        setHasUnsavedChanges(false);
+        setError('编辑结果保存成功！');
+      } else {
+        throw new Error(result.message || '保存失败');
+      }
+    } catch (err) {
+      setError(`保存失败: ${err instanceof Error ? err.message : '未知错误'}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [video, targetLanguage]);
+
+  // 切换编辑模式
+  const toggleEditMode = useCallback(() => {
+    setIsEditMode(prev => !prev);
+  }, []);
+
+  // 导出编辑后的字幕
+  const exportEditedSubtitles = useCallback((resultsToExport: any[]) => {
+    if (!video || !resultsToExport.length) {
+      setError('没有可导出的字幕数据');
+      return;
+    }
+
+    try {
+      // 生成SRT格式内容
+      const srtContent = resultsToExport
+        .map((result, index) => {
+          const startTime = timeUtils.secondsToSrt(result.startTime);
+          const endTime = timeUtils.secondsToSrt(result.endTime);
+          return `${index + 1}\n${startTime} --> ${endTime}\n${result.translated}\n`;
+        })
+        .join('\n');
+
+      // 创建下载链接
+      const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${video.fileName}_${targetLanguage}_edited.srt`;
+
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setError('字幕文件导出成功！');
+    } catch (err) {
+      setError(`导出失败: ${err instanceof Error ? err.message : '未知错误'}`);
+    }
+  }, [video, targetLanguage]);
+
+  // 处理编辑结果保存（扩展版本，支持导出）
+  const handleEditedResultsSaveAndExport = useCallback(async (editedResults: any[], shouldExport: boolean = false) => {
+    // 先保存到服务器
+    await handleEditedResultsSave(editedResults);
+
+    // 如果需要导出，则导出文件
+    if (shouldExport) {
+      exportEditedSubtitles(editedResults);
+    }
+  }, [handleEditedResultsSave, exportEditedSubtitles]);
+
   // 格式化时间
   const formatTime = useCallback((seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -609,6 +730,7 @@ const VideoDetailWithTranslation: React.FC = () => {
           <Fade in={true} timeout={600}>
             <Card sx={{ mb: 3 }}>
               <VideoPlayer
+                ref={videoPlayerRef}
                 src={video.filePath}
                 onTimeUpdate={setCurrentTime}
                 poster=""
@@ -618,79 +740,65 @@ const VideoDetailWithTranslation: React.FC = () => {
             </Card>
           </Fade>
 
-          {/* 翻译结果预览 */}
+          {/* 翻译结果编辑器 */}
           {translationResults.length > 0 && (
             <Fade in={true} timeout={800}>
-              <Card>
-                <CardHeader
-                  title={
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <PreviewIcon color="primary" />
-                      <Typography variant="h6">翻译结果预览</Typography>
-                      <Chip
-                        label={`${translationResults.length} 条 (显示 ${displayedResults.length})`}
-                        size="small"
-                        color="primary"
-                      />
-                    </Stack>
-                  }
-                />
-                <CardContent>
-                  <Box
-                    ref={scrollContainerRef}
-                    sx={{ maxHeight: 400, overflow: 'auto' }}
-                    onScroll={handleScroll}
-                  >
-                    {displayedResults.length === 0 && (
-                      <Typography sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
-                        正在加载翻译结果...
-                      </Typography>
-                    )}
-                    {displayedResults.map((result, index) => (
-                      <Paper
-                        key={index}
+              <Box>
+                {/* 编辑模式切换按钮 */}
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* 导出按钮 */}
+                    <Tooltip title="导出编辑后的字幕文件">
+                      <Button
                         variant="outlined"
-                        sx={{ p: 2, mb: 2 }}
+                        color="secondary"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => exportEditedSubtitles(translationResults)}
+                        size="small"
+                        disabled={translationResults.length === 0}
                       >
-                        <Typography variant="caption" color="text.secondary">
-                          {formatTime(result.startTime)} → {formatTime(result.endTime)}
-                        </Typography>
-                        <Box sx={{ mt: 1 }}>
-                          <Typography variant="body2" sx={{ mb: 1, opacity: 0.7 }}>
-                            原文: {result.original}
-                          </Typography>
-                          <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-                            译文: {result.translated}
-                          </Typography>
-                          {result.confidence && (
-                            <Chip
-                              label={`可信度: ${Math.round(result.confidence * 100)}%`}
-                              size="small"
-                              color={result.confidence > 0.8 ? 'success' : result.confidence > 0.6 ? 'warning' : 'error'}
-                              sx={{ mt: 1 }}
-                            />
-                          )}
-                        </Box>
-                      </Paper>
-                    ))}
-                    {loadedCount < translationResults.length && (
-                      <Box sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          已显示 {loadedCount} / {translationResults.length} 条结果
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          滚动到底部加载更多...
-                        </Typography>
-                      </Box>
-                    )}
-                    {loadedCount >= translationResults.length && translationResults.length > 15 && (
-                      <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-                        已显示全部 {translationResults.length} 条结果
-                      </Typography>
-                    )}
+                        导出字幕
+                      </Button>
+                    </Tooltip>
                   </Box>
-                </CardContent>
-              </Card>
+
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    {hasUnsavedChanges && (
+                      <Chip
+                        label={`${editedCount} 条未保存`}
+                        color="warning"
+                        size="small"
+                        variant="filled"
+                      />
+                    )}
+
+                    <Tooltip title={isEditMode ? '切换到预览模式' : '切换到编辑模式'}>
+                      <Button
+                        variant={isEditMode ? 'contained' : 'outlined'}
+                        color="primary"
+                        startIcon={isEditMode ? <VisibilityIcon /> : <EditIcon />}
+                        onClick={toggleEditMode}
+                        size="small"
+                      >
+                        {isEditMode ? '预览模式' : '编辑模式'}
+                      </Button>
+                    </Tooltip>
+                  </Box>
+                </Box>
+
+                {/* 翻译结果编辑器组件 */}
+                <TranslationResultEditor
+                  results={translationResults}
+                  currentTime={currentTime}
+                  videoId={video.id}
+                  readOnly={!isEditMode}
+                  showPreview={!isEditMode}
+                  maxHeight={500}
+                  onTimeJump={handleTimeJump}
+                  onEditStateChange={handleEditStateChange}
+                  onSave={handleEditedResultsSave}
+                />
+              </Box>
             </Fade>
           )}
         </Grid>
