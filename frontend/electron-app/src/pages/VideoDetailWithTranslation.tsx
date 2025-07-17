@@ -61,7 +61,9 @@ import { VideoInfo } from '@subtranslate/shared';
 import VideoPlayer, { VideoPlayerRef } from '../components/VideoPlayer';
 import ErrorSnackbar from '../components/ErrorSnackbar';
 import TranslationResultEditor from '../components/TranslationResultEditor';
+import TranslationTestPanel from '../components/TranslationTestPanel';
 import { createModernCardStyles, createModernPaperStyles, createModernFormStyles, createModernAlertStyles, createModernDialogStyles, createModernButtonStyles, createModernContainerStyles, createElegantAreaStyles } from '../utils/modernStyles';
+import { UnifiedSubtitleItem } from '@subtranslate/shared/src/types/subtitle';
 import { timeUtils } from '../utils/timeUtils';
 
 // 翻译步骤枚举
@@ -147,6 +149,10 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // VideoPlayer引用
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
+
+  // 字幕显示状态
+  const [showSubtitles, setShowSubtitles] = useState(true);
+  const [subtitlesForPlayer, setSubtitlesForPlayer] = useState<UnifiedSubtitleItem[]>([]);
 
   // 设置对话框状态
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -235,6 +241,77 @@ const VideoDetailWithTranslation: React.FC = () => {
     loadVideo();
   }, [id, state.videos]);
 
+  // 转换翻译结果为字幕格式
+  const convertToSubtitles = useCallback((results: TranslationResult[]): UnifiedSubtitleItem[] => {
+    return results.map((result, index) => ({
+      id: `subtitle-${index}`,
+      index: index + 1,
+      startTime: result.startTime,
+      endTime: result.endTime,
+      startTimeStr: timeUtils.secondsToSrt(result.startTime),
+      endTimeStr: timeUtils.secondsToSrt(result.endTime),
+      originalText: result.original,
+      translatedText: result.translated,
+      confidence: result.confidence,
+      edited: false // 默认为未编辑
+    }));
+  }, []);
+
+  // 加载保存的翻译结果
+  const loadSavedTranslation = useCallback(async () => {
+    if (!video || !targetLanguage) {
+      console.log('加载翻译结果跳过:', { video: !!video, targetLanguage });
+      return;
+    }
+
+    console.log('尝试加载保存的翻译结果:', { videoId: video.id, targetLanguage });
+
+    try {
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/translate/load`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          targetLanguage: targetLanguage
+        })
+      });
+
+      console.log('加载翻译结果响应状态:', response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('加载翻译结果响应:', result);
+
+        if (result.success && result.data?.results) {
+          console.log('成功加载保存的翻译结果:', result.data.results.length, '条');
+          setTranslationResults(result.data.results);
+          setTranslationStatus(TranslationStatus.COMPLETED);
+          setActiveStep(2);
+
+          // 转换为字幕格式
+          const subtitles = convertToSubtitles(result.data.results);
+          setSubtitlesForPlayer(subtitles);
+        } else {
+          console.log('没有找到保存的翻译结果');
+        }
+      } else {
+        console.log('加载翻译结果请求失败:', response.status);
+      }
+    } catch (error) {
+      console.log('加载翻译结果出错:', error);
+    }
+  }, [video, targetLanguage, convertToSubtitles]);
+
+  // 当视频和目标语言都设置后，尝试加载保存的翻译结果
+  useEffect(() => {
+    if (video && targetLanguage && translationStatus === TranslationStatus.IDLE) {
+      loadSavedTranslation();
+    }
+  }, [video, targetLanguage, translationStatus, loadSavedTranslation]);
+
   // 可用字幕轨道选项
   const trackOptions = useMemo(() => {
     if (!video?.subtitleTracks) return [];
@@ -279,6 +356,8 @@ const VideoDetailWithTranslation: React.FC = () => {
       setActiveStep(step);
     }
   }, [activeStep]);
+
+
 
   // 开始翻译
   const startTranslation = useCallback(async () => {
@@ -362,6 +441,11 @@ const VideoDetailWithTranslation: React.FC = () => {
 
           setTranslationStatus(TranslationStatus.COMPLETED);
           setTranslationResults(data.results || []);
+          // 转换为字幕格式
+          if (data.results && Array.isArray(data.results)) {
+            const subtitles = convertToSubtitles(data.results);
+            setSubtitlesForPlayer(subtitles);
+          }
           setActiveStep(2);
           console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
         } else if (data.type === 'error') {
@@ -451,6 +535,22 @@ const VideoDetailWithTranslation: React.FC = () => {
       videoPlayerRef.current.seekTo(time);
     }
   }, []);
+
+  // 处理测试翻译结果
+  const handleTestResults = useCallback((results: any[]) => {
+    console.log('收到测试翻译结果:', results);
+    setTranslationResults(results);
+    setTranslationStatus(TranslationStatus.COMPLETED);
+    setActiveStep(2);
+
+    // 转换为字幕格式
+    const subtitles = convertToSubtitles(results);
+    setSubtitlesForPlayer(subtitles);
+  }, [convertToSubtitles]);
+
+
+
+
 
   // 处理编辑状态变化
   const handleEditStateChange = useCallback((hasChanges: boolean, editedCount: number) => {
@@ -736,6 +836,12 @@ const VideoDetailWithTranslation: React.FC = () => {
                 poster=""
                 autoPlay={false}
                 muted={false}
+                showSubtitles={showSubtitles}
+                subtitles={subtitlesForPlayer}
+                showMultiTrack={true}
+                onSubtitleClick={(subtitle) => {
+                  console.log('字幕点击:', subtitle);
+                }}
               />
             </Card>
           </Fade>
@@ -1016,7 +1122,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   startIcon={<PlayIcon />}
                                   onClick={startTranslation}
                                   disabled={!isConfigComplete || translationStatus === TranslationStatus.TRANSLATING}
-                                  sx={{ 
+                                  sx={{
                                     ...createModernButtonStyles(theme, 'primary'),
                                     flex: 1,
                                     py: 1.2
@@ -1125,6 +1231,13 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   <AlertTitle sx={{ fontWeight: 600 }}>翻译失败</AlertTitle>
                                   {error}
                                 </Alert>
+                              )}
+
+                              {/* 测试翻译面板 */}
+                              {translationStatus === TranslationStatus.IDLE && (
+                                <Box sx={{ mt: 3 }}>
+                                  <TranslationTestPanel onTestResults={handleTestResults} />
+                                </Box>
                               )}
                             </Box>
                           )}

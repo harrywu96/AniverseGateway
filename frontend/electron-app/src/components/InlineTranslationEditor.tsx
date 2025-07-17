@@ -96,8 +96,17 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
       setEditText(result.translated);
       // 延迟聚焦，确保DOM已更新
       setTimeout(() => {
-        textFieldRef.current?.focus();
-        textFieldRef.current?.select();
+        const inputElement = textFieldRef.current;
+        if (inputElement) {
+          inputElement.focus();
+          // 选中所有文本
+          if (inputElement.select) {
+            inputElement.select();
+          } else {
+            // 备用方案：设置选择范围
+            inputElement.setSelectionRange?.(0, inputElement.value.length);
+          }
+        }
       }, 100);
     }
   }, [isEditing, result.translated]);
@@ -300,7 +309,7 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
               {isEditing ? (
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                   <TextField
-                    ref={textFieldRef}
+                    inputRef={textFieldRef}
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -328,31 +337,35 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
                   
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Tooltip title="保存 (Enter)">
-                      <IconButton
-                        size="small"
-                        onClick={handleSave}
-                        disabled={isSaving || editText.trim() === result.translated}
-                        sx={{ 
-                          color: 'success.main',
-                          '&:hover': { backgroundColor: alpha(theme.palette.success.main, 0.1) }
-                        }}
-                      >
-                        <SaveIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={handleSave}
+                          disabled={isSaving || editText.trim() === result.translated}
+                          sx={{
+                            color: 'success.main',
+                            '&:hover': { backgroundColor: alpha(theme.palette.success.main, 0.1) }
+                          }}
+                        >
+                          <SaveIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </span>
                     </Tooltip>
-                    
+
                     <Tooltip title="取消 (Esc)">
-                      <IconButton
-                        size="small"
-                        onClick={handleCancel}
-                        disabled={isSaving}
-                        sx={{ 
-                          color: 'text.secondary',
-                          '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) }
-                        }}
-                      >
-                        <CloseIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={handleCancel}
+                          disabled={isSaving}
+                          sx={{
+                            color: 'text.secondary',
+                            '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) }
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </Box>
                 </Box>

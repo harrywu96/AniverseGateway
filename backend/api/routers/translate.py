@@ -6,7 +6,9 @@
 import logging
 import os
 import uuid
+import json
 from typing import Optional, Dict, List, Any
+from pathlib import Path
 
 from fastapi import (
     APIRouter,
@@ -145,6 +147,32 @@ class TranslateResponse(APIResponse):
                 },
             }
         }
+
+
+# 翻译结果保存请求模型
+class TranslationSaveRequest(BaseModel):
+    """翻译结果保存请求模型"""
+
+    videoId: str = Field(..., description="视频ID")
+    results: List[Dict[str, Any]] = Field(..., description="翻译结果列表")
+    targetLanguage: str = Field(..., description="目标语言")
+    fileName: str = Field(..., description="文件名")
+    edited: bool = Field(default=False, description="是否为编辑后的结果")
+
+
+# 翻译结果加载请求模型
+class TranslationLoadRequest(BaseModel):
+    """翻译结果加载请求模型"""
+
+    videoId: str = Field(..., description="视频ID")
+    targetLanguage: str = Field(..., description="目标语言")
+
+
+# 翻译结果保存响应模型
+class TranslationSaveResponse(APIResponse):
+    """翻译结果保存响应模型"""
+
+    pass
 
 
 async def _configure_ai_service_from_provider_config(
@@ -582,6 +610,114 @@ async def list_templates(
         raise HTTPException(
             status_code=500, detail=f"获取模板列表失败: {str(e)}"
         )
+
+
+@router.post(
+    "/save", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
+)
+async def save_translation_results(
+    request: TranslationSaveRequest,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """保存翻译结果
+
+    Args:
+        request: 保存请求
+        config: 系统配置
+
+    Returns:
+        TranslationSaveResponse: 保存响应
+    """
+    try:
+        # 创建保存目录
+        save_dir = Path(config.temp_dir) / "translations"
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成文件名
+        file_suffix = "_edited" if request.edited else ""
+        file_name = (
+            f"{request.videoId}_{request.targetLanguage}{file_suffix}.json"
+        )
+        file_path = save_dir / file_name
+
+        # 保存数据
+        save_data = {
+            "videoId": request.videoId,
+            "targetLanguage": request.targetLanguage,
+            "fileName": request.fileName,
+            "edited": request.edited,
+            "results": request.results,
+            "savedAt": str(uuid.uuid4()),  # 简单的时间戳替代
+        }
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(save_data, f, ensure_ascii=False, indent=2)
+
+        logger.info(f"翻译结果已保存到: {file_path}")
+
+        return TranslationSaveResponse(
+            success=True,
+            message="翻译结果保存成功",
+            data={"filePath": str(file_path), "fileName": file_name},
+        )
+
+    except Exception as e:
+        logger.error(f"保存翻译结果失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"保存失败: {str(e)}")
+
+
+@router.post(
+    "/load", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
+)
+async def load_translation_results(
+    request: TranslationLoadRequest,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """加载翻译结果
+
+    Args:
+        request: 加载请求
+        config: 系统配置
+
+    Returns:
+        TranslationSaveResponse: 加载响应
+    """
+    try:
+        save_dir = Path(config.temp_dir) / "translations"
+
+        # 优先查找编辑过的版本
+        edited_file = (
+            save_dir
+            / f"{request.videoId}_{request.targetLanguage}_edited.json"
+        )
+        original_file = (
+            save_dir / f"{request.videoId}_{request.targetLanguage}.json"
+        )
+
+        file_path = None
+        if edited_file.exists():
+            file_path = edited_file
+        elif original_file.exists():
+            file_path = original_file
+
+        if not file_path:
+            return TranslationSaveResponse(
+                success=False, message="未找到保存的翻译结果", data=None
+            )
+
+        # 加载数据
+        with open(file_path, "r", encoding="utf-8") as f:
+            save_data = json.load(f)
+
+        logger.info(f"翻译结果已从 {file_path} 加载")
+
+        return TranslationSaveResponse(
+            success=True, message="翻译结果加载成功", data=save_data
+        )
+
+    except Exception as e:
+        logger.error(f"加载翻译结果失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"加载失败: {str(e)}")
 
 
 @router.websocket("/ws/{task_id}")
