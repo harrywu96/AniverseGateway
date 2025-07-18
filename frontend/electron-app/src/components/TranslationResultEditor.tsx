@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Visibility as PreviewIcon,
   Save as SaveIcon,
   Undo as UndoIcon,
   Redo as RedoIcon,
@@ -113,7 +112,6 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
 
   // 编辑状态
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isPreviewMode, setIsPreviewMode] = useState(showPreview);
 
   // 搜索和过滤状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -127,6 +125,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
 
   // 通知父组件编辑状态变化
   React.useEffect(() => {
+    console.log('编辑状态变化:', { hasUnsavedChanges, editedCount });
     onEditStateChange?.(hasUnsavedChanges, editedCount);
   }, [hasUnsavedChanges, editedCount, onEditStateChange]);
 
@@ -225,17 +224,30 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
   }, [resetResult]);
 
   // 处理保存所有编辑
-  const handleSaveAll = useCallback(() => {
-    const finalResults = getEditedResults();
-    onSave?.(finalResults);
-    saveToLocalStorage();
+  const handleSaveAll = useCallback(async () => {
+    try {
+      const finalResults = getEditedResults();
+      console.log('保存所有编辑结果:', finalResults.length, '条');
+
+      // 调用父组件的保存函数
+      if (onSave) {
+        await onSave(finalResults);
+        console.log('编辑结果已保存到服务器');
+      }
+
+      // 保存到localStorage作为备份
+      saveToLocalStorage();
+    } catch (error) {
+      console.error('保存编辑结果失败:', error);
+    }
   }, [getEditedResults, onSave, saveToLocalStorage]);
 
-  // 切换预览模式
-  const togglePreviewMode = useCallback(() => {
-    setIsPreviewMode(prev => !prev);
-    setEditingId(null); // 退出编辑模式
-  }, []);
+  // 当切换到预览模式时，退出当前编辑
+  useEffect(() => {
+    if (showPreview) {
+      setEditingId(null);
+    }
+  }, [showPreview]);
 
   // 计算进度
   const progress = totalCount > 0 ? (loadedCount / totalCount) * 100 : 0;
@@ -257,7 +269,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
             <Stack direction="row" alignItems="center" spacing={1}>
               <EditIcon color="primary" />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {isPreviewMode ? '翻译结果预览' : '翻译结果编辑'}
+                {showPreview ? '翻译结果预览' : '翻译结果编辑'}
               </Typography>
               <Chip
                 label={`${totalCount} 条 (显示 ${loadedCount})`}
@@ -278,7 +290,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
           action={
             <Stack direction="row" spacing={1}>
               {/* 撤销重做按钮 */}
-              {!readOnly && !isPreviewMode && (
+              {!readOnly && !showPreview && (
                 <>
                   <Tooltip title="撤销">
                     <span>
@@ -309,7 +321,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
               )}
 
               {/* 保存按钮 */}
-              {!readOnly && hasUnsavedChanges && (
+              {!readOnly && !showPreview && hasUnsavedChanges && (
                 <Tooltip title="保存所有编辑">
                   <IconButton
                     size="small"
@@ -325,7 +337,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
               )}
 
               {/* 重置所有编辑 */}
-              {!readOnly && editedCount > 0 && (
+              {!readOnly && !showPreview && editedCount > 0 && (
                 <Tooltip title="重置所有编辑">
                   <IconButton
                     size="small"
@@ -363,26 +375,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
                 </IconButton>
               </Tooltip>
 
-              {/* 预览模式切换 */}
-              {!readOnly && (
-                <Tooltip title={isPreviewMode ? '切换到编辑模式' : '切换到预览模式'}>
-                  <IconButton
-                    size="small"
-                    onClick={togglePreviewMode}
-                    sx={{
-                      color: isPreviewMode ? 'secondary.main' : 'primary.main',
-                      '&:hover': {
-                        backgroundColor: alpha(
-                          isPreviewMode ? theme.palette.secondary.main : theme.palette.primary.main,
-                          0.1
-                        )
-                      }
-                    }}
-                  >
-                    {isPreviewMode ? <EditIcon fontSize="small" /> : <PreviewIcon fontSize="small" />}
-                  </IconButton>
-                </Tooltip>
-              )}
+
             </Stack>
           }
           sx={{
@@ -483,12 +476,12 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
               <InlineTranslationEditor
                 key={result.id}
                 result={result}
-                isEditing={!isPreviewMode && editingId === result.id}
+                isEditing={!showPreview && editingId === result.id}
                 isHighlighted={isCurrentSubtitle(result)}
-                readOnly={readOnly || isPreviewMode}
+                readOnly={readOnly || showPreview}
                 showTime={true}
                 showConfidence={true}
-                onEdit={handleEditStart}
+                onEdit={readOnly || showPreview ? undefined : handleEditStart}
                 onSave={handleEditSave}
                 onCancel={handleEditCancel}
                 onReset={handleReset}

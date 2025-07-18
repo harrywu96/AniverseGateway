@@ -445,6 +445,8 @@ const VideoDetailWithTranslation: React.FC = () => {
           if (data.results && Array.isArray(data.results)) {
             const subtitles = convertToSubtitles(data.results);
             setSubtitlesForPlayer(subtitles);
+            // 保存翻译结果
+            saveTranslationResults(data.results, false);
           }
           setActiveStep(2);
           console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
@@ -536,9 +538,54 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, []);
 
+  // 保存翻译结果
+  const saveTranslationResults = useCallback(async (results: TranslationResult[], edited: boolean = false) => {
+    if (!video || !targetLanguage || !results.length) {
+      console.log('保存翻译结果跳过:', { video: !!video, targetLanguage, resultsLength: results.length });
+      return;
+    }
+
+    try {
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/translate/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          results: results,
+          targetLanguage: targetLanguage,
+          fileName: video.fileName || 'unknown',
+          edited: edited
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log('翻译结果保存成功:', result.data);
+        } else {
+          console.error('翻译结果保存失败:', result.message);
+        }
+      } else {
+        console.error('翻译结果保存请求失败:', response.status);
+      }
+    } catch (error) {
+      console.error('保存翻译结果出错:', error);
+    }
+  }, [video, targetLanguage]);
+
   // 处理测试翻译结果
   const handleTestResults = useCallback((results: any[]) => {
     console.log('收到测试翻译结果:', results);
+
+    // 检查是否已有真实的翻译结果，如果有则不覆盖
+    if (translationResults.length > 0 && translationStatus === TranslationStatus.COMPLETED) {
+      console.log('已存在真实翻译结果，跳过模拟翻译结果覆盖');
+      return;
+    }
+
     setTranslationResults(results);
     setTranslationStatus(TranslationStatus.COMPLETED);
     setActiveStep(2);
@@ -546,7 +593,10 @@ const VideoDetailWithTranslation: React.FC = () => {
     // 转换为字幕格式
     const subtitles = convertToSubtitles(results);
     setSubtitlesForPlayer(subtitles);
-  }, [convertToSubtitles]);
+
+    // 只有在没有真实翻译结果时才保存测试翻译结果
+    saveTranslationResults(results, false);
+  }, [convertToSubtitles, saveTranslationResults, translationResults.length, translationStatus]);
 
 
 
@@ -569,7 +619,7 @@ const VideoDetailWithTranslation: React.FC = () => {
       setLoading(true);
       const apiPort = '8000';
 
-      const response = await fetch(`http://localhost:${apiPort}/api/translation/save`, {
+      const response = await fetch(`http://localhost:${apiPort}/api/translate/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -590,8 +640,21 @@ const VideoDetailWithTranslation: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
+        // 更新翻译结果
+        setTranslationResults(editedResults);
         setHasUnsavedChanges(false);
+        setEditedCount(editedResults.filter(r => r.edited).length);
+
+        // 更新字幕显示
+        const subtitles = convertToSubtitles(editedResults);
+        setSubtitlesForPlayer(subtitles);
+
         setError('编辑结果保存成功！');
+
+        // 3秒后清除成功消息
+        setTimeout(() => {
+          setError(null);
+        }, 3000);
       } else {
         throw new Error(result.message || '保存失败');
       }
@@ -911,6 +974,13 @@ const VideoDetailWithTranslation: React.FC = () => {
 
         {/* 右侧：翻译配置和进度 */}
         <Grid item xs={12} lg={6}>
+          {/* 测试翻译面板 */}
+          <Fade in={true} timeout={800}>
+            <Box sx={{ mb: 3 }}>
+              <TranslationTestPanel onTestResults={handleTestResults} />
+            </Box>
+          </Fade>
+
           <Fade in={true} timeout={1000}>
             <Card
               sx={{
@@ -1231,13 +1301,6 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   <AlertTitle sx={{ fontWeight: 600 }}>翻译失败</AlertTitle>
                                   {error}
                                 </Alert>
-                              )}
-
-                              {/* 测试翻译面板 */}
-                              {translationStatus === TranslationStatus.IDLE && (
-                                <Box sx={{ mt: 3 }}>
-                                  <TranslationTestPanel onTestResults={handleTestResults} />
-                                </Box>
                               )}
                             </Box>
                           )}

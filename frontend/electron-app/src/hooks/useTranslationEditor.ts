@@ -144,8 +144,8 @@ export const useTranslationEditor = (
           editedData[id] = result;
         });
         localStorage.setItem(storageKey, JSON.stringify(editedData));
-        setHasUnsavedChanges(false);
         console.log('编辑结果已保存到localStorage:', editedResults.size, '条');
+        // 注意：这里不设置 setHasUnsavedChanges(false)，因为只是保存到localStorage，不是真正的服务器保存
       } catch (error) {
         console.error('保存编辑结果到localStorage失败:', error);
       }

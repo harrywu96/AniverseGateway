@@ -392,7 +392,7 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
                   >
                     {result.translated || '点击编辑译文...'}
                   </Typography>
-                  
+
                   {!readOnly && (
                     <Tooltip title="编辑译文">
                       <IconButton
@@ -401,10 +401,10 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
                           e.stopPropagation();
                           handleStartEdit();
                         }}
-                        sx={{ 
+                        sx={{
                           opacity: 0.6,
                           color: 'text.secondary',
-                          '&:hover': { 
+                          '&:hover': {
                             opacity: 1,
                             color: 'primary.main',
                             backgroundColor: alpha(theme.palette.primary.main, 0.1)
