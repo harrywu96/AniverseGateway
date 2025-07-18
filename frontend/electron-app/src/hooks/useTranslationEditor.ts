@@ -83,10 +83,42 @@ export const useTranslationEditor = (
 ): UseTranslationEditorReturn => {
   // 为结果添加ID（如果没有的话）
   const resultsWithIds = useMemo(() => {
-    return results.map((result, index) => ({
-      ...result,
-      id: result.id || `subtitle-${index}`,
-    }));
+    console.log('resultsWithIds重新计算，results长度:', results.length);
+    if (results.length > 0) {
+      console.log('第一条结果结构:', results[0]);
+    }
+
+    return results.map((result, index) => {
+      // 生成稳定的ID，基于内容而不是索引
+      let stableId = result.id;
+      if (!stableId) {
+        // 使用多种字段生成更稳定的ID，处理不同的数据结构
+        const anyResult = result as any;
+        const startTime = result.startTime || anyResult.start_time || 0;
+        const endTime = result.endTime || anyResult.end_time || 0;
+        const original = result.original || anyResult.text || '';
+
+        // 使用index + 时间 + 内容hash生成稳定ID
+        const timeKey = `${startTime}-${endTime}`;
+        const contentHash = original.slice(0, 15).replace(/[^a-zA-Z0-9]/g, '');
+        stableId = `subtitle-${index}-${timeKey}-${contentHash}`;
+
+        console.log(`生成ID: index=${index}, timeKey=${timeKey}, contentHash=${contentHash}, finalId=${stableId}`);
+      }
+
+      const anyResult = result as any;
+      const finalResult: TranslationResult = {
+        ...result,
+        id: stableId,
+        // 统一字段名
+        startTime: result.startTime || anyResult.start_time || 0,
+        endTime: result.endTime || anyResult.end_time || 0,
+        original: result.original || anyResult.text || '',
+        translated: result.translated || anyResult.translated_text || '',
+      };
+
+      return finalResult;
+    });
   }, [results]);
 
   // 虚拟列表状态
@@ -168,8 +200,15 @@ export const useTranslationEditor = (
 
   // 更新翻译结果
   const updateResult = useCallback((id: string, newText: string) => {
+    console.log('updateResult调用:', { id, newText, resultsWithIdsLength: resultsWithIds.length });
+
     const originalResult = resultsWithIds.find(r => r.id === id);
-    if (!originalResult) return;
+    if (!originalResult) {
+      console.error('未找到原始结果:', { id, availableIds: resultsWithIds.map(r => r.id) });
+      return;
+    }
+
+    console.log('找到原始结果:', { originalResult });
 
     // 保存当前状态到撤销栈
     const currentEditedResults = Array.from(editedResults.values());
@@ -182,9 +221,12 @@ export const useTranslationEditor = (
       edited: true,
     };
 
+    console.log('创建编辑结果:', { editedResult });
+
     setEditedResults(prev => {
       const newMap = new Map(prev);
       newMap.set(id, editedResult);
+      console.log('更新editedResults:', { id, newMapSize: newMap.size });
       return newMap;
     });
 
@@ -265,10 +307,25 @@ export const useTranslationEditor = (
 
   // 获取最终的编辑结果
   const getEditedResults = useCallback((): TranslationResult[] => {
-    return resultsWithIds.map(result => {
-      const edited = editedResults.get(result.id!);
-      return edited || result;
+    console.log('getEditedResults调用:', {
+      resultsWithIdsLength: resultsWithIds.length,
+      editedResultsSize: editedResults.size,
+      editedResultsKeys: Array.from(editedResults.keys())
     });
+
+    const finalResults = resultsWithIds.map(result => {
+      const edited = editedResults.get(result.id!);
+      const finalResult = edited || result;
+
+      if (edited) {
+        console.log('使用编辑版本:', { id: result.id, original: result.translated, edited: edited.translated });
+      }
+
+      return finalResult;
+    });
+
+    console.log('最终结果:', { length: finalResults.length, editedCount: finalResults.filter(r => r.edited).length });
+    return finalResults;
   }, [resultsWithIds, editedResults]);
 
   // 手动保存到localStorage
@@ -301,6 +358,21 @@ export const useTranslationEditor = (
   useEffect(() => {
     loadFromLocalStorage();
   }, [loadFromLocalStorage]);
+
+  // 当results发生变化时，重置编辑状态（新翻译结果时）
+  useEffect(() => {
+    console.log('results变化，重置编辑状态，results长度:', results.length);
+    setEditedResults(new Map());
+    setHasUnsavedChanges(false);
+    setUndoStack([]);
+    setRedoStack([]);
+
+    // 延迟加载localStorage，确保状态重置完成
+    setTimeout(() => {
+      console.log('延迟加载localStorage');
+      loadFromLocalStorage();
+    }, 100);
+  }, [results, loadFromLocalStorage]);
 
   // 计算编辑统计
   const editedCount = editedResults.size;

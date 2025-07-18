@@ -177,14 +177,27 @@ async def simulate_translation_process(
 
         for i in range(subtitle_count):
             base_data = MOCK_TRANSLATION_DATA[i % len(MOCK_TRANSLATION_DATA)]
+            start_time = base_data["startTime"] + i * 5
+            end_time = base_data["endTime"] + i * 5
+
+            # 生成稳定的ID
+            time_key = f"{start_time}-{end_time}"
+            content_hash = (
+                base_data["original"][:20] if base_data["original"] else ""
+            )
+            stable_id = (
+                f"subtitle-{time_key}-{content_hash}".replace(" ", "-")
+                .replace(",", "")
+                .replace(".", "")
+            )
+
             result = {
+                "id": stable_id,  # 添加稳定的ID
                 "index": i + 1,
-                "startTime": base_data["startTime"] + i * 5,  # 每条字幕间隔5秒
-                "endTime": base_data["endTime"] + i * 5,
-                "startTimeStr": format_time_to_srt(
-                    base_data["startTime"] + i * 5
-                ),
-                "endTimeStr": format_time_to_srt(base_data["endTime"] + i * 5),
+                "startTime": start_time,
+                "endTime": end_time,
+                "startTimeStr": format_time_to_srt(start_time),
+                "endTimeStr": format_time_to_srt(end_time),
                 "original": base_data["original"],
                 "translated": base_data["translated"],
                 "confidence": 0.85 + (i % 3) * 0.05,  # 模拟不同的可信度
@@ -259,7 +272,17 @@ async def get_sample_translation_results():
         # 生成示例结果
         sample_results = []
         for i, data in enumerate(MOCK_TRANSLATION_DATA):
+            # 生成稳定的ID
+            time_key = f"{data['startTime']}-{data['endTime']}"
+            content_hash = data["original"][:20] if data["original"] else ""
+            stable_id = (
+                f"subtitle-{time_key}-{content_hash}".replace(" ", "-")
+                .replace(",", "")
+                .replace(".", "")
+            )
+
             result = {
+                "id": stable_id,  # 添加稳定的ID
                 "index": i + 1,
                 "startTime": data["startTime"],
                 "endTime": data["endTime"],

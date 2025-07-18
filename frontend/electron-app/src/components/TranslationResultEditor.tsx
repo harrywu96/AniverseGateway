@@ -24,7 +24,8 @@ import {
   Redo as RedoIcon,
   Refresh as RefreshIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon
+  FilterList as FilterIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { createModernCardStyles } from '../utils/modernStyles';
 import { useTranslationEditor, TranslationResult } from '../hooks/useTranslationEditor';
@@ -64,7 +65,10 @@ export interface TranslationResultEditorProps {
   
   /** 保存回调 */
   onSave?: (editedResults: TranslationResult[]) => void;
-  
+
+  /** 删除翻译结果回调 */
+  onDelete?: () => Promise<boolean>;
+
   /** 自定义样式 */
   sx?: any;
 }
@@ -84,6 +88,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
   onTimeJump,
   onEditStateChange,
   onSave,
+  onDelete,
   sx
 }) => {
   const theme = useTheme();
@@ -242,6 +247,23 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
     }
   }, [getEditedResults, onSave, saveToLocalStorage]);
 
+  // 处理删除翻译结果
+  const handleDeleteAll = useCallback(async () => {
+    if (!onDelete) return;
+
+    const confirmed = window.confirm('确定要删除整个翻译结果吗？此操作不可撤销。');
+    if (!confirmed) return;
+
+    try {
+      const success = await onDelete();
+      if (success) {
+        console.log('翻译结果已删除');
+      }
+    } catch (error) {
+      console.error('删除翻译结果失败:', error);
+    }
+  }, [onDelete]);
+
   // 当切换到预览模式时，退出当前编辑
   useEffect(() => {
     if (showPreview) {
@@ -342,12 +364,28 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
                   <IconButton
                     size="small"
                     onClick={resetAllEdits}
-                    sx={{ 
+                    sx={{
                       color: 'warning.main',
                       '&:hover': { backgroundColor: alpha(theme.palette.warning.main, 0.1) }
                     }}
                   >
                     <RefreshIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {/* 删除翻译结果 */}
+              {!readOnly && onDelete && (
+                <Tooltip title="删除整个翻译结果">
+                  <IconButton
+                    size="small"
+                    onClick={handleDeleteAll}
+                    sx={{
+                      color: 'error.main',
+                      '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) }
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}

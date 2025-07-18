@@ -720,6 +720,134 @@ async def load_translation_results(
         raise HTTPException(status_code=500, detail=f"加载失败: {str(e)}")
 
 
+@router.post(
+    "/clear", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
+)
+async def clear_translation_results(
+    request: TranslationLoadRequest,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """清空指定视频的所有翻译结果
+
+    Args:
+        request: 清空请求（复用加载请求的结构）
+        config: 系统配置
+
+    Returns:
+        TranslationSaveResponse: 清空响应
+    """
+    try:
+        save_dir = Path(config.temp_dir) / "translations"
+
+        # 查找所有相关文件
+        edited_file = (
+            save_dir
+            / f"{request.videoId}_{request.targetLanguage}_edited.json"
+        )
+        original_file = (
+            save_dir / f"{request.videoId}_{request.targetLanguage}.json"
+        )
+
+        cleared_files = []
+
+        # 删除编辑版本
+        if edited_file.exists():
+            edited_file.unlink()
+            cleared_files.append(str(edited_file))
+            logger.info(f"已删除编辑版本: {edited_file}")
+
+        # 删除原始版本
+        if original_file.exists():
+            original_file.unlink()
+            cleared_files.append(str(original_file))
+            logger.info(f"已删除原始版本: {original_file}")
+
+        if not cleared_files:
+            return TranslationSaveResponse(
+                success=True,
+                message="没有找到需要清空的翻译结果",
+                data={"clearedFiles": []},
+            )
+
+        logger.info(
+            f"已清空视频 {request.videoId} 的 {request.targetLanguage} 翻译结果"
+        )
+
+        return TranslationSaveResponse(
+            success=True,
+            message=f"成功清空 {len(cleared_files)} 个翻译结果文件",
+            data={"clearedFiles": cleared_files},
+        )
+
+    except Exception as e:
+        logger.error(f"清空翻译结果失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"清空失败: {str(e)}")
+
+
+@router.delete(
+    "/delete", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
+)
+async def delete_translation_results(
+    request: TranslationLoadRequest,
+    config: SystemConfig = Depends(get_system_config),
+):
+    """删除指定视频的翻译结果（用户主动删除）
+
+    Args:
+        request: 删除请求（复用加载请求的结构）
+        config: 系统配置
+
+    Returns:
+        TranslationSaveResponse: 删除响应
+    """
+    try:
+        save_dir = Path(config.temp_dir) / "translations"
+
+        # 查找所有相关文件
+        edited_file = (
+            save_dir
+            / f"{request.videoId}_{request.targetLanguage}_edited.json"
+        )
+        original_file = (
+            save_dir / f"{request.videoId}_{request.targetLanguage}.json"
+        )
+
+        deleted_files = []
+
+        # 删除编辑版本
+        if edited_file.exists():
+            edited_file.unlink()
+            deleted_files.append(str(edited_file))
+            logger.info(f"用户删除编辑版本: {edited_file}")
+
+        # 删除原始版本
+        if original_file.exists():
+            original_file.unlink()
+            deleted_files.append(str(original_file))
+            logger.info(f"用户删除原始版本: {original_file}")
+
+        if not deleted_files:
+            return TranslationSaveResponse(
+                success=False,
+                message="没有找到可删除的翻译结果",
+                data={"deletedFiles": []},
+            )
+
+        logger.info(
+            f"用户删除了视频 {request.videoId} 的 {request.targetLanguage} 翻译结果"
+        )
+
+        return TranslationSaveResponse(
+            success=True,
+            message=f"成功删除 {len(deleted_files)} 个翻译结果文件",
+            data={"deletedFiles": deleted_files},
+        )
+
+    except Exception as e:
+        logger.error(f"删除翻译结果失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"删除失败: {str(e)}")
+
+
 @router.websocket("/ws/{task_id}")
 async def websocket_translation_progress(websocket: WebSocket, task_id: str):
     """WebSocket端点，用于实时推送翻译进度

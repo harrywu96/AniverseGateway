@@ -286,14 +286,21 @@ const VideoDetailWithTranslation: React.FC = () => {
         console.log('加载翻译结果响应:', result);
 
         if (result.success && result.data?.results) {
-          console.log('成功加载保存的翻译结果:', result.data.results.length, '条');
-          setTranslationResults(result.data.results);
-          setTranslationStatus(TranslationStatus.COMPLETED);
-          setActiveStep(2);
+          // 检查是否为真实翻译结果（通过isRealTranslation字段判断）
+          const isRealTranslation = result.data.isRealTranslation !== false; // 默认为true，除非明确标记为false
 
-          // 转换为字幕格式
-          const subtitles = convertToSubtitles(result.data.results);
-          setSubtitlesForPlayer(subtitles);
+          if (isRealTranslation) {
+            console.log('成功加载保存的真实翻译结果:', result.data.results.length, '条');
+            setTranslationResults(result.data.results);
+            setTranslationStatus(TranslationStatus.COMPLETED);
+            setActiveStep(2);
+
+            // 转换为字幕格式
+            const subtitles = convertToSubtitles(result.data.results);
+            setSubtitlesForPlayer(subtitles);
+          } else {
+            console.log('跳过模拟翻译结果，等待真实翻译');
+          }
         } else {
           console.log('没有找到保存的翻译结果');
         }
@@ -417,7 +424,7 @@ const VideoDetailWithTranslation: React.FC = () => {
         console.log('翻译WebSocket连接已建立');
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = async (event) => {
         const data = JSON.parse(event.data);
         console.log('WebSocket收到消息:', data);
 
@@ -439,14 +446,17 @@ const VideoDetailWithTranslation: React.FC = () => {
             firstResult: data.results?.[0]
           });
 
+          // 真实翻译完成，先清空历史数据，再设置新的翻译结果
+          await clearPreviousTranslationData();
+
           setTranslationStatus(TranslationStatus.COMPLETED);
           setTranslationResults(data.results || []);
           // 转换为字幕格式
           if (data.results && Array.isArray(data.results)) {
             const subtitles = convertToSubtitles(data.results);
             setSubtitlesForPlayer(subtitles);
-            // 保存翻译结果
-            saveTranslationResults(data.results, false);
+            // 保存新的翻译结果
+            saveTranslationResults(data.results, false, true); // isRealTranslation = true
           }
           setActiveStep(2);
           console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
@@ -538,10 +548,104 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, []);
 
+  // 清空之前的翻译数据
+  const clearPreviousTranslationData = useCallback(async () => {
+    if (!video || !targetLanguage) return;
+
+    try {
+      // 清空服务器端数据
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/translate/clear`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          targetLanguage: targetLanguage
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log('服务器端历史翻译数据已清空');
+        }
+      }
+
+      // 清空localStorage中的编辑数据
+      const storageKey = `edited_subtitles_${video.id}`;
+      localStorage.removeItem(storageKey);
+      console.log('localStorage中的编辑数据已清空');
+
+    } catch (error) {
+      console.error('清空历史翻译数据失败:', error);
+    }
+  }, [video, targetLanguage]);
+
+  // 删除翻译结果
+  const deleteTranslationResults = useCallback(async (): Promise<boolean> => {
+    if (!video || !targetLanguage) return false;
+
+    try {
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/translate/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: video.id,
+          targetLanguage: targetLanguage
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log('翻译结果已删除');
+
+          // 清空前端状态
+          setTranslationResults([]);
+          setTranslationStatus(TranslationStatus.IDLE);
+          setActiveStep(1);
+          setSubtitlesForPlayer([]);
+
+          // 清空localStorage中的编辑数据
+          const storageKey = `edited_subtitles_${video.id}`;
+          localStorage.removeItem(storageKey);
+
+          setError('翻译结果已删除');
+
+          // 3秒后清除消息
+          setTimeout(() => {
+            setError(null);
+          }, 3000);
+
+          return true;
+        } else {
+          throw new Error(result.message || '删除失败');
+        }
+      } else {
+        throw new Error(`删除请求失败: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('删除翻译结果失败:', error);
+      setError(`删除失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      return false;
+    }
+  }, [video, targetLanguage]);
+
   // 保存翻译结果
-  const saveTranslationResults = useCallback(async (results: TranslationResult[], edited: boolean = false) => {
+  const saveTranslationResults = useCallback(async (results: TranslationResult[], edited: boolean = false, isRealTranslation: boolean = true) => {
     if (!video || !targetLanguage || !results.length) {
       console.log('保存翻译结果跳过:', { video: !!video, targetLanguage, resultsLength: results.length });
+      return;
+    }
+
+    // 如果是模拟翻译，不保存到服务器
+    if (!isRealTranslation) {
+      console.log('模拟翻译结果不保存到服务器，避免污染真实翻译数据');
       return;
     }
 
@@ -557,14 +661,15 @@ const VideoDetailWithTranslation: React.FC = () => {
           results: results,
           targetLanguage: targetLanguage,
           fileName: video.fileName || 'unknown',
-          edited: edited
+          edited: edited,
+          isRealTranslation: isRealTranslation
         })
       });
 
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          console.log('翻译结果保存成功:', result.data);
+          console.log('真实翻译结果保存成功:', result.data);
         } else {
           console.error('翻译结果保存失败:', result.message);
         }
@@ -594,9 +699,9 @@ const VideoDetailWithTranslation: React.FC = () => {
     const subtitles = convertToSubtitles(results);
     setSubtitlesForPlayer(subtitles);
 
-    // 只有在没有真实翻译结果时才保存测试翻译结果
-    saveTranslationResults(results, false);
-  }, [convertToSubtitles, saveTranslationResults, translationResults.length, translationStatus]);
+    // 模拟翻译结果不保存到服务器，避免污染真实翻译数据
+    console.log('模拟翻译结果仅用于测试，不保存到服务器');
+  }, [convertToSubtitles, translationResults.length, translationStatus]);
 
 
 
@@ -966,6 +1071,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                   onTimeJump={handleTimeJump}
                   onEditStateChange={handleEditStateChange}
                   onSave={handleEditedResultsSave}
+                  onDelete={deleteTranslationResults}
                 />
               </Box>
             </Fade>

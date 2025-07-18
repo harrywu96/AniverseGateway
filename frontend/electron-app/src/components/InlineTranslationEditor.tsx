@@ -124,7 +124,16 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
 
   // 保存编辑
   const handleSave = useCallback(async () => {
+    console.log('InlineTranslationEditor保存开始:', {
+      resultId: result.id,
+      originalText: result.translated,
+      editText: editText.trim(),
+      hasOnSave: !!onSave,
+      textChanged: editText !== result.translated
+    });
+
     if (!onSave || !result.id || editText === result.translated) {
+      console.log('保存跳过:', { hasOnSave: !!onSave, hasId: !!result.id, textChanged: editText !== result.translated });
       handleCancel();
       return;
     }
@@ -132,12 +141,13 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
     try {
       setIsSaving(true);
       await onSave(result.id, editText.trim());
+      console.log('InlineTranslationEditor保存成功');
     } catch (error) {
       console.error('保存翻译编辑失败:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [onSave, result.id, result.translated, editText]);
+  }, [onSave, result.id, result.translated, editText, result]);
 
   // 取消编辑
   const handleCancel = useCallback(() => {
