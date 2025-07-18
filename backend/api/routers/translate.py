@@ -848,6 +848,44 @@ async def delete_translation_results(
         raise HTTPException(status_code=500, detail=f"删除失败: {str(e)}")
 
 
+@router.post("/cancel/{task_id}", response_model=APIResponse)
+async def cancel_translation_task(task_id: str):
+    """取消翻译任务
+
+    Args:
+        task_id: 翻译任务ID
+
+    Returns:
+        APIResponse: 操作响应
+    """
+    try:
+        # 导入任务取消管理器
+        from backend.services.task_cancellation_manager import (
+            cancellation_manager,
+        )
+
+        # 标记任务为取消状态
+        success = cancellation_manager.cancel_task(task_id)
+
+        if success:
+            # 通过WebSocket通知前端任务已取消
+            await manager.broadcast(
+                task_id,
+                {"type": "cancelled", "message": "翻译任务已被用户取消"},
+            )
+
+            logger.info(f"翻译任务 {task_id} 取消请求已处理")
+            return APIResponse(success=True, message="翻译任务取消请求已提交")
+        else:
+            return APIResponse(
+                success=False, message="任务已经被标记为取消或不存在"
+            )
+
+    except Exception as e:
+        logger.error(f"取消翻译任务失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"取消任务失败: {str(e)}")
+
+
 @router.websocket("/ws/{task_id}")
 async def websocket_translation_progress(websocket: WebSocket, task_id: str):
     """WebSocket端点，用于实时推送翻译进度

@@ -634,6 +634,11 @@ class SubtitleTranslator:
             Dict[str, Any]: 包含翻译结果和格式映射的字典
         """
         try:
+            # 导入任务取消管理器
+            from backend.services.task_cancellation_manager import (
+                cancellation_manager,
+            )
+
             # 读取源文件内容
             with open(task.source_path, "r", encoding="utf-8") as f:
                 srt_content = f.read()
@@ -658,6 +663,14 @@ class SubtitleTranslator:
             # 逐块翻译
             translated_lines = []
             for i, chunk in enumerate(chunks):
+                # 检查任务是否被取消
+                if cancellation_manager.is_cancelled(task.id):
+                    logger.info(f"任务 {task.id} 被用户取消，停止翻译")
+                    # 从取消列表中移除任务
+                    cancellation_manager.remove_task(task.id)
+                    # 抛出取消异常
+                    raise Exception("翻译任务被用户取消")
+
                 # 翻译当前块
                 chunk_result = await self.translate_chunk(chunk, task)
                 translated_lines.extend(chunk_result)

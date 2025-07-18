@@ -167,6 +167,9 @@ const VideoDetailWithTranslation: React.FC = () => {
   const wsRef = useRef<WebSocket | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // 当前任务ID状态
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+
   // 初始化提供商选择
   useEffect(() => {
     if (activeProviders.length > 0 && !selectedProviderId) {
@@ -415,6 +418,9 @@ const VideoDetailWithTranslation: React.FC = () => {
 
       const taskId = result.data.task_id;
 
+      // 设置当前任务ID
+      setCurrentTaskId(taskId);
+
       // 建立WebSocket连接监听进度
       const apiPort = '8000';
       const ws = new WebSocket(`ws://localhost:${apiPort}/api/translate/ws/${taskId}`);
@@ -459,10 +465,18 @@ const VideoDetailWithTranslation: React.FC = () => {
             saveTranslationResults(data.results, false, true); // isRealTranslation = true
           }
           setActiveStep(2);
+          // 清空当前任务ID
+          setCurrentTaskId(null);
           console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
         } else if (data.type === 'error') {
           setTranslationStatus(TranslationStatus.ERROR);
           setError(`翻译失败: ${data.message || '未知错误'}`);
+          // 清空当前任务ID
+          setCurrentTaskId(null);
+        } else if (data.type === 'cancelled') {
+          console.log('收到后端取消确认:', data.message);
+          setTranslationStatus(TranslationStatus.CANCELLED);
+          setCurrentTaskId(null);
         }
       };
 
@@ -478,6 +492,9 @@ const VideoDetailWithTranslation: React.FC = () => {
       };
 
     } catch (err) {
+      // 清空当前任务ID
+      setCurrentTaskId(null);
+
       if (abortControllerRef.current?.signal.aborted) {
         setTranslationStatus(TranslationStatus.CANCELLED);
       } else {
@@ -488,15 +505,45 @@ const VideoDetailWithTranslation: React.FC = () => {
   }, [video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, selectedProvider, selectedModel]);
 
   // 停止翻译
-  const stopTranslation = useCallback(() => {
+  const stopTranslation = useCallback(async () => {
+    try {
+      // 如果有当前任务ID，调用后端取消API
+      if (currentTaskId) {
+        const apiPort = '8000';
+        console.log('发送取消请求到后端，任务ID:', currentTaskId);
+
+        const response = await fetch(`http://localhost:${apiPort}/api/translate/cancel/${currentTaskId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('取消请求成功:', result);
+        } else {
+          console.error('取消请求失败:', response.status);
+        }
+      }
+    } catch (error) {
+      console.error('发送取消请求失败:', error);
+    }
+
+    // 执行前端清理逻辑
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     if (wsRef.current) {
       wsRef.current.close();
     }
+
+    // 清空当前任务ID
+    setCurrentTaskId(null);
+
+    // 设置翻译状态为已取消
     setTranslationStatus(TranslationStatus.CANCELLED);
-  }, []);
+  }, [currentTaskId]);
 
   // 保存翻译结果
   const saveTranslation = useCallback(async () => {
