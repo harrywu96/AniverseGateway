@@ -207,3 +207,6 @@ taskkill /f /im python.exe
 
 # 启动uv环境
 source .venv/Scripts/activate
+
+# 打包后端环境
+source .venv/Scripts/activate && pyinstaller backend_build.spec --distpath frontend/electron-app/resources --workpath build/pyinstaller

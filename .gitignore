@@ -43,6 +43,10 @@ frontend/electron-app/dist/
 frontend/electron-app/dist-electron/
 frontend/electron-app/release/
 frontend/electron-app/.vite/
+frontend/electron-app/resources/
+frontend/electron-app/output/
+frontend/electron-app/temp/
+frontend/electron-app/uploads/
 
 # IDE
 .idea/
@@ -68,3 +72,37 @@ htmlcov/
 *.bak
 *.swp
 *~
+
+# Test files
+test_*.js
+test_*.py
+test_*.bat
+
+# Package files
+*.exe
+*.msi
+*.dmg
+*.pkg
+
+# Video and media files
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.mp3
+*.wav
+
+# Archive files
+*.zip
+*.rar
+*.7z
+
+# Null files
+nul
+
+# PyInstaller build files
+backend_build.spec
+build_package.bat
+
+# Electron log files
+electron-log/

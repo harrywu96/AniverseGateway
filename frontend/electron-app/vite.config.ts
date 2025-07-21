@@ -17,7 +17,8 @@ export default defineConfig({
         build: {
           outDir: 'dist/main',
           rollupOptions: {
-            external: ['node-fetch'],
+            // 移除node-fetch的external配置，让它和依赖一起被打包
+            // external: ['node-fetch'],
             output: {
               entryFileNames: (chunkInfo) => {
                 if (chunkInfo.name === 'electron/preload') {

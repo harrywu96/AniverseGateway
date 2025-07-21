@@ -13,8 +13,8 @@ let apiCheckInterval: NodeJS.Timeout | null = null;
 let startupTimeout: NodeJS.Timeout | null = null;
 const tempDirPath = join(__dirname, '..', '..', 'temp'); // 定义 temp 目录路径
 
-// 是否是开发环境
-const isDev = process.env.NODE_ENV === 'development';
+// 是否是开发环境 - 使用app.isPackaged来区分
+const isDev = !app.isPackaged;
 
 /**
  * 创建主窗口
@@ -156,10 +156,10 @@ function startPythonBackend() {
         console.log(`使用默认路径: ${scriptPath}`);
       }
     } else {
-      // 生产环境路径
+      // 生产环境路径 - 使用打包的Python可执行文件
       const resourcesPath = process.resourcesPath;
-      pythonPath = join(resourcesPath, 'backend', 'python.exe');
-      scriptPath = join(resourcesPath, 'backend', 'run_api_server.py');
+      pythonPath = join(resourcesPath, 'backend.exe');
+      scriptPath = ''; // 不需要脚本路径，因为已经打包到可执行文件中
     }
 
     console.log('启动Python后端...');
@@ -174,9 +174,10 @@ function startPythonBackend() {
     env.API_PORT = port;
 
     // 启动Python进程
-    pythonProcess = spawn(pythonPath, [scriptPath], {
+    const args = scriptPath ? [scriptPath] : []; // 生产环境不需要脚本参数
+    pythonProcess = spawn(pythonPath, args, {
       env,
-      windowsHide: false // 确保在Windows上显示控制台窗口以便调试
+      windowsHide: !isDev // 开发环境显示控制台，生产环境隐藏
     });
 
     // 清除之前的超时和间隔
