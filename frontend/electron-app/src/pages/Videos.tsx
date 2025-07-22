@@ -39,7 +39,8 @@ import {
   Add as AddIcon,
   PlayCircle as PlayCircleIcon,
   Folder as FolderIcon,
-  Analytics as AnalyticsIcon
+  Analytics as AnalyticsIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { VideoInfo } from '@subtranslate/shared';
 import VideoCard from '../components/ui/VideoCard';
@@ -104,6 +105,44 @@ const Videos: React.FC = () => {
     } catch (error) {
       console.error('检查后端视频列表错误:', error);
       setError(`检查后端视频列表错误: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }, []);
+
+  // 删除后端存储的视频
+  const deleteBackendVideos = useCallback(async () => {
+    try {
+      const confirmed = window.confirm('确定要删除所有后端存储的视频吗？此操作不可撤销。');
+      if (!confirmed) {
+        return;
+      }
+
+      setLoading(true);
+      const apiPort = '8000';
+      const response = await fetch(`http://localhost:${apiPort}/api/videos/all`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`删除失败: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('删除后端视频结果:', result);
+
+      if (result.success) {
+        setError(`成功删除 ${result.data.deleted_count} 个后端存储的视频`);
+        // 可选：刷新视频列表或清空前端状态
+      } else {
+        setError(`删除失败: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('删除后端视频错误:', error);
+      setError(`删除后端视频错误: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -458,12 +497,29 @@ const Videos: React.FC = () => {
                 检查后端
               </Button>
               <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={deleteBackendVideos}
+                disabled={loading}
+                sx={{
+                  borderColor: theme.palette.error.main,
+                  color: theme.palette.error.main,
+                  '&:hover': {
+                    borderColor: theme.palette.error.dark,
+                    backgroundColor: alpha(theme.palette.error.main, 0.04)
+                  }
+                }}
+              >
+                删除后端
+              </Button>
+              <Button
                 variant="contained"
                 size="large"
                 startIcon={<UploadIcon />}
                 onClick={handleImportVideo}
                 disabled={loading}
-                sx={{ 
+                sx={{
                   borderRadius: 3,
                   px: 3,
                   py: 1.5,

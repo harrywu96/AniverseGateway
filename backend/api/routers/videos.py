@@ -1096,6 +1096,107 @@ async def upload_local_video(
         )
 
 
+@router.delete("/all", response_model=APIResponse, tags=["视频管理"])
+async def delete_all_videos(
+    video_storage: VideoStorageService = Depends(get_video_storage),
+):
+    """删除所有后端存储的视频
+
+    删除后端存储的所有视频及其相关文件。
+
+    Args:
+        video_storage: 视频存储服务
+
+    Returns:
+        APIResponse: 删除响应
+    """
+    try:
+        logger.info("开始删除所有后端存储的视频")
+
+        # 获取当前视频数量
+        video_count = len(video_storage.videos)
+        video_list = list(video_storage.videos.values())
+
+        if video_count == 0:
+            return APIResponse(
+                success=True,
+                message="后端没有存储的视频",
+                data={"deleted_count": 0, "deleted_videos": []},
+            )
+
+        # 记录要删除的视频信息
+        deleted_videos = [
+            {"id": v.id, "filename": v.filename} for v in video_list
+        ]
+
+        # 删除所有视频
+        video_storage.clear_all()
+
+        logger.info(f"成功删除所有视频，共 {video_count} 个")
+        return APIResponse(
+            success=True,
+            message=f"成功删除所有视频，共 {video_count} 个",
+            data={
+                "deleted_count": video_count,
+                "deleted_videos": deleted_videos,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"删除所有视频时出错: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"删除所有视频失败: {str(e)}"
+        )
+
+
+@router.delete("/{video_id}", response_model=APIResponse, tags=["视频管理"])
+async def delete_video(
+    video_id: str,
+    video_storage: VideoStorageService = Depends(get_video_storage),
+):
+    """删除视频
+
+    删除指定ID的视频及其相关文件。
+
+    Args:
+        video_id: 视频ID
+        video_storage: 视频存储服务
+
+    Returns:
+        APIResponse: 删除响应
+    """
+    try:
+        logger.info(f"开始删除视频，ID: {video_id}")
+
+        # 检查视频是否存在
+        video_info = video_storage.get_video(video_id)
+        if not video_info:
+            logger.warning(f"视频不存在，ID: {video_id}")
+            raise HTTPException(status_code=404, detail="视频不存在")
+
+        # 删除视频
+        success = video_storage.delete_video(video_id)
+
+        if success:
+            logger.info(
+                f"成功删除视频: {video_info.filename} (ID: {video_id})"
+            )
+            return APIResponse(
+                success=True,
+                message=f"成功删除视频: {video_info.filename}",
+                data={"video_id": video_id, "filename": video_info.filename},
+            )
+        else:
+            logger.error(f"删除视频失败，ID: {video_id}")
+            raise HTTPException(status_code=500, detail="删除视频失败")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"删除视频时出错: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"删除视频失败: {str(e)}")
+
+
 @router.post("/clear-cache", response_model=APIResponse, tags=["视频管理"])
 async def clear_cache(
     config: SystemConfig = Depends(get_system_config),

@@ -21,21 +21,40 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+# 检测是否在PyInstaller打包环境中运行
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    # PyInstaller打包环境
+    bundle_dir = Path(sys._MEIPASS)
+    project_root = bundle_dir
+    print(f"INFO:     运行在PyInstaller打包环境中，bundle目录: {bundle_dir}")
+else:
+    # 开发环境
+    project_root = Path(__file__).parent.parent
+    print(f"INFO:     运行在开发环境中，项目根目录: {project_root}")
+
 # 添加项目根目录到Python路径
-project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # 打印Python路径以便调试
 logger = logging.getLogger("api_server")
 logger.info(f"Python路径: {sys.path}")
 
-# 初始化日志
+# 初始化日志 - 在打包环境中调整日志文件路径
+log_file_path = "api_server.log"
+if getattr(sys, "frozen", False):
+    # 在打包环境中，将日志文件写入用户数据目录或当前工作目录
+    import tempfile
+
+    log_file_path = os.path.join(
+        tempfile.gettempdir(), "subtranslate_api_server.log"
+    )
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("api_server.log", encoding="utf-8"),
+        logging.FileHandler(log_file_path, encoding="utf-8"),
     ],
 )
 

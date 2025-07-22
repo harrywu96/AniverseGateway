@@ -210,3 +210,6 @@ source .venv/Scripts/activate
 
 # 打包后端环境
 source .venv/Scripts/activate && pyinstaller backend_build.spec --distpath frontend/electron-app/resources --workpath build/pyinstaller
+
+# 打包(虚拟环境 git bash)
+./build_package.bat

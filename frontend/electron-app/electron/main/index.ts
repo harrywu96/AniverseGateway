@@ -160,6 +160,20 @@ function startPythonBackend() {
       const resourcesPath = process.resourcesPath;
       pythonPath = join(resourcesPath, 'backend.exe');
       scriptPath = ''; // 不需要脚本路径，因为已经打包到可执行文件中
+
+      // 验证backend.exe是否存在
+      if (!fs.existsSync(pythonPath)) {
+        console.error(`错误: 找不到后端可执行文件: ${pythonPath}`);
+        console.log(`资源路径: ${resourcesPath}`);
+        console.log('资源目录内容:');
+        try {
+          const files = fs.readdirSync(resourcesPath);
+          files.forEach(file => console.log(`  - ${file}`));
+        } catch (err) {
+          console.error('无法读取资源目录:', err);
+        }
+        throw new Error(`后端可执行文件不存在: ${pythonPath}`);
+      }
     }
 
     console.log('启动Python后端...');
@@ -175,8 +189,16 @@ function startPythonBackend() {
 
     // 启动Python进程
     const args = scriptPath ? [scriptPath] : []; // 生产环境不需要脚本参数
+
+    // 设置工作目录 - 对于生产环境，使用资源目录作为工作目录
+    const cwd = isDev ? process.cwd() : process.resourcesPath;
+
+    console.log(`工作目录: ${cwd}`);
+    console.log(`启动参数: ${JSON.stringify(args)}`);
+
     pythonProcess = spawn(pythonPath, args, {
       env,
+      cwd, // 设置正确的工作目录
       windowsHide: !isDev // 开发环境显示控制台，生产环境隐藏
     });
 
@@ -223,42 +245,61 @@ function startPythonBackend() {
     // 监听标准输出
     pythonProcess.stdout.on('data', (data) => {
       const output = data.toString();
-      // 检查是否包含INFO或DEBUG前缀，如果是则作为正常输出处理
-      if (output.includes('INFO:') || output.includes('DEBUG:')) {
-        console.log(`Python后端输出: ${output.trim()}`);
-      } else {
-        console.log(`Python后端输出: ${output.trim()}`);
-      }
+      console.log(`Python后端stdout: ${output.trim()}`);
 
       // 检测后端是否已经启动 - 保留原有检测，但增加了其他启动信息的检测
       if (output.includes('Application startup complete') ||
           output.includes('Uvicorn running on') ||
-          output.includes('Started server process')) {
+          output.includes('Started server process') ||
+          output.includes('运行在PyInstaller打包环境中') ||
+          output.includes('运行在开发环境中')) {
         console.log('检测到API服务启动关键信息');
-        isBackendStarted = true;
-        if (startupTimeout) {
-          clearTimeout(startupTimeout);
+
+        // 如果检测到PyInstaller环境信息，给更多时间让服务完全启动
+        if (output.includes('运行在PyInstaller打包环境中')) {
+          console.log('检测到PyInstaller环境，延长启动检测时间');
+          setTimeout(() => {
+            if (!isBackendStarted) {
+              console.log('延迟检测API健康状态...');
+            }
+          }, 3000);
         }
-        mainWindow?.webContents.send('backend-started');
       }
     });
 
     // 监听错误输出
     pythonProcess.stderr.on('data', (data) => {
       const output = data.toString().trim();
+      console.log(`Python后端stderr: ${output}`);
 
       // 检查是否是真正的错误，还是只是日志输出
       if (output.includes('ERROR:') ||
           output.includes('CRITICAL:') ||
           output.includes('Exception:') ||
-          output.includes('Error:')) {
+          output.includes('Error:') ||
+          output.includes('Traceback')) {
         console.error(`Python后端错误: ${output}`);
+
+        // 如果是严重错误，通知前端
+        if (mainWindow && (output.includes('CRITICAL:') || output.includes('Exception:') || output.includes('Traceback'))) {
+          mainWindow.webContents.send('backend-error', {
+            message: `后端启动错误: ${output}`
+          });
+        }
       } else if (output.includes('INFO:') || output.includes('DEBUG:') || output.includes('WARNING:')) {
         // 这些实际上是日志输出，不是真正的错误
         console.log(`Python后端日志: ${output}`);
-      } else {
-        // 其他未分类的输出
-        console.log(`Python后端stderr: ${output}`);
+
+        // 检测启动完成信息
+        if (output.includes('Application startup complete') ||
+            output.includes('Uvicorn running on')) {
+          console.log('从stderr检测到API服务启动完成');
+          isBackendStarted = true;
+          if (startupTimeout) {
+            clearTimeout(startupTimeout);
+          }
+          mainWindow?.webContents.send('backend-started');
+        }
       }
 
       // 如果检测到端口已被占用
