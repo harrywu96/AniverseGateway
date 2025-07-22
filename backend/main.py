@@ -68,41 +68,67 @@ log_config["formatters"]["default"]["fmt"] = "%(levelprefix)s %(message)s"
 
 def run_server():
     """启动API服务器"""
-    # 记录编码信息
-    logger.info(f"系统默认编码: {sys.getdefaultencoding()}")
-    logger.info(f"文件系统编码: {sys.getfilesystemencoding()}")
-    locale_encoding = locale.getpreferredencoding()
-    logger.info(f"区域设置: {locale_encoding}")
+    try:
+        # 记录环境信息
+        print(f"INFO:     当前工作目录: {os.getcwd()}")
+        print(f"INFO:     Python可执行文件: {sys.executable}")
+        print(f"INFO:     Python版本: {sys.version}")
+        print(f"INFO:     是否为打包环境: {getattr(sys, 'frozen', False)}")
 
-    # 获取配置参数
-    host = os.environ.get("API_HOST", "0.0.0.0")
-    port = int(os.environ.get("API_PORT", "8000"))
-    reload = os.environ.get("API_RELOAD", "false").lower() in (
-        "true",
-        "1",
-        "yes",
-    )
-    workers = int(os.environ.get("API_WORKERS", "1"))
+        if getattr(sys, "frozen", False):
+            print(f"INFO:     PyInstaller bundle目录: {sys._MEIPASS}")
 
-    # 记录启动信息
-    msg = (
-        f"启动API服务器: host={host}, port={port}, "
-        f"reload={reload}, workers={workers}"
-    )
-    logger.info(msg)
+        # 记录编码信息
+        logger.info(f"系统默认编码: {sys.getdefaultencoding()}")
+        logger.info(f"文件系统编码: {sys.getfilesystemencoding()}")
+        locale_encoding = locale.getpreferredencoding()
+        logger.info(f"区域设置: {locale_encoding}")
 
-    # 直接打印启动信息和完成消息 - 确保Electron能捕获到这个信息
-    print("INFO:     Starting API server...")
+        # 获取配置参数
+        host = os.environ.get("API_HOST", "0.0.0.0")
+        port = int(os.environ.get("API_PORT", "8000"))
+        reload = os.environ.get("API_RELOAD", "false").lower() in (
+            "true",
+            "1",
+            "yes",
+        )
+        workers = int(os.environ.get("API_WORKERS", "1"))
 
-    # 启动服务器 - 使用log_config确保保留原始的日志格式
-    uvicorn.run(
-        "backend.api.app:app",
-        host=host,
-        port=port,
-        reload=reload,
-        workers=workers,
-        log_config=log_config,
-    )
+        # 记录启动信息
+        msg = (
+            f"启动API服务器: host={host}, port={port}, "
+            f"reload={reload}, workers={workers}"
+        )
+        logger.info(msg)
+        print(f"INFO:     {msg}")
+
+        # 直接打印启动信息和完成消息 - 确保Electron能捕获到这个信息
+        print("INFO:     Starting API server...")
+
+        # 测试导入关键模块
+        try:
+            print("INFO:     测试导入backend.api.app...")
+            from backend.api.app import app
+
+            print("INFO:     backend.api.app导入成功")
+        except Exception as e:
+            print(f"ERROR:    导入backend.api.app失败: {e}")
+            raise
+
+        # 启动服务器 - 使用log_config确保保留原始的日志格式
+        print("INFO:     启动uvicorn服务器...")
+        uvicorn.run(
+            "backend.api.app:app",
+            host=host,
+            port=port,
+            reload=reload,
+            workers=workers,
+            log_config=log_config,
+        )
+    except Exception as e:
+        print(f"ERROR:    run_server函数内部错误: {e}")
+        logger.error(f"run_server函数内部错误: {e}", exc_info=True)
+        raise
 
 
 if __name__ == "__main__":

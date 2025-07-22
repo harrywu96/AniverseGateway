@@ -10,7 +10,6 @@ import uuid
 from pathlib import Path
 from typing import Dict, Optional, Any, List
 
-import torch
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -42,6 +41,27 @@ from backend.api.websocket import manager
 
 # 配置日志
 logger = logging.getLogger(__name__)
+
+
+def _get_default_device() -> str:
+    """获取默认设备"""
+    try:
+        import torch
+
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except ImportError:
+        return "cpu"
+
+
+def _get_default_compute_type() -> str:
+    """获取默认计算类型"""
+    try:
+        import torch
+
+        return "float16" if torch.cuda.is_available() else "float32"
+    except ImportError:
+        return "float32"
+
 
 # 创建路由
 router = APIRouter(prefix="/speech-to-text", tags=["语音转写"])
@@ -1164,10 +1184,9 @@ async def transcribe_with_local_model(
             initial_prompt=request_data.initial_prompt,
             vad_filter=request_data.vad_filter,
             word_timestamps=request_data.word_timestamps,
-            device=request_data.device
-            or ("cuda" if torch.cuda.is_available() else "cpu"),
+            device=request_data.device or _get_default_device(),
             compute_type=request_data.compute_type
-            or ("float16" if torch.cuda.is_available() else "float32"),
+            or _get_default_compute_type(),
         )
 
         # 创建SpeechToText实例

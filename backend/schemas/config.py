@@ -4,7 +4,16 @@ from enum import Enum
 from typing import Optional, List, Dict, Any, Union
 
 from pydantic import BaseModel, Field, SecretStr
-import torch
+
+
+def _is_cuda_available() -> bool:
+    """检测CUDA是否可用，避免导入torch"""
+    try:
+        import torch
+
+        return torch.cuda.is_available()
+    except ImportError:
+        return False
 
 
 class AIProviderType(str, Enum):
@@ -359,11 +368,11 @@ class SpeechToTextConfig(BaseModel):
     """语音转文字配置"""
 
     device: str = Field(
-        default="cuda" if torch.cuda.is_available() else "cpu",
+        default="cuda" if _is_cuda_available() else "cpu",
         description="运算设备，可选值: cuda, cpu, mps",
     )
     compute_type: str = Field(
-        default="float16" if torch.cuda.is_available() else "float32",
+        default="float16" if _is_cuda_available() else "float32",
         description="计算精度，可选值: float16, float32, int8_float16, int8_float32, int8_bfloat16, bfloat16",
     )
     model_dir: Optional[str] = Field(
@@ -711,11 +720,11 @@ class SystemConfig(BaseModel):
             speech_to_text=SpeechToTextConfig(
                 device=os.getenv(
                     "SPEECH_TO_TEXT_DEVICE",
-                    "cuda" if torch.cuda.is_available() else "cpu",
+                    "cuda" if _is_cuda_available() else "cpu",
                 ),
                 compute_type=os.getenv(
                     "SPEECH_TO_TEXT_COMPUTE_TYPE",
-                    "float16" if torch.cuda.is_available() else "float32",
+                    "float16" if _is_cuda_available() else "float32",
                 ),
                 model_dir=os.getenv("SPEECH_TO_TEXT_MODEL_DIR"),
                 default_model=os.getenv(

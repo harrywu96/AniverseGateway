@@ -10,8 +10,30 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Any, Callable
 
-import torch
 from pydantic import BaseModel, Field
+
+
+def _is_torch_available() -> bool:
+    """检测torch是否可用"""
+    try:
+        import torch
+
+        return True
+    except ImportError:
+        return False
+
+
+def _get_torch_device() -> str:
+    """获取torch设备"""
+    if not _is_torch_available():
+        return "cpu"
+    try:
+        import torch
+
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except ImportError:
+        return "cpu"
+
 
 from backend.core.ffmpeg import FFmpegTool, FFmpegError
 
@@ -55,11 +77,15 @@ class TranscriptionParameters(BaseModel):
 
     # 计算设备配置
     device: str = Field(
-        default="cuda" if torch.cuda.is_available() else "cpu",
+        default_factory=_get_torch_device,
         description="执行设备: cuda, cpu, mps",
     )
     compute_type: str = Field(
-        default="float16" if torch.cuda.is_available() else "float32",
+        default=(
+            "float16"
+            if _is_torch_available() and _get_torch_device() == "cuda"
+            else "float32"
+        ),
         description="计算精度类型: float16, float32, int8",
     )
 

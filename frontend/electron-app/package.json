@@ -52,7 +52,7 @@
                   "appId":  "com.subtranslate.app",
                   "productName":  "SubTranslate",
                   "directories":  {
-                                      "output":  "dist-electron-20250722_094651",
+                                      "output":  "dist-electron-20250722_123107",
                                       "buildResources":  "build-resources"
                                   },
                   "asar":  true,
@@ -69,15 +69,19 @@
                                      ],
                   "win":  {
                               "target":  [
-                                  {
-                                      "target":  "nsis",
-                                      "arch":  ["x64"]
-                                  },
-                                  {
-                                      "target":  "portable",
-                                      "arch":  ["x64"]
-                                  }
-                              ],
+                                             {
+                                                 "target":  "nsis",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             },
+                                             {
+                                                 "target":  "portable",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             }
+                                         ],
                               "icon":  "public/icon.ico"
                           },
                   "mac":  {

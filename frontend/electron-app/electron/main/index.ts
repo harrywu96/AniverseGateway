@@ -210,27 +210,30 @@ function startPythonBackend() {
       clearInterval(apiCheckInterval);
     }
 
-    // 设置新的超时
+    // 设置新的超时 - 给PyInstaller打包的应用更多启动时间
+    const timeoutDuration = isDev ? 30000 : 60000; // 开发环境30秒，生产环境60秒
     startupTimeout = setTimeout(() => {
       if (!isBackendStarted) {
-        console.error('后端启动超时');
+        console.error(`后端启动超时 (${timeoutDuration/1000}秒)`);
         if (mainWindow) {
           mainWindow.webContents.send('backend-error', {
-            message: '后端启动超时，请检查日志以获取详细信息'
+            message: `后端启动超时 (${timeoutDuration/1000}秒)，请检查backend.exe是否能正常运行`
           });
         }
       }
-    }, 30000); // 30秒超时
+    }, timeoutDuration);
 
     // 启动定期检查API是否可访问
+    const checkInterval = isDev ? 2000 : 5000; // 开发环境2秒，生产环境5秒
     apiCheckInterval = setInterval(async () => {
       if (isBackendStarted) {
         clearInterval(apiCheckInterval);
         return;
       }
 
+      console.log('执行API健康检查...');
       // 使用改进的checkApiHealth函数，带重试机制
-      const isHealthy = await checkApiHealth(2); // 每次检查最多重试2次
+      const isHealthy = await checkApiHealth(1); // 减少重试次数以避免过度请求
       if (isHealthy) {
         isBackendStarted = true;
         if (startupTimeout) {
@@ -240,7 +243,7 @@ function startPythonBackend() {
         mainWindow?.webContents.send('backend-started');
         clearInterval(apiCheckInterval);
       }
-    }, 2000); // 每2秒检查一次，减少检查频率
+    }, checkInterval);
 
     // 监听标准输出
     pythonProcess.stdout.on('data', (data) => {
@@ -315,8 +318,11 @@ function startPythonBackend() {
     });
 
     // 进程退出时的处理
-    pythonProcess.on('close', (code) => {
-      console.log(`Python后端已退出，退出码: ${code}`);
+    pythonProcess.on('close', (code, signal) => {
+      console.log(`Python后端已退出，退出码: ${code}, 信号: ${signal}`);
+      console.log(`Python路径: ${pythonPath}`);
+      console.log(`工作目录: ${cwd}`);
+
       if (startupTimeout) {
         clearTimeout(startupTimeout);
       }
@@ -327,13 +333,33 @@ function startPythonBackend() {
       isBackendStarted = false;
 
       if (mainWindow) {
-        mainWindow.webContents.send('backend-stopped', { code });
+        const errorMessage = code !== 0 ?
+          `后端进程异常退出 (退出码: ${code}, 信号: ${signal})` :
+          '后端进程正常退出';
+
+        mainWindow.webContents.send('backend-stopped', {
+          code,
+          signal,
+          message: errorMessage
+        });
+
+        // 如果是异常退出，发送错误信息
+        if (code !== 0) {
+          mainWindow.webContents.send('backend-error', {
+            message: `${errorMessage}\n请检查backend.exe是否能正常运行`
+          });
+        }
       }
     });
 
     // 处理错误
     pythonProcess.on('error', (err) => {
       console.error(`启动Python进程时出错: ${err.message}`);
+      console.error(`错误详情:`, err);
+      console.error(`Python路径: ${pythonPath}`);
+      console.error(`工作目录: ${cwd}`);
+      console.error(`环境变量: ${JSON.stringify(env, null, 2)}`);
+
       if (startupTimeout) {
         clearTimeout(startupTimeout);
       }
@@ -342,7 +368,7 @@ function startPythonBackend() {
       }
       if (mainWindow) {
         mainWindow.webContents.send('backend-error', {
-          message: `启动Python进程失败: ${err.message}`
+          message: `启动Python进程失败: ${err.message}\n路径: ${pythonPath}\n工作目录: ${cwd}`
         });
       }
     });
