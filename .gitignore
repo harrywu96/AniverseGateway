@@ -41,6 +41,7 @@ yarn-error.log
 # Electron
 frontend/electron-app/dist/
 frontend/electron-app/dist-electron/
+frontend/electron-app/dist-electron-*/
 frontend/electron-app/release/
 frontend/electron-app/.vite/
 frontend/electron-app/resources/

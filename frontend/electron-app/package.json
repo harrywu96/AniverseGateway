@@ -1,83 +1,91 @@
 {
-    "name": "electron-app",
-    "version": "1.0.0",
-    "private": true,
-    "main": "dist/main/index.js",
-    "scripts": {
-        "dev": "vite",
-        "dev:win": "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '跳过TypeScript编译' -ForegroundColor Cyan; vite\"",
-        "build": "vite build",
-        "build:check": "tsc && vite build",
-        "build:electron": "npm run build && electron-builder",
-        "build:python": "cd ../.. && source .venv/Scripts/activate && pyinstaller backend_build.spec --distpath frontend/electron-app/resources --workpath build/pyinstaller",
-        "build:all": "npm run build:python && npm run build:electron",
-        "preview": "vite preview",
-        "predev": "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '跳过TypeScript编译' -ForegroundColor Cyan\""
-    },
-    "dependencies": {
-        "@emotion/react": "^11.11.1",
-        "@emotion/styled": "^11.11.0",
-        "@mui/icons-material": "^5.14.0",
-        "@mui/material": "^5.14.0",
-        "@subtranslate/shared": "workspace:*",
-        "@reduxjs/toolkit": "^2.2.5",
-        "react-redux": "^9.1.2",
-        "redux-persist": "^6.0.0",
-        "electron-store": "^8.1.0",
-        "node-fetch": "^2.6.12",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-router-dom": "^6.14.1"
-    },
-    "devDependencies": {
-        "@types/node": "18.19.86",
-        "@types/node-fetch": "^2.6.12",
-        "@types/react": "^18.2.14",
-        "@types/react-dom": "^18.2.6",
-        "@typescript-eslint/eslint-plugin": "^5.61.0",
-        "@typescript-eslint/parser": "^5.61.0",
-        "@vitejs/plugin-react": "^4.0.1",
-        "electron": "^25.3.0",
-        "electron-builder": "^24.4.0",
-        "eslint": "^8.44.0",
-        "eslint-plugin-react-hooks": "^4.6.0",
-        "eslint-plugin-react-refresh": "^0.4.1",
-        "typescript": "^5.0.2",
-        "vite": "^4.4.0",
-        "vite-plugin-electron": "^0.11.2"
-    },
-    "build": {
-        "appId": "com.subtranslate.app",
-        "productName": "SubTranslate",
-        "directories": {
-            "output": "dist-electron"
-        },
-        "files": [
-            "dist/**/*",
-            "node_modules/**/*",
-            "package.json"
-        ],
-        "extraResources": [
-            {
-                "from": "resources/backend.exe",
-                "to": "backend.exe"
-            }
-        ],
-        "win": {
-            "target": "nsis",
-            "icon": "public/icon.ico"
-        },
-        "mac": {
-            "target": "dmg",
-            "icon": "public/icon.icns"
-        },
-        "linux": {
-            "target": "AppImage",
-            "icon": "public/icon.png"
-        },
-        "nsis": {
-            "oneClick": false,
-            "allowToChangeInstallationDirectory": true
-        }
-    }
+    "name":  "electron-app",
+    "version":  "1.0.0",
+    "description":  "SubTranslate - AI-powered video subtitle translation application",
+    "author":  "SubTranslate Team",
+    "private":  true,
+    "main":  "dist/main/index.js",
+    "scripts":  {
+                    "dev":  "vite",
+                    "dev:win":  "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host \u0027跳过TypeScript编译\u0027 -ForegroundColor Cyan; vite\"",
+                    "build":  "vite build",
+                    "build:check":  "tsc \u0026\u0026 vite build",
+                    "build:electron":  "npm run build \u0026\u0026 electron-builder",
+                    "build:python":  "cd ../.. \u0026\u0026 source .venv/Scripts/activate \u0026\u0026 pyinstaller backend_build.spec --distpath frontend/electron-app/resources --workpath build/pyinstaller",
+                    "build:all":  "npm run build:python \u0026\u0026 npm run build:electron",
+                    "preview":  "vite preview",
+                    "predev":  "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host \u0027跳过TypeScript编译\u0027 -ForegroundColor Cyan\""
+                },
+    "dependencies":  {
+                         "@emotion/react":  "^11.11.1",
+                         "@emotion/styled":  "^11.11.0",
+                         "@mui/icons-material":  "^5.14.0",
+                         "@mui/material":  "^5.14.0",
+                         "@subtranslate/shared":  "workspace:*",
+                         "@reduxjs/toolkit":  "^2.2.5",
+                         "react-redux":  "^9.1.2",
+                         "redux-persist":  "^6.0.0",
+                         "electron-store":  "^8.1.0",
+                         "node-fetch":  "^2.6.12",
+                         "react":  "^18.2.0",
+                         "react-dom":  "^18.2.0",
+                         "react-router-dom":  "^6.14.1"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "18.19.86",
+                            "@types/node-fetch":  "^2.6.12",
+                            "@types/react":  "^18.2.14",
+                            "@types/react-dom":  "^18.2.6",
+                            "@typescript-eslint/eslint-plugin":  "^5.61.0",
+                            "@typescript-eslint/parser":  "^5.61.0",
+                            "@vitejs/plugin-react":  "^4.0.1",
+                            "electron":  "^25.3.0",
+                            "electron-builder":  "^24.4.0",
+                            "eslint":  "^8.44.0",
+                            "eslint-plugin-react-hooks":  "^4.6.0",
+                            "eslint-plugin-react-refresh":  "^0.4.1",
+                            "typescript":  "^5.0.2",
+                            "vite":  "^4.4.0",
+                            "vite-plugin-electron":  "^0.11.2"
+                        },
+    "build":  {
+                  "appId":  "com.subtranslate.app",
+                  "productName":  "SubTranslate",
+                  "directories":  {
+                                      "output":  "dist-electron-20250722_094651",
+                                      "buildResources":  "build-resources"
+                                  },
+                  "asar":  true,
+                  "files":  [
+                                "dist/**/*",
+                                "node_modules/**/*",
+                                "package.json"
+                            ],
+                  "extraResources":  [
+                                         {
+                                             "from":  "resources/backend.exe",
+                                             "to":  "backend.exe"
+                                         }
+                                     ],
+                  "win":  {
+                              "target":  "nsis",
+                              "icon":  "public/icon.ico"
+                          },
+                  "mac":  {
+                              "target":  "dmg",
+                              "icon":  "public/icon.icns"
+                          },
+                  "linux":  {
+                                "target":  "AppImage",
+                                "icon":  "public/icon.png"
+                            },
+                  "nsis":  {
+                               "oneClick":  false,
+                               "allowToChangeInstallationDirectory":  true,
+                               "createDesktopShortcut":  true,
+                               "createStartMenuShortcut":  true
+                           },
+                  "compression":  "normal",
+                  "removePackageScripts":  true
+              }
 }

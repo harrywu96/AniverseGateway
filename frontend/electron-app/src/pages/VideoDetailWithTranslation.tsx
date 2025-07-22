@@ -200,7 +200,7 @@ const VideoDetailWithTranslation: React.FC = () => {
         } else {
           // 尝试从后端获取
           const apiPort = '8000';
-          const response = await fetch(`http://localhost:${apiPort}/api/videos/${id}`);
+          const response = await fetch(`http://localhost:${apiPort}/api/videos/${id}?include_subtitles=true`);
           
           if (response.ok) {
             const result = await response.json();

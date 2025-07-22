@@ -212,7 +212,7 @@ const VideoDetailComponent: React.FC = () => {
         setError(null);
 
         const apiPort = '8000';
-        const url = `http://localhost:${apiPort}/api/videos/${id}`;
+        const url = `http://localhost:${apiPort}/api/videos/${id}?include_subtitles=true`;
         console.log('从后端获取视频信息:', url);
 
         let retryCount = 0;
