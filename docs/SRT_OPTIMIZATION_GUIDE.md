@@ -15,14 +15,14 @@
 
 ## 安装和依赖
 
-`SRTOptimizer` 已集成到 SubTranslate 项目中，无需额外安装。它位于 `src/subtranslate/services/utils.py` 文件中。
+`SRTOptimizer` 已集成到异世界语桥项目中，无需额外安装。它位于 `src/aniversegateway/services/utils.py` 文件中。
 
 ## 基本用法
 
 ### 1. 优化 SRT 内容
 
 ```python
-from src.subtranslate.services.utils import SRTOptimizer
+from src.aniversegateway.services.utils import SRTOptimizer
 
 # 读取 SRT 文件
 with open("example.srt", "r", encoding="utf-8") as f:

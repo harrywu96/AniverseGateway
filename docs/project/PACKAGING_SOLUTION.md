@@ -21,8 +21,8 @@
 {
   "name": "electron-app",
   "version": "1.0.0",
-  "description": "SubTranslate - AI-powered video subtitle translation application",
-  "author": "SubTranslate Team",
+  "description": "AniVerse Gateway - AI-powered anime subtitle translation application",
+  "author": "AniVerse Gateway Team",
   "build": {
     "directories": {
       "output": "dist-electron-{timestamp}",

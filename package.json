@@ -1,8 +1,8 @@
 {
-  "name": "subtranslate-workspace",
+  "name": "aniversegateway-workspace",
   "version": "1.0.0",
   "private": true,
-  "description": "SubTranslate 智能视频字幕翻译系统工作区",
+  "description": "异世界语桥 (AniVerse Gateway) 动漫字幕翻译神器工作区",
   "scripts": {
     "dev": "cd frontend/shared && pnpm build && cd ../.. && cd frontend && pnpm --filter electron-app dev",
     "dev:win": "cd frontend/shared && pnpm build && cd ../.. && cd frontend && powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 | Out-Null; pnpm --filter electron-app dev:win\"",
@@ -17,7 +17,7 @@
     "react",
     "vite"
   ],
-  "author": "SubTranslate Team",
+  "author": "AniVerse Gateway Team",
   "license": "MIT",
   "engines": {
     "node": ">=18",

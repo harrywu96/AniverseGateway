@@ -1,6 +1,6 @@
-# SubTranslate 项目开发者指南
+# 异世界语桥 (AniVerse Gateway) 项目开发者指南
 
-本文档为 SubTranslate 项目开发者提供全面的指导和参考，包括环境设置、开发标准、代码规范、测试方法和常见问题解决方案。
+本文档为异世界语桥项目开发者提供全面的指导和参考，包括环境设置、开发标准、代码规范、测试方法和常见问题解决方案。
 
 ## 目录
 
@@ -29,7 +29,7 @@
 1. **克隆代码库**
    ```bash
    git clone [repository-url]
-   cd subtranslate
+   cd aniversegateway
    ```
 
 2. **安装 Python 依赖**

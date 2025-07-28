@@ -1,6 +1,6 @@
 {
-  "appId": "com.subtranslate.app",
-  "productName": "SubTranslate",
+  "appId": "com.aniversegateway.app",
+  "productName": "AniVerse Gateway",
   "directories": {
     "output": "release"
   },

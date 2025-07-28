@@ -1,6 +1,6 @@
-# SubTranslate - 智能视频字幕翻译系统
+# 异世界语桥 (AniVerse Gateway)
 
-SubTranslate 是一款基于人工智能的视频字幕翻译系统，支持多种 AI 模型和语言，为您提供高质量的字幕翻译体验。
+每一部动漫都是一个独特的异世界，而语言往往是阻隔我们深入其中的最大障碍。异世界语桥正是为此而生——它不仅仅是一个翻译工具，更是连接现实与动漫世界的神奇桥梁。通过先进的AI技术，让每一句台词都成为通往异世界的钥匙，让每一个追番的夜晚都充满无限可能。
 
 ## 功能特点
 
@@ -89,7 +89,7 @@ python scripts/package.py
 
 ## 字幕翻译子系统
 
-字幕翻译子系统是SubTranslate的核心组件，负责处理字幕的提取、分析、翻译和整合过程。
+字幕翻译子系统是异世界语桥的核心组件，负责处理字幕的提取、分析、翻译和整合过程。
 
 ### 特点
 
@@ -119,7 +119,7 @@ python scripts/package.py
 ## 项目结构
 
 ```
-subtranslate/
+aniversegateway/
 ├── frontend/                      # 所有前端代码
 │   ├── electron-app/              # Electron 应用
 │   │   ├── electron/              # Electron 主进程代码
@@ -152,7 +152,7 @@ subtranslate/
 
 ## 支持的AI服务提供商
 
-SubTranslate支持多种AI服务提供商，您可以根据需要选择：
+异世界语桥支持多种AI服务提供商，您可以根据需要选择：
 
 - **OpenAI**：支持GPT-3.5和GPT-4等模型
 - **智谱AI**：支持ChatGLM等国产大语言模型

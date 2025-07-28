@@ -1,8 +1,8 @@
 {
     "name":  "electron-app",
     "version":  "1.0.0",
-    "description":  "SubTranslate - AI-powered video subtitle translation application",
-    "author":  "SubTranslate Team",
+    "description":  "AniVerse Gateway - AI-powered anime subtitle translation application",
+    "author":  "AniVerse Gateway Team",
     "private":  true,
     "main":  "dist/main/index.js",
     "scripts":  {
@@ -49,8 +49,8 @@
                             "vite-plugin-electron":  "^0.11.2"
                         },
     "build":  {
-                  "appId":  "com.subtranslate.app",
-                  "productName":  "SubTranslate",
+                  "appId":  "com.aniversegateway.app",
+                  "productName":  "AniVerse Gateway",
                   "directories":  {
                                       "output":  "dist-electron-20250722_123107",
                                       "buildResources":  "build-resources"

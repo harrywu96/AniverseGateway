@@ -12,18 +12,25 @@ from pydantic import BaseModel, Field
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # 复制基础的Pydantic模型
 class TranslationStyle(str, Enum):
     """翻译风格枚举"""
+
     NATURAL = "natural"
     LITERAL = "literal"
     CREATIVE = "creative"
 
+
 class APIResponse(BaseModel):
     """API响应基础模型"""
+
     success: bool = Field(default=True, description="操作是否成功")
     message: str = Field(default="操作成功", description="响应消息")
-    data: Optional[Dict[str, Any]] = Field(default=None, description="响应数据")
+    data: Optional[Dict[str, Any]] = Field(
+        default=None, description="响应数据"
+    )
+
 
 # 复制视频字幕翻译请求模型
 class VideoSubtitleTranslateRequest(BaseModel):
@@ -49,42 +56,55 @@ class VideoSubtitleTranslateRequest(BaseModel):
     )
     preserve_formatting: bool = Field(default=True, description="保留原格式")
 
+
 # 复制响应模型
 class VideoSubtitleTranslateResponse(APIResponse):
     """视频字幕翻译响应模型"""
+
     pass
+
 
 # 创建虚拟的系统配置
 class MockSystemConfig:
     """虚拟系统配置"""
+
     def __init__(self):
         self.temp_dir = "./temp"
+
 
 # 创建虚拟的视频存储服务
 class MockVideoStorageService:
     """虚拟视频存储服务"""
+
     def get_video(self, video_id: str):
         # 返回虚拟视频信息
         if video_id == "test-video-id":
-            return type('VideoInfo', (), {
-                'subtitle_tracks': [{'index': 0, 'language': 'zh'}]
-            })()
+            return type(
+                "VideoInfo",
+                (),
+                {"subtitle_tracks": [{"index": 0, "language": "zh"}]},
+            )()
         return None
+
 
 # 创建虚拟的字幕翻译器
 class MockSubtitleTranslator:
     """虚拟字幕翻译器"""
+
     def __init__(self, config):
         self.config = config
+
 
 # 虚拟依赖项函数
 def get_mock_system_config() -> MockSystemConfig:
     """获取虚拟系统配置"""
     return MockSystemConfig()
 
+
 def get_mock_video_storage() -> MockVideoStorageService:
     """获取虚拟视频存储服务"""
     return MockVideoStorageService()
+
 
 def get_mock_subtitle_translator(
     config: MockSystemConfig = Depends(get_mock_system_config),
@@ -92,8 +112,10 @@ def get_mock_subtitle_translator(
     """获取虚拟字幕翻译器"""
     return MockSubtitleTranslator(config)
 
+
 # 创建路由器
 router = APIRouter()
+
 
 @router.post(
     "/video-subtitle",
@@ -150,6 +172,7 @@ async def translate_video_subtitle(
             status_code=500, detail=f"提交翻译任务失败: {str(e)}"
         )
 
+
 # 创建简化版本（无依赖项）
 @router.post(
     "/video-subtitle-simple",
@@ -183,16 +206,19 @@ async def translate_video_subtitle_simple(
         )
 
     except Exception as e:
-        logger.error(f"调试简化版：提交视频字幕翻译任务失败: {e}", exc_info=True)
+        logger.error(
+            f"调试简化版：提交视频字幕翻译任务失败: {e}", exc_info=True
+        )
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(
             status_code=500, detail=f"提交翻译任务失败: {str(e)}"
         )
 
+
 # 创建应用
 app = FastAPI(
-    title="Debug SubTranslate API",
+    title="Debug AniVerse Gateway API",
     description="调试视频字幕翻译接口问题",
     version="0.1.0-debug",
 )
@@ -202,8 +228,13 @@ app.include_router(router, prefix="/api/translate")
 
 if __name__ == "__main__":
     import uvicorn
+
     print("启动调试服务器...")
     print("测试URL:")
-    print("- 完整版本: POST http://localhost:8001/api/translate/video-subtitle")
-    print("- 简化版本: POST http://localhost:8001/api/translate/video-subtitle-simple")
+    print(
+        "- 完整版本: POST http://localhost:8001/api/translate/video-subtitle"
+    )
+    print(
+        "- 简化版本: POST http://localhost:8001/api/translate/video-subtitle-simple"
+    )
     uvicorn.run(app, host="0.0.0.0", port=8001)

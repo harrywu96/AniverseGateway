@@ -131,9 +131,9 @@ const Home: React.FC = () => {
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Hero区域 */}
       <HeroSection
-        title="欢迎使用 SubTranslate"
-        subtitle="智能视频字幕翻译系统"
-        description="SubTranslate 是一款强大的视频字幕翻译工具，支持多种 AI 模型和语言，为您提供高质量的字幕翻译体验。"
+        title="欢迎来到异世界语桥"
+        subtitle="AniVerse Gateway"
+        description="在这里，语言不再是障碍，每一部动漫都将为你敞开大门。无论是热血的异世界冒险，还是温馨的日常物语，AI将为你架起通往每个精彩世界的桥梁。"
         primaryAction={{
           label: '开始翻译',
           onClick: () => navigate('/videos'),

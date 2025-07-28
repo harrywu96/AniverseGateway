@@ -1,6 +1,6 @@
 # 语音转写功能使用指南
 
-SubTranslate 现在提供了语音转写功能，可以将视频和音频文件自动转写为 SRT 字幕文件。本功能基于 Faster Whisper 实现，支持多种模型大小和配置选项。
+异世界语桥现在提供了语音转写功能，可以将视频和音频文件自动转写为 SRT 字幕文件。本功能基于 Faster Whisper 实现，支持多种模型大小和配置选项。
 
 ## 安装依赖
 
@@ -17,7 +17,7 @@ uv pip install faster-whisper==0.10.0
 项目提供了一个简单的命令行工具，用于快速转写音频和视频文件：
 
 ```bash
-python -m src.subtranslate.cli.transcribe /path/to/video_or_audio_file
+python -m src.aniversegateway.cli.transcribe /path/to/video_or_audio_file
 ```
 
 ### 命令行选项
@@ -27,7 +27,7 @@ usage: transcribe.py [-h] [-o OUTPUT_DIR] [-m {tiny,base,small,medium,large,larg
                      [-l LANGUAGE] [-t {transcribe,translate}] [-d {cuda,cpu,mps}] 
                      [-c {float16,float32,int8}] [-k] [-v] target
 
-SubTranslate 语音转写工具
+异世界语桥语音转写工具
 
 positional arguments:
   target                视频或音频文件/目录的路径

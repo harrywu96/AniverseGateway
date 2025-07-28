@@ -103,9 +103,9 @@
 项目目前的目录结构如下：
 
 ```
-subtranslate/
+aniversegateway/
 ├── src/
-│   └── subtranslate/
+│   └── aniversegateway/
 │       ├── __init__.py         # 包初始化文件
 │       ├── api/                # FastAPI后端（待实现）
 │       │   └── __init__.py
