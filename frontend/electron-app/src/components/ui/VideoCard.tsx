@@ -42,23 +42,23 @@ interface VideoCardProps {
 // 获取视频状态信息
 const getVideoStatus = (video: VideoInfo) => {
   if (video.hasEmbeddedSubtitles || video.hasExternalSubtitles) {
-    return { 
-      label: '已有字幕', 
-      color: 'success' as const, 
-      icon: <CheckIcon fontSize="small" /> 
+    return {
+      label: '已有字幕',
+      color: 'success' as const,
+      icon: <CheckIcon fontSize="small" />
     };
   }
   if (video.subtitleTracks && video.subtitleTracks.length > 0) {
-    return { 
-      label: '处理中', 
-      color: 'warning' as const, 
-      icon: <ScheduleIcon fontSize="small" /> 
+    return {
+      label: '处理中',
+      color: 'warning' as const,
+      icon: <ScheduleIcon fontSize="small" />
     };
   }
-  return { 
-    label: '待处理', 
-    color: 'default' as const, 
-    icon: <ErrorIcon fontSize="small" /> 
+  return {
+    label: '无字幕轨道',
+    color: 'error' as const,
+    icon: <ErrorIcon fontSize="small" />
   };
 };
 
@@ -106,9 +106,15 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
     onPlay?.();
   };
 
+  // 检查是否有字幕轨道
+  const hasSubtitleTracks = video.subtitleTracks && video.subtitleTracks.length > 0;
+
   // 处理卡片点击
   const handleCardClick = () => {
-    onEdit?.();
+    // 只有有字幕轨道的视频才能进入详情页面
+    if (hasSubtitleTracks) {
+      onEdit?.();
+    }
   };
 
   // 鼠标悬停处理
@@ -144,23 +150,24 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
         height: getCardHeight(),
         display: 'flex',
         flexDirection: 'column',
-        cursor: 'pointer',
+        cursor: hasSubtitleTracks ? 'pointer' : 'not-allowed',
         position: 'relative',
         overflow: 'hidden',
         border: selected ? `2px solid ${theme.palette.primary.main}` : 'none',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
-        boxShadow: isHovered 
+        transform: isHovered && hasSubtitleTracks ? 'translateY(-8px)' : 'translateY(0)',
+        boxShadow: isHovered && hasSubtitleTracks
           ? theme.shadows[8]
           : theme.shadows[2],
-        '&:hover': {
+        opacity: hasSubtitleTracks ? 1 : 0.7,
+        '&:hover': hasSubtitleTracks ? {
           '& .video-overlay': {
             opacity: 1,
           },
           '& .video-thumbnail': {
             transform: 'scale(1.05)',
           }
-        }
+        } : {}
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -214,49 +221,57 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
               position: 'absolute',
               top: 8,
               left: 8,
-              backgroundColor: alpha(theme.palette[status.color].main, 0.9),
+              backgroundColor: alpha(
+                status.color === 'success' ? theme.palette.success.main :
+                status.color === 'warning' ? theme.palette.warning.main :
+                status.color === 'error' ? theme.palette.error.main :
+                theme.palette.grey[600],
+                0.9
+              ),
               color: '#ddd'
             }}
           />
         </CardMedia>
 
-        {/* 悬停覆盖层 */}
-        <Fade in={isHovered}>
-          <Box
-            className="video-overlay"
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: alpha('#000', 0.5),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
-            <Zoom in={isHovered}>
-              <IconButton
-                sx={{
-                  backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                  color: '#ddd',
-                  width: 64,
-                  height: 64,
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.main,
-                    transform: 'scale(1.1)'
-                  }
-                }}
-                onClick={handlePlayPause}
-              >
-                {isPlaying ? <PauseIcon fontSize="large" /> : <PlayIcon fontSize="large" />}
-              </IconButton>
-            </Zoom>
-          </Box>
-        </Fade>
+        {/* 悬停覆盖层 - 只有有字幕轨道的视频才显示 */}
+        {hasSubtitleTracks && (
+          <Fade in={isHovered}>
+            <Box
+              className="video-overlay"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: alpha('#000', 0.5),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0,
+                transition: 'opacity 0.3s ease'
+              }}
+            >
+              <Zoom in={isHovered}>
+                <IconButton
+                  sx={{
+                    backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                    color: '#ddd',
+                    width: 64,
+                    height: 64,
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main,
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                  onClick={handlePlayPause}
+                >
+                  {isPlaying ? <PauseIcon fontSize="large" /> : <PlayIcon fontSize="large" />}
+                </IconButton>
+              </Zoom>
+            </Box>
+          </Fade>
+        )}
 
         {/* 加载进度条 */}
         {loading && (
@@ -295,9 +310,18 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
               格式: {video.format || '未知'}
             </Typography>
-            {video.subtitleTracks && video.subtitleTracks.length > 0 && (
+            {video.subtitleTracks && video.subtitleTracks.length > 0 ? (
               <Typography variant="body2" color="text.secondary">
                 字幕轨道: {video.subtitleTracks.length}
+              </Typography>
+            ) : (
+              <Typography variant="body2" color="error.main" sx={{ fontStyle: 'italic' }}>
+                请导入带有内嵌字幕轨道的视频
+              </Typography>
+            )}
+            {(!video.subtitleTracks || video.subtitleTracks.length === 0) && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                ASR相关功能还在开发中，后续会添加无字幕轨道的视频的ASR字幕翻译功能
               </Typography>
             )}
           </Box>
@@ -329,57 +353,67 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
       </CardContent>
 
       {/* 操作按钮 */}
-      <CardActions 
-        sx={{ 
-          px: variant === 'compact' ? 1 : 2, 
+      <CardActions
+        sx={{
+          px: variant === 'compact' ? 1 : 2,
           py: 1,
-          justifyContent: 'space-between',
+          justifyContent: hasSubtitleTracks ? 'space-between' : 'center',
           borderTop: `1px solid ${theme.palette.divider}`
         }}
       >
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="查看详情">
-            <IconButton 
-              size="small" 
-              color="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit?.();
-              }}
-            >
-              <PlayIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+        {hasSubtitleTracks ? (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="查看详情">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.();
+                }}
+              >
+                <PlayIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-          <Tooltip title="提取字幕">
-            <IconButton 
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onExtractSubtitles?.();
-              }}
-            >
-              <SubtitlesIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            <Tooltip title="提取字幕">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExtractSubtitles?.();
+                }}
+              >
+                <SubtitlesIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-          <Tooltip title="翻译字幕">
-            <IconButton 
-              size="small" 
-              color="secondary"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTranslate?.();
-              }}
-            >
-              <TranslateIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        <IconButton size="small">
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
+            <Tooltip title="翻译字幕">
+              <IconButton
+                size="small"
+                color="secondary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTranslate?.();
+                }}
+              >
+                <TranslateIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ) : (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              fontStyle: 'italic',
+              textAlign: 'center',
+              py: 0.5
+            }}
+          >
+            ASR功能开发中，敬请期待
+          </Typography>
+        )}
       </CardActions>
     </Card>
   );

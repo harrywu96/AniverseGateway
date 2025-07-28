@@ -494,7 +494,7 @@ const Videos: React.FC = () => {
                 onClick={checkBackendVideos}
                 disabled={loading}
               >
-                检查后端
+                检查后端视频
               </Button>
               <Button
                 variant="outlined"
@@ -511,7 +511,7 @@ const Videos: React.FC = () => {
                   }
                 }}
               >
-                删除后端
+                删除后端视频
               </Button>
               <Button
                 variant="contained"

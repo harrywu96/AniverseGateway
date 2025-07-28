@@ -72,7 +72,7 @@ class PromptTemplate(BaseModel):
             str: 格式化后的系统提示
         """
         return self.system_prompt.format(
-            **{k: v for k, v in kwargs.items() if v}
+            **{k: v for k, v in kwargs.items() if v is not None}
         )
 
     def format_user_prompt(self, **kwargs) -> str:
@@ -85,7 +85,7 @@ class PromptTemplate(BaseModel):
             str: 格式化后的用户提示
         """
         return self.user_prompt.format(
-            **{k: v for k, v in kwargs.items() if v}
+            **{k: v for k, v in kwargs.items() if v is not None}
         )
 
 
