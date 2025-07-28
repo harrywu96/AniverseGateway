@@ -5,7 +5,7 @@ Created By: AI Assistant
 Associated Protocol: RIPER-5 + Multidimensional + Agent Protocol
 
 # Task Description
-优化Layout.tsx布局页面，创造现代化、专业级的用户界面体验，使用Material-UI的优秀设计思路，让用户惊叹并愿意为之付费订阅服务。
+优化Layout.tsx布局页面，创造现代化、专业级的用户界面体验，使用Material-UI的优秀设计思路，提供出色的用户体验。
 
 # Project Overview
 智能视频字幕翻译系统的Electron应用前端，使用React + TypeScript + Material-UI技术栈。

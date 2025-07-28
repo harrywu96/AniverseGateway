@@ -334,20 +334,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Box>
           </Box>
 
-          {/* 状态指示器 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip
-              label="在线"
-              size="small"
-              sx={{
-                background: theme.palette.success.main,
-                color: theme.palette.success.contrastText,
-                fontWeight: 600,
-                fontSize: '0.7rem',
-                '& .MuiChip-label': { px: 1 },
-              }}
-            />
-          </Box>
+
         </Toolbar>
       </AppBar>
 

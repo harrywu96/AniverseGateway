@@ -828,23 +828,7 @@ const Settings: React.FC = () => {
                         配置您的专业AI翻译参数
                       </Typography>
                     </Box>
-                    
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 0.5,
-                        borderRadius: 2,
-                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)',
-                        color: '#ddd',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
-                      }}
-                    >
-                      Pro
-                    </Box>
+
                   </Box>
                   
                   <Box sx={{ p: 3 }}>

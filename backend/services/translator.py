@@ -169,7 +169,7 @@ class SubtitleTranslator:
                     "你需要输出的是：\n"
                     "1. 大家好\n\n"
                     "2. 今天是个好日子\n\n"
-                    "上下文信息（如有）：\n{context}\n\n"
+                    "另外字幕的上下文信息为（可能存在）：\n{context}\n\n"
                     "现在请翻译这段字幕：\n{subtitle_text}"
                 ),
                 is_default=True,
