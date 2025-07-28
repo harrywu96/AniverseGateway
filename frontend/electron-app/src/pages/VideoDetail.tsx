@@ -22,8 +22,6 @@ import {
   Chip,
   Tabs,
   Tab,
-  Fade,
-  Slide,
   useTheme,
   alpha,
   Tooltip,
@@ -694,8 +692,7 @@ const VideoDetailComponent: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* 顶部导航栏 */}
-      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
-        <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <Tooltip title="返回视频列表">
               <IconButton 
@@ -750,32 +747,28 @@ const VideoDetailComponent: React.FC = () => {
             </Box>
           </Stack>
         </Box>
-      </Slide>
 
       {/* 主内容区域 */}
       <Grid container spacing={3}>
         {/* 左侧：视频播放区域 */}
         <Grid item xs={12} lg={8}>
-          <Fade in={true} timeout={600}>
-            <Card sx={{ mb: 3, overflow: 'hidden' }}>
-              <VideoPlayer
-                src={video.filePath}
-                onTimeUpdate={handleTimeUpdate}
-                poster=""
-                autoPlay={false}
-                muted={false}
-              />
-            </Card>
-          </Fade>
+          <Card sx={{ mb: 3, overflow: 'hidden' }}>
+            <VideoPlayer
+              src={video.filePath}
+              onTimeUpdate={handleTimeUpdate}
+              poster=""
+              autoPlay={false}
+              muted={false}
+            />
+          </Card>
 
           {/* 视频信息标签页 */}
-          <Fade in={true} timeout={800}>
-            <Card 
-              sx={{
-                ...createModernCardStyles(theme, 'default', 1.2),
-                overflow: 'hidden'
-              }}
-            >
+          <Card
+            sx={{
+              ...createModernCardStyles(theme, 'default', 1.2),
+              overflow: 'hidden'
+            }}
+          >
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
                   <Tab icon={<InfoIcon />} label="视频信息" {...a11yProps(0)} />
@@ -964,20 +957,18 @@ const VideoDetailComponent: React.FC = () => {
                 </Box>
               </TabPanel>
             </Card>
-          </Fade>
         </Grid>
 
         {/* 右侧：字幕编辑区域 */}
         <Grid item xs={12} lg={4}>
-          <Fade in={true} timeout={1000}>
-            <Card 
-              sx={{ 
-                ...createModernCardStyles(theme, 'secondary', 1.1),
-                ...createElegantAreaStyles(theme, 'subtitle-editor'),
-                height: 'fit-content', 
-                minHeight: 600 
-              }}
-            >
+          <Card
+            sx={{
+              ...createModernCardStyles(theme, 'secondary', 1.1),
+              ...createElegantAreaStyles(theme, 'subtitle-editor'),
+              height: 'fit-content',
+              minHeight: 600
+            }}
+          >
               <CardContent sx={{ p: 3 }}>
                 {/* 字幕轨道选择 */}
                 <Box sx={{ mb: 3 }}>
@@ -1149,14 +1140,18 @@ const VideoDetailComponent: React.FC = () => {
                       onClick={handleRefreshSubtitles}
                       disabled={!selectedTrack || isRefreshing || loading}
                       sx={{
-                        ...createModernButtonStyles(theme, 'outlined'),
+                        borderRadius: 3,
+                        textTransform: 'none',
+                        fontWeight: 600,
                         borderColor: alpha(theme.palette.secondary.main, 0.3),
                         color: theme.palette.secondary.main,
+                        transition: `all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`,
                         '&:hover': {
                           borderColor: theme.palette.secondary.main,
                           backgroundColor: alpha(theme.palette.secondary.main, 0.05),
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
+                          // 只使用不影响布局的效果
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                          // 移除transform，避免影响其他按钮
                         }
                       }}
                     >
@@ -1169,16 +1164,20 @@ const VideoDetailComponent: React.FC = () => {
                         size="small"
                         startIcon={<DownloadIcon />}
                         disabled={!selectedTrack}
-                        sx={{ 
-                          ...createModernButtonStyles(theme, 'outlined'),
+                        sx={{
                           flex: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
                           borderColor: alpha(theme.palette.info.main, 0.3),
                           color: theme.palette.info.main,
+                          transition: `all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`,
                           '&:hover': {
                             borderColor: theme.palette.info.main,
                             backgroundColor: alpha(theme.palette.info.main, 0.05),
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.2)}`
+                            // 只使用不影响布局的效果
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.2)}`,
+                            // 移除transform，避免影响其他按钮
                           }
                         }}
                       >
@@ -1195,9 +1194,17 @@ const VideoDetailComponent: React.FC = () => {
                             navigate(`/videos/${id}/translate`);
                           }
                         }}
-                        sx={{ 
-                          ...createModernButtonStyles(theme, 'outlined'),
-                          flex: 1
+                        sx={{
+                          flex: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          transition: `all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`,
+                          '&:hover': {
+                            // 只使用不影响布局的效果
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                            // 移除transform，避免影响其他按钮
+                          }
                         }}
                       >
                         翻译
@@ -1251,10 +1258,18 @@ const VideoDetailComponent: React.FC = () => {
                           setError('字幕保存失败，请重试');
                         }
                       }}
-                      sx={{ 
-                        ...createModernButtonStyles(theme, 'primary'),
+                      sx={{
                         py: 1.5,
-                        fontSize: '1rem'
+                        fontSize: '1rem',
+                        borderRadius: 3,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        transition: `all 0.2s cubic-bezier(0.4, 0, 0.2, 1)`,
+                        '&:hover': {
+                          // 只使用不影响布局的效果
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                          // 移除transform，避免影响其他按钮
+                        }
                       }}
                     >
                       保存所有修改
@@ -1263,7 +1278,6 @@ const VideoDetailComponent: React.FC = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Fade>
         </Grid>
       </Grid>
 

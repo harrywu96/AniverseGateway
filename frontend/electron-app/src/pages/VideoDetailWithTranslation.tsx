@@ -25,9 +25,6 @@ import {
   Divider,
   Alert,
   AlertTitle,
-  Fade,
-  Slide,
-  Zoom,
   Container,
   useTheme,
   alpha,
@@ -987,8 +984,7 @@ const VideoDetailWithTranslation: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* 顶部导航 */}
-      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
-        <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <Tooltip title="返回视频详情">
               <IconButton 
@@ -1037,34 +1033,30 @@ const VideoDetailWithTranslation: React.FC = () => {
             </Tooltip>
           </Stack>
         </Box>
-      </Slide>
 
       <Grid container spacing={3}>
         {/* 左侧：视频播放器 */}
         <Grid item xs={12} lg={6}>
-          <Fade in={true} timeout={600}>
-            <Card sx={{ mb: 3 }}>
-              <VideoPlayer
-                ref={videoPlayerRef}
-                src={video.filePath}
-                onTimeUpdate={setCurrentTime}
-                poster=""
-                autoPlay={false}
-                muted={false}
-                showSubtitles={showSubtitles}
-                subtitles={subtitlesForPlayer}
-                showMultiTrack={true}
-                onSubtitleClick={(subtitle) => {
-                  console.log('字幕点击:', subtitle);
-                }}
-              />
-            </Card>
-          </Fade>
+          <Card sx={{ mb: 3 }}>
+            <VideoPlayer
+              ref={videoPlayerRef}
+              src={video.filePath}
+              onTimeUpdate={setCurrentTime}
+              poster=""
+              autoPlay={false}
+              muted={false}
+              showSubtitles={showSubtitles}
+              subtitles={subtitlesForPlayer}
+              showMultiTrack={true}
+              onSubtitleClick={(subtitle) => {
+                console.log('字幕点击:', subtitle);
+              }}
+            />
+          </Card>
 
           {/* 翻译结果编辑器 */}
           {translationResults.length > 0 && (
-            <Fade in={true} timeout={800}>
-              <Box>
+            <Box>
                 {/* 编辑模式切换按钮 */}
                 <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -1121,27 +1113,23 @@ const VideoDetailWithTranslation: React.FC = () => {
                   onDelete={deleteTranslationResults}
                 />
               </Box>
-            </Fade>
           )}
         </Grid>
 
         {/* 右侧：翻译配置和进度 */}
         <Grid item xs={12} lg={6}>
           {/* 测试翻译面板 */}
-          <Fade in={true} timeout={800}>
-            <Box sx={{ mb: 3 }}>
-              <TranslationTestPanel onTestResults={handleTestResults} />
-            </Box>
-          </Fade>
+          <Box sx={{ mb: 3 }}>
+            <TranslationTestPanel onTestResults={handleTestResults} />
+          </Box>
 
-          <Fade in={true} timeout={1000}>
-            <Card
-              sx={{
-                ...createModernCardStyles(theme, 'primary', 1.2),
-                ...createElegantAreaStyles(theme, 'translation-flow'),
-                overflow: 'hidden'
-              }}
-            >
+          <Card
+            sx={{
+              ...createModernCardStyles(theme, 'primary', 1.2),
+              ...createElegantAreaStyles(theme, 'translation-flow'),
+              overflow: 'hidden'
+            }}
+          >
               <CardHeader
                 title={
                   <Stack direction="row" alignItems="center" spacing={1}>
@@ -1562,7 +1550,6 @@ const VideoDetailWithTranslation: React.FC = () => {
                 </Stepper>
               </CardContent>
             </Card>
-          </Fade>
         </Grid>
       </Grid>
 
@@ -1629,21 +1616,19 @@ const VideoDetailWithTranslation: React.FC = () => {
 
       {/* 浮动操作按钮 */}
       {translationStatus === TranslationStatus.IDLE && (
-        <Zoom in={true}>
-          <Fab
-            color="primary"
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              zIndex: 1000
-            }}
-            onClick={startTranslation}
-            disabled={!isConfigComplete}
-          >
-            <PlayIcon />
-          </Fab>
-        </Zoom>
+        <Fab
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000
+          }}
+          onClick={startTranslation}
+          disabled={!isConfigComplete}
+        >
+          <PlayIcon />
+        </Fab>
       )}
 
       {/* 错误提示 */}

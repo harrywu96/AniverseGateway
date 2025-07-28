@@ -9,8 +9,7 @@ import {
   Chip,
   useTheme,
   alpha,
-  Tooltip,
-  Fade
+  Tooltip
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -189,24 +188,23 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
   const animationStyles = !readOnly ? createUnifiedCardAnimation(theme, 'subtle') : {};
 
   return (
-    <Fade in={true} timeout={parseInt(unifiedAnimations.duration.standard) * 1000}>
-      <Paper
-        sx={{
-          ...cardStyles,
-          mb: 1,
-          p: 2,
-          cursor: readOnly ? 'default' : 'pointer',
-          // 应用统一的动画样式
-          ...animationStyles,
-          // 高亮状态的特殊处理
-          ...(isHighlighted && {
-            transform: unifiedAnimations.transforms.cardHover,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
-          }),
-          ...sx
-        }}
-        onClick={!isEditing && !readOnly ? handleStartEdit : undefined}
-      >
+    <Paper
+      sx={{
+        ...cardStyles,
+        mb: 1,
+        p: 2,
+        cursor: readOnly ? 'default' : 'pointer',
+        // 应用统一的动画样式
+        ...animationStyles,
+        // 高亮状态的特殊处理
+        ...(isHighlighted && {
+          transform: unifiedAnimations.transforms.cardHover,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
+        }),
+        ...sx
+      }}
+      onClick={!isEditing && !readOnly ? handleStartEdit : undefined}
+    >
         {/* 时间信息栏 */}
         {showTime && (
           <Box sx={{ 
@@ -436,7 +434,6 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
           </Grid>
         </Grid>
       </Paper>
-    </Fade>
   );
 };
 

@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             mt: 0.5,
           }}
         >
-          AI 字幕翻译专家
+          AI 字幕翻译
         </Typography>
       </Box>
     </Box>

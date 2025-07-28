@@ -24,8 +24,6 @@ import {
   Container,
   useTheme,
   alpha,
-  Fade,
-  Slide,
   Card,
   CardContent,
   Stack,
@@ -577,8 +575,7 @@ const Settings: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* 页面标题 */}
-      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
-        <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <Box
               sx={{
@@ -614,23 +611,20 @@ const Settings: React.FC = () => {
             </Box>
           </Stack>
         </Box>
-      </Slide>
 
       {/* 保存状态提示 */}
       {saved && (
-        <Fade in={true}>
-          <Alert 
-            severity="success" 
-            sx={{ 
-              mb: 3,
-              border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-              backgroundColor: alpha(theme.palette.success.main, 0.1)
-            }}
-            icon={<CheckCircleIcon />}
-          >
-            设置已成功保存
-          </Alert>
-        </Fade>
+        <Alert
+          severity="success"
+          sx={{
+            mb: 3,
+            border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+            backgroundColor: alpha(theme.palette.success.main, 0.1)
+          }}
+          icon={<CheckCircleIcon />}
+        >
+          设置已成功保存
+        </Alert>
       )}
 
       {/* 设置标签页 */}
@@ -1173,31 +1167,29 @@ const Settings: React.FC = () => {
       </Card>
 
       {/* 保存按钮 */}
-      <Fade in={true} timeout={1000}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-          <Button 
-            variant="contained" 
-            size="large"
-            color="primary" 
-            startIcon={<SaveIcon />}
-            onClick={handleSave}
-            sx={{
-              px: 4,
-              py: 1.5,
-              borderRadius: 3,
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              boxShadow: theme.shadows[4],
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: theme.shadows[8]
-              }
-            }}
-          >
-            保存设置
-          </Button>
-        </Box>
-      </Fade>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          startIcon={<SaveIcon />}
+          onClick={handleSave}
+          sx={{
+            px: 4,
+            py: 1.5,
+            borderRadius: 3,
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            boxShadow: theme.shadows[4],
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: theme.shadows[8]
+            }
+          }}
+        >
+          保存设置
+        </Button>
+      </Box>
 
       {/* 对话框组件 */}
       <CustomProviderDialog

@@ -16,10 +16,7 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
-  alpha,
-  Fade,
-  Slide,
-  Zoom
+  alpha
 } from '@mui/material';
 import {
   VideoLibrary as VideoLibraryIcon,
@@ -38,7 +35,7 @@ import {
 } from '@mui/icons-material';
 import HeroSection from '../components/ui/HeroSection';
 import StatsCard from '../components/ui/StatsCard';
-import { createModernCardStylesNoAnimation } from '../utils/modernStyles';
+import { createModernCardStyles } from '../utils/modernStyles';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -153,98 +150,79 @@ const Home: React.FC = () => {
       />
 
       {/* 统计概览 */}
-      <Slide direction="up" in={true} timeout={800}>
-        <Box sx={{ mt: 6, mb: 6 }}>
-          <Typography 
-            variant="h4" 
-            component="h2" 
-            sx={{ 
-              mb: 3,
-              fontWeight: 600,
-              textAlign: 'center'
-            }}
-          >
-            项目概览
-          </Typography>
+      <Box sx={{ mt: 6, mb: 6 }}>
+        <Typography
+          variant="h4"
+          component="h2"
+          sx={{
+            mb: 3,
+            fontWeight: 600,
+            textAlign: 'center'
+          }}
+        >
+          项目概览
+        </Typography>
 
-          <Grid container spacing={3}>
+        <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={600}>
-                <Box>
-                  <StatsCard
-                    title="总视频数"
-                    value={stats.totalVideos}
-                    description="已导入的视频文件"
-                    icon={VideoLibraryIcon}
-                    variant="primary"
-                    onClick={() => navigate('/videos')}
-                  />
-                </Box>
-              </Zoom>
+              <StatsCard
+                title="总视频数"
+                value={stats.totalVideos}
+                description="已导入的视频文件"
+                icon={VideoLibraryIcon}
+                variant="primary"
+                onClick={() => navigate('/videos')}
+              />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={700}>
-                <Box>
-                  <StatsCard
-                    title="已处理"
-                    value={stats.withSubtitles}
-                    description="包含字幕的视频"
-                    icon={SubtitlesIcon}
-                    variant="success"
-                    progress={stats.completionRate}
-                  />
-                </Box>
-              </Zoom>
+              <StatsCard
+                title="已处理"
+                value={stats.withSubtitles}
+                description="包含字幕的视频"
+                icon={SubtitlesIcon}
+                variant="success"
+                progress={stats.completionRate}
+              />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={800}>
-                <Box>
-                  <StatsCard
-                    title="总时长"
-                    value={formatDuration(stats.totalDuration)}
-                    description="视频内容总长度"
-                    icon={AccessTimeIcon}
-                    variant="info"
-                  />
-                </Box>
-              </Zoom>
+              <StatsCard
+                title="总时长"
+                value={formatDuration(stats.totalDuration)}
+                description="视频内容总长度"
+                icon={AccessTimeIcon}
+                variant="info"
+              />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={900}>
-                <Box>
-                  <StatsCard
-                    title="完成率"
-                    value={`${stats.completionRate}%`}
-                    description="项目完成进度"
-                    icon={TrendingUpIcon}
-                    variant="warning"
-                    trend={{
-                      value: 12,
-                      label: '本周',
-                      isPositive: true
-                    }}
-                  />
-                </Box>
-              </Zoom>
+              <StatsCard
+                title="完成率"
+                value={`${stats.completionRate}%`}
+                description="项目完成进度"
+                icon={TrendingUpIcon}
+                variant="warning"
+                trend={{
+                  value: 12,
+                  label: '本周',
+                  isPositive: true
+                }}
+              />
             </Grid>
           </Grid>
         </Box>
-      </Slide>
 
       <Grid container spacing={6}>
         {/* 快速操作 */}
         <Grid item xs={12} lg={6}>
-          <Fade in={true} timeout={1000}>
-            <Card 
-              sx={{ 
-                height: '100%',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.02)})`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-              }}
-            >
+          <Card
+            sx={{
+              height: '100%',
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.02)})`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+            }}
+          >
               <CardContent sx={{ p: 4 }}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
                   <Box
@@ -269,15 +247,28 @@ const Home: React.FC = () => {
                 <Grid container spacing={2}>
                   {quickActions.map((action, index) => (
                     <Grid item xs={12} key={action.title}>
-                      <Slide direction="right" in={true} timeout={300 + index * 100}>
-                        <Card
-                          sx={{
-                            // 暂时移除所有动画效果，使用基础样式
-                            ...createModernCardStylesNoAnimation(theme, action.color, 1.1),
-                            cursor: 'pointer'
-                          }}
-                          onClick={action.action}
-                        >
+                      <Card
+                        sx={{
+                          ...createModernCardStyles(theme, action.color, 1.1),
+                          cursor: 'pointer',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: `0 16px 48px ${alpha(theme.palette[action.color].main, 0.2)}`,
+                            '& .action-icon': {
+                              transform: 'scale(1.15) rotate(5deg)',
+                              backgroundColor: alpha(theme.palette[action.color].main, 0.15)
+                            },
+                            '& .action-title': {
+                              background: `linear-gradient(135deg, ${theme.palette[action.color].main}, ${theme.palette[action.color].dark})`,
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent'
+                            }
+                          }
+                        }}
+                        onClick={action.action}
+                      >
                           <CardContent sx={{ p: 2.5 }}>
                             <Stack direction="row" alignItems="center" spacing={2.5}>
                               <Box
@@ -291,7 +282,23 @@ const Home: React.FC = () => {
                                   borderRadius: 3,
                                   backgroundColor: alpha(theme.palette[action.color].main, 0.1),
                                   color: theme.palette[action.color].main,
-                                  // 移除内联动画，让统一动画系统接管
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+                                  '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: `linear-gradient(135deg, ${alpha(theme.palette[action.color].main, 0.1)}, transparent)`,
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s ease'
+                                  },
+                                  '&:hover::before': {
+                                    opacity: 1
+                                  }
                                 }}
                               >
                                 <action.icon fontSize="medium" />
@@ -303,7 +310,7 @@ const Home: React.FC = () => {
                                   sx={{
                                     fontWeight: 700,
                                     mb: 0.5,
-                                    // 移除内联动画，让统一动画系统接管
+                                    transition: 'all 0.3s ease'
                                   }}
                                 >
                                   {action.title}
@@ -320,7 +327,6 @@ const Home: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Box
-                                className="action-arrow"
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -330,8 +336,8 @@ const Home: React.FC = () => {
                                   borderRadius: '50%',
                                   backgroundColor: alpha(theme.palette[action.color].main, 0.1),
                                   color: theme.palette[action.color].main,
-                                  opacity: 0.7,
-                                  // 移除内联动画，让统一动画系统接管
+                                  transition: 'all 0.3s ease',
+                                  opacity: 0.7
                                 }}
                               >
                                 →
@@ -339,25 +345,22 @@ const Home: React.FC = () => {
                             </Stack>
                           </CardContent>
                         </Card>
-                      </Slide>
                     </Grid>
                   ))}
                 </Grid>
               </CardContent>
             </Card>
-          </Fade>
         </Grid>
 
         {/* 功能特性 */}
         <Grid item xs={12} lg={6}>
-          <Fade in={true} timeout={1200}>
-            <Card 
-              sx={{ 
-                height: '100%',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.05)}, ${alpha(theme.palette.primary.main, 0.02)})`,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`
-              }}
-            >
+          <Card
+            sx={{
+              height: '100%',
+              background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.05)}, ${alpha(theme.palette.primary.main, 0.02)})`,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`
+            }}
+          >
               <CardContent sx={{ p: 4 }}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
                   <Box
@@ -381,17 +384,17 @@ const Home: React.FC = () => {
 
                 <List sx={{ p: 0 }}>
                   {features.map((feature, index) => (
-                    <Slide direction="left" in={true} timeout={300 + index * 100} key={feature.title}>
-                      <ListItem 
-                        sx={{ 
-                          px: 0, 
-                          py: 1.5,
-                          borderRadius: 2,
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.action.hover, 0.04)
-                          }
-                        }}
-                      >
+                    <ListItem
+                      key={feature.title}
+                      sx={{
+                        px: 0,
+                        py: 1.5,
+                        borderRadius: 2,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.action.hover, 0.04)
+                        }
+                      }}
+                    >
                         <ListItemIcon sx={{ minWidth: 48 }}>
                           <Box
                             sx={{
@@ -421,27 +424,24 @@ const Home: React.FC = () => {
                           }
                         />
                       </ListItem>
-                    </Slide>
                   ))}
                 </List>
               </CardContent>
             </Card>
-          </Fade>
         </Grid>
       </Grid>
 
       {/* 底部行动召唤 */}
-      <Fade in={true} timeout={1400}>
-        <Box 
-          sx={{ 
-            mt: 8, 
-            p: 6,
-            textAlign: 'center',
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
-            borderRadius: 2,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-          }}
-        >
+      <Box
+        sx={{
+          mt: 8,
+          p: 6,
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+          borderRadius: 2,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+        }}
+      >
           <Typography 
             variant="h4" 
             component="h3" 
@@ -497,7 +497,6 @@ const Home: React.FC = () => {
             </Button>
           </Stack>
         </Box>
-      </Fade>
     </Container>
   );
 };

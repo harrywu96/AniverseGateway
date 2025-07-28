@@ -17,8 +17,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Fade,
-  Slide,
   Card,
   CardContent,
   useTheme,
@@ -318,8 +316,7 @@ const Videos: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* 页面标题和统计 */}
-      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
-        <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
             <Box>
               <Typography 
@@ -535,18 +532,16 @@ const Videos: React.FC = () => {
             </Stack>
           </Box>
         </Box>
-      </Slide>
 
       {/* 搜索和筛选工具栏 */}
-      <Fade in={true} timeout={500}>
-        <Card 
-          variant="outlined" 
-          sx={{ 
-            mb: 3, 
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            background: alpha(theme.palette.primary.main, 0.02)
-          }}
-        >
+      <Card
+        variant="outlined"
+        sx={{
+          mb: 3,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          background: alpha(theme.palette.primary.main, 0.02)
+        }}
+      >
           <CardContent sx={{ p: 3 }}>
             <Grid container spacing={3} alignItems="center">
               {/* 搜索框 */}
@@ -647,7 +642,6 @@ const Videos: React.FC = () => {
             </Grid>
           </CardContent>
         </Card>
-      </Fade>
 
       {/* 视频列表内容 */}
       <Box sx={{ minHeight: 400 }}>
@@ -656,16 +650,15 @@ const Videos: React.FC = () => {
             <VideoSkeleton variant={viewMode === 'grid' ? 'standard' : 'compact'} count={6} />
           </Grid>
         ) : videos.length === 0 ? (
-          <Fade in={true}>
-            <Card
-              sx={{
-                p: 8,
-                textAlign: 'center',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
-                border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-                borderRadius: 2
-              }}
-            >
+          <Card
+            sx={{
+              p: 8,
+              textAlign: 'center',
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+              border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
+              borderRadius: 2
+            }}
+          >
               <Box sx={{ mb: 3 }}>
                 <FolderIcon sx={{ fontSize: 64, color: theme.palette.grey[400] }} />
               </Box>
@@ -686,14 +679,12 @@ const Videos: React.FC = () => {
                 导入视频
               </Button>
             </Card>
-          </Fade>
         ) : (
-          <Fade in={true} timeout={800}>
-            <Grid 
-              container 
-              spacing={viewMode === 'grid' ? 3 : 2}
-              sx={{ mb: 4 }}
-            >
+          <Grid
+            container
+            spacing={viewMode === 'grid' ? 3 : 2}
+            sx={{ mb: 4 }}
+          >
               {filteredAndSortedVideos.map((video, index) => (
                 <Grid 
                   item 
@@ -703,54 +694,41 @@ const Videos: React.FC = () => {
                   lg={viewMode === 'grid' ? 3 : 12}
                   key={video.id}
                 >
-                  <Slide 
-                    direction="up" 
-                    in={true} 
-                    timeout={200 + index * 100}
-                    mountOnEnter 
-                    unmountOnExit
-                  >
-                    <Box>
-                      <VideoCard
-                        video={video}
-                        variant={viewMode === 'grid' ? 'standard' : 'compact'}
-                        selected={selectedVideo?.id === video.id}
-                        loading={processingVideo === video.id}
-                        onPlay={() => handleVideoPlay(video)}
-                        onEdit={() => handleVideoEdit(video)}
-                        onTranslate={() => handleVideoTranslate(video)}
-                        onExtractSubtitles={() => handleExtractSubtitles(video)}
-                      />
-                    </Box>
-                  </Slide>
+                  <VideoCard
+                    video={video}
+                    variant={viewMode === 'grid' ? 'standard' : 'compact'}
+                    selected={selectedVideo?.id === video.id}
+                    loading={processingVideo === video.id}
+                    onPlay={() => handleVideoPlay(video)}
+                    onEdit={() => handleVideoEdit(video)}
+                    onTranslate={() => handleVideoTranslate(video)}
+                    onExtractSubtitles={() => handleExtractSubtitles(video)}
+                  />
                 </Grid>
               ))}
             </Grid>
-          </Fade>
         )}
       </Box>
 
       {/* 浮动操作按钮 */}
       {videos.length > 0 && (
-        <Fade in={!loading}>
-          <Fab
-            color="primary"
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              zIndex: 1000,
-              boxShadow: theme.shadows[6],
-              '&:hover': {
-                transform: 'scale(1.1)',
-                boxShadow: theme.shadows[12]
-              }
-            }}
-            onClick={handleImportVideo}
-          >
-            <AddIcon />
-          </Fab>
-        </Fade>
+        <Fab
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000,
+            boxShadow: theme.shadows[6],
+            '&:hover': {
+              transform: 'scale(1.1)',
+              boxShadow: theme.shadows[12]
+            }
+          }}
+          onClick={handleImportVideo}
+        >
+          <AddIcon />
+        </Fab>
       )}
 
       {/* 错误提示 */}

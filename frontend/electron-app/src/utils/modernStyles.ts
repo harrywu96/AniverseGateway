@@ -146,7 +146,10 @@ export const createModernButtonStyles = (
     fontWeight: 600,
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
-      transform: 'translateY(-1px)'
+      // 移除transform，避免影响布局中的其他元素
+      // transform: 'translateY(-1px)'
+      // 只使用不影响布局的效果，如阴影增强
+      filter: 'brightness(1.05)',
     }
   };
 
