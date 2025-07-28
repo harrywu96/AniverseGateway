@@ -27,6 +27,7 @@ import {
   Translate as TranslateIcon,
   PlayCircle as PlayIcon,
 } from '@mui/icons-material';
+import { unifiedAnimations } from '../utils/modernStyles';
 
 // 抽屉宽度
 const drawerWidth = 280;
@@ -145,10 +146,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               : isHovered
                 ? alpha(theme.palette.primary.main, 0.08)
                 : 'transparent',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            // 使用统一的动画配置
+            transition: `all ${unifiedAnimations.duration.quick} ${unifiedAnimations.easing.standard}`,
             border: `1px solid ${isSelected
               ? alpha(theme.palette.primary.main, 0.3)
               : alpha(theme.palette.divider, 0.1)}`,
+            // 添加微妙的悬停效果
+            transform: isHovered ? unifiedAnimations.transforms.subtle : 'translateY(0)',
           }}
         >
           <ListItemButton
@@ -260,7 +264,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             fontSize: '0.65rem',
           }}
         >
-          Powered by AI Technology
+          Powered by Harrywu
         </Typography>
       </Box>
     </Box>
@@ -291,10 +295,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               display: { sm: 'none' },
               background: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              // 使用统一的动画配置
+              transition: `all ${unifiedAnimations.duration.quick} ${unifiedAnimations.easing.standard}`,
               '&:hover': {
-                transform: 'scale(1.05)',
+                transform: unifiedAnimations.transforms.iconHover,
                 background: theme.palette.primary.dark,
+              },
+              '&:active': {
+                transform: unifiedAnimations.transforms.iconPress,
               }
             }}
           >

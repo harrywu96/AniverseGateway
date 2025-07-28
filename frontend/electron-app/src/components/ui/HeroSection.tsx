@@ -10,6 +10,7 @@ import {
   Fade,
   Slide
 } from '@mui/material';
+import { createUnifiedButtonAnimation, unifiedAnimations } from '../../utils/modernStyles';
 
 interface HeroSectionProps {
   title: string;
@@ -187,9 +188,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                       fontSize: '1.1rem',
                       fontWeight: 600,
                       boxShadow: theme.shadows[4],
+                      // 应用统一的按钮动画
+                      ...createUnifiedButtonAnimation(theme, 'large'),
                       '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: theme.shadows[8]
+                        boxShadow: theme.shadows[unifiedAnimations.shadows.hover]
                       }
                     }}
                   >
@@ -209,9 +211,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                       borderRadius: 3,
                       fontSize: '1.1rem',
                       fontWeight: 600,
-                      '&:hover': {
-                        transform: 'translateY(-2px)'
-                      }
+                      // 应用统一的按钮动画
+                      ...createUnifiedButtonAnimation(theme, 'large')
                     }}
                   >
                     {secondaryAction.label}

@@ -20,7 +20,7 @@ import {
   AccessTime as TimeIcon,
   PlayArrow as PlayIcon
 } from '@mui/icons-material';
-import { createModernCardStyles } from '../utils/modernStyles';
+import { createModernCardStyles, createUnifiedCardAnimation, unifiedAnimations } from '../utils/modernStyles';
 import { timeUtils } from '../utils/timeUtils';
 import { TranslationResult } from '../hooks/useTranslationEditor';
 
@@ -185,19 +185,24 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
     isHighlighted ? 1.5 : 1.0
   );
 
+  // 统一的动画样式
+  const animationStyles = !readOnly ? createUnifiedCardAnimation(theme, 'subtle') : {};
+
   return (
-    <Fade in={true} timeout={300}>
+    <Fade in={true} timeout={parseInt(unifiedAnimations.duration.standard) * 1000}>
       <Paper
         sx={{
           ...cardStyles,
           mb: 1,
           p: 2,
           cursor: readOnly ? 'default' : 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: isHighlighted ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: isHighlighted 
-            ? `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`
-            : undefined,
+          // 应用统一的动画样式
+          ...animationStyles,
+          // 高亮状态的特殊处理
+          ...(isHighlighted && {
+            transform: unifiedAnimations.transforms.cardHover,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
+          }),
           ...sx
         }}
         onClick={!isEditing && !readOnly ? handleStartEdit : undefined}

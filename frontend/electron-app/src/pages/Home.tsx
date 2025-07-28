@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import HeroSection from '../components/ui/HeroSection';
 import StatsCard from '../components/ui/StatsCard';
-import { createModernCardStyles } from '../utils/modernStyles';
+import { createModernCardStylesNoAnimation } from '../utils/modernStyles';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -272,23 +272,9 @@ const Home: React.FC = () => {
                       <Slide direction="right" in={true} timeout={300 + index * 100}>
                         <Card
                           sx={{
-                            ...createModernCardStyles(theme, action.color, 1.1),
-                            cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                              transform: 'translateX(12px) translateY(-2px)',
-                              boxShadow: `0 16px 48px ${alpha(theme.palette[action.color].main, 0.2)}`,
-                              '& .action-icon': {
-                                transform: 'scale(1.15) rotate(5deg)',
-                                backgroundColor: alpha(theme.palette[action.color].main, 0.15)
-                              },
-                              '& .action-title': {
-                                background: `linear-gradient(135deg, ${theme.palette[action.color].main}, ${theme.palette[action.color].dark})`,
-                                backgroundClip: 'text',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent'
-                              }
-                            }
+                            // 暂时移除所有动画效果，使用基础样式
+                            ...createModernCardStylesNoAnimation(theme, action.color, 1.1),
+                            cursor: 'pointer'
                           }}
                           onClick={action.action}
                         >
@@ -305,35 +291,19 @@ const Home: React.FC = () => {
                                   borderRadius: 3,
                                   backgroundColor: alpha(theme.palette[action.color].main, 0.1),
                                   color: theme.palette[action.color].main,
-                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  position: 'relative',
-                                  overflow: 'hidden',
-                                  '&::before': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    background: `linear-gradient(135deg, ${alpha(theme.palette[action.color].main, 0.1)}, transparent)`,
-                                    opacity: 0,
-                                    transition: 'opacity 0.3s ease'
-                                  },
-                                  '&:hover::before': {
-                                    opacity: 1
-                                  }
+                                  // 移除内联动画，让统一动画系统接管
                                 }}
                               >
                                 <action.icon fontSize="medium" />
                               </Box>
                               <Box sx={{ flexGrow: 1 }}>
-                                <Typography 
+                                <Typography
                                   className="action-title"
-                                  variant="subtitle1" 
-                                  sx={{ 
+                                  variant="subtitle1"
+                                  sx={{
                                     fontWeight: 700,
                                     mb: 0.5,
-                                    transition: 'all 0.3s ease'
+                                    // 移除内联动画，让统一动画系统接管
                                   }}
                                 >
                                   {action.title}
@@ -350,6 +320,7 @@ const Home: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Box
+                                className="action-arrow"
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -359,8 +330,8 @@ const Home: React.FC = () => {
                                   borderRadius: '50%',
                                   backgroundColor: alpha(theme.palette[action.color].main, 0.1),
                                   color: theme.palette[action.color].main,
-                                  transition: 'all 0.3s ease',
-                                  opacity: 0.7
+                                  opacity: 0.7,
+                                  // 移除内联动画，让统一动画系统接管
                                 }}
                               >
                                 →

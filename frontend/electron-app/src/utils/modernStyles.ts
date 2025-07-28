@@ -245,29 +245,250 @@ export const createModernPaperStyles = (
 };
 
 /**
- * 创建动画配置
+ * 统一的动画配置系统
+ * 基于Videos.tsx的Chip组件和Home.tsx的StatsCard组件的优秀效果
  */
-export const modernAnimations = {
+export const unifiedAnimations = {
   // 标准过渡时间
   duration: {
-    short: '0.2s',
-    standard: '0.3s',
-    long: '0.5s'
+    instant: '0.15s',    // 即时反馈（按钮点击）
+    quick: '0.2s',       // 快速交互（hover进入）
+    standard: '0.3s',    // 标准过渡（卡片动画）
+    smooth: '0.4s',      // 平滑过渡（页面切换）
+    slow: '0.6s'         // 慢速动画（入场动画）
   },
-  // 缓动函数
+
+  // 统一的缓动函数
   easing: {
+    // 标准Material Design缓动
     standard: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    // 减速缓动（适合入场）
     decelerate: 'cubic-bezier(0.0, 0, 0.2, 1)',
+    // 加速缓动（适合出场）
     accelerate: 'cubic-bezier(0.4, 0, 1, 1)',
-    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)'
+    // 尖锐缓动（适合快速反馈）
+    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+    // 自然缓动（适合浮动效果）
+    natural: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
   },
-  // 常用变换
+
+  // 统一的变换效果
   transforms: {
-    hover: 'translateY(-2px)',
-    press: 'translateY(0px) scale(0.98)',
-    float: 'translateY(-4px)'
+    // 卡片类组件的浮动效果（基于StatsCard）
+    cardHover: 'translateY(-4px)',
+    cardPress: 'translateY(-2px) scale(0.98)',
+
+    // 按钮类组件的反馈效果
+    buttonHover: 'translateY(-2px)',
+    buttonPress: 'translateY(0px) scale(0.96)',
+
+    // 小型元素的微动效果
+    chipHover: 'translateY(-1px)',
+    iconHover: 'scale(1.1)',
+    iconPress: 'scale(0.9)',
+
+    // 特殊效果
+    float: 'translateY(-6px)',
+    subtle: 'translateY(-1px)'
+  },
+
+  // 阴影层级（配合浮动效果）
+  shadows: {
+    rest: 2,      // 静止状态
+    hover: 8,     // 悬停状态
+    active: 4,    // 激活状态
+    floating: 16  // 浮动状态
   }
 };
+
+// 向后兼容的别名
+export const modernAnimations = unifiedAnimations;
+
+/**
+ * 创建统一的卡片动画样式
+ * 基于StatsCard组件的优秀效果
+ */
+export const createUnifiedCardAnimation = (theme: Theme, variant: 'default' | 'subtle' | 'prominent' | 'smooth' = 'default') => {
+  const config = {
+    default: {
+      transform: unifiedAnimations.transforms.cardHover,
+      shadow: unifiedAnimations.shadows.hover,
+      easing: unifiedAnimations.easing.standard
+    },
+    subtle: {
+      transform: unifiedAnimations.transforms.subtle,
+      shadow: unifiedAnimations.shadows.hover,
+      easing: unifiedAnimations.easing.standard
+    },
+    prominent: {
+      transform: unifiedAnimations.transforms.float,
+      shadow: unifiedAnimations.shadows.floating,
+      easing: unifiedAnimations.easing.standard
+    },
+    smooth: {
+      transform: unifiedAnimations.transforms.cardHover,
+      shadow: unifiedAnimations.shadows.hover,
+      easing: unifiedAnimations.easing.natural
+    }
+  };
+
+  const selected = config[variant];
+
+  return {
+    transition: `all ${unifiedAnimations.duration.standard} ${selected.easing}`,
+    cursor: 'pointer',
+    '&:hover': {
+      transform: selected.transform,
+      boxShadow: theme.shadows[selected.shadow],
+    },
+    '&:active': {
+      transform: unifiedAnimations.transforms.cardPress,
+      boxShadow: theme.shadows[unifiedAnimations.shadows.active],
+    }
+  };
+};
+
+/**
+ * 创建统一的按钮动画样式
+ * 基于HeroSection按钮的优秀效果
+ */
+export const createUnifiedButtonAnimation = (theme: Theme, size: 'small' | 'medium' | 'large' = 'medium') => {
+  const transforms = {
+    small: unifiedAnimations.transforms.chipHover,
+    medium: unifiedAnimations.transforms.buttonHover,
+    large: unifiedAnimations.transforms.buttonHover
+  };
+
+  return {
+    transition: `all ${unifiedAnimations.duration.quick} ${unifiedAnimations.easing.standard}`,
+    '&:hover': {
+      transform: transforms[size],
+      boxShadow: theme.shadows[unifiedAnimations.shadows.hover],
+    },
+    '&:active': {
+      transform: unifiedAnimations.transforms.buttonPress,
+    }
+  };
+};
+
+/**
+ * 创建统一的图标动画样式
+ */
+export const createUnifiedIconAnimation = () => ({
+  transition: `transform ${unifiedAnimations.duration.quick} ${unifiedAnimations.easing.standard}`,
+  '&:hover': {
+    transform: unifiedAnimations.transforms.iconHover,
+  },
+  '&:active': {
+    transform: unifiedAnimations.transforms.iconPress,
+  }
+});
+
+/**
+ * 创建不包含动画的现代化卡片样式
+ * 用于需要自定义动画的场景
+ */
+export const createModernCardStylesNoAnimation = (
+  theme: Theme,
+  variant: keyof ModernCardVariant = 'default',
+  intensity: number = 1.0
+) => {
+  const getVariantColors = () => {
+    switch (variant) {
+      case 'primary':
+        return {
+          main: theme.palette.primary.main,
+          secondary: theme.palette.primary.light
+        };
+      case 'secondary':
+        return {
+          main: theme.palette.secondary.main,
+          secondary: theme.palette.secondary.light
+        };
+      case 'success':
+        return {
+          main: theme.palette.success.main,
+          secondary: theme.palette.success.light
+        };
+      case 'warning':
+        return {
+          main: theme.palette.warning.main,
+          secondary: theme.palette.warning.light
+        };
+      case 'info':
+        return {
+          main: theme.palette.info.main,
+          secondary: theme.palette.info.light
+        };
+      case 'error':
+        return {
+          main: theme.palette.error.main,
+          secondary: theme.palette.error.light
+        };
+      default:
+        return {
+          main: theme.palette.primary.main,
+          secondary: theme.palette.secondary.main
+        };
+    }
+  };
+
+  const colors = getVariantColors();
+  const baseAlpha = 0.08 * intensity;
+  const borderAlpha = 0.15 * intensity;
+
+  return {
+    background: `linear-gradient(135deg, ${alpha(colors.main, baseAlpha)}, ${alpha(colors.secondary, baseAlpha * 0.5)})`,
+    border: `1px solid ${alpha(colors.main, borderAlpha)}`,
+    borderRadius: 2,
+    backdropFilter: 'blur(10px)',
+    position: 'relative' as const,
+    overflow: 'hidden' as const,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      background: `linear-gradient(90deg, ${colors.main}, ${alpha(colors.main, 0.7)})`,
+      opacity: 0.8
+    }
+  };
+};
+
+/**
+ * 创建自然的快速操作卡片动画样式
+ * 专门用于解决僵硬的悬停效果问题
+ */
+export const createSmoothActionCardAnimation = (theme: Theme, colorMain: string) => ({
+  cursor: 'pointer',
+  transition: `all ${unifiedAnimations.duration.standard} ${unifiedAnimations.easing.natural}`,
+  '&:hover': {
+    transform: unifiedAnimations.transforms.cardHover,
+    boxShadow: `0 8px 24px ${alpha(colorMain, 0.15)}`,
+    '& .action-icon': {
+      transform: unifiedAnimations.transforms.iconHover,
+      backgroundColor: alpha(colorMain, 0.15),
+      transition: `all ${unifiedAnimations.duration.standard} ${unifiedAnimations.easing.natural}`
+    },
+    '& .action-title': {
+      background: `linear-gradient(135deg, ${colorMain}, ${alpha(colorMain, 0.8)})`,
+      backgroundClip: 'text',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      transition: `all ${unifiedAnimations.duration.standard} ${unifiedAnimations.easing.natural}`
+    },
+    '& .action-arrow': {
+      transform: 'translateX(4px)',
+      opacity: 1,
+      transition: `all ${unifiedAnimations.duration.standard} ${unifiedAnimations.easing.natural}`
+    }
+  },
+  '&:active': {
+    transform: unifiedAnimations.transforms.cardPress,
+  }
+});
 
 /**
  * 响应式断点工具

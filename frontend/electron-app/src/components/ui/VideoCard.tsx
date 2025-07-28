@@ -27,6 +27,7 @@ import {
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { VideoInfo } from '@subtranslate/shared';
+import { createUnifiedCardAnimation, createUnifiedIconAnimation, unifiedAnimations } from '../../utils/modernStyles';
 
 interface VideoCardProps {
   video: VideoInfo;
@@ -144,6 +145,11 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
     }
   };
 
+  // 统一的卡片动画样式
+  const cardAnimationStyles = hasSubtitleTracks
+    ? createUnifiedCardAnimation(theme, 'default')
+    : {};
+
   return (
     <Card
       sx={{
@@ -154,18 +160,17 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
         position: 'relative',
         overflow: 'hidden',
         border: selected ? `2px solid ${theme.palette.primary.main}` : 'none',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isHovered && hasSubtitleTracks ? 'translateY(-8px)' : 'translateY(0)',
-        boxShadow: isHovered && hasSubtitleTracks
-          ? theme.shadows[8]
-          : theme.shadows[2],
         opacity: hasSubtitleTracks ? 1 : 0.7,
+        boxShadow: theme.shadows[unifiedAnimations.shadows.rest],
+        // 应用统一的动画样式
+        ...cardAnimationStyles,
         '&:hover': hasSubtitleTracks ? {
           '& .video-overlay': {
             opacity: 1,
           },
           '& .video-thumbnail': {
             transform: 'scale(1.05)',
+            transition: `transform ${unifiedAnimations.duration.standard} ${unifiedAnimations.easing.natural}`,
           }
         } : {}
       }}
@@ -259,9 +264,10 @@ const VideoCard: React.FC<VideoCardProps> = memo(({
                     color: '#ddd',
                     width: 64,
                     height: 64,
+                    // 应用统一的图标动画
+                    ...createUnifiedIconAnimation(),
                     '&:hover': {
                       backgroundColor: theme.palette.primary.main,
-                      transform: 'scale(1.1)'
                     }
                   }}
                   onClick={handlePlayPause}
