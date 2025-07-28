@@ -22,7 +22,7 @@ from backend.api.dependencies import get_system_config
 
 
 # 配置日志
-logger = logging.getLogger("subtranslate.api.config")
+logger = logging.getLogger("aniversegateway.api.config")
 
 
 # 创建路由器

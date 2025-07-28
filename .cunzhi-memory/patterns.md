@@ -1,4 +1,0 @@
-# 常用模式和最佳实践
-
-- Electron界面动画统一化重构：采用渐进式优化方案，以Videos.tsx的Chip组件和Home.tsx的StatsCard组件的hover效果为基准，统一所有组件的动画效果，创建统一的动画配置文件管理
-- Electron界面动画统一化重构完成：移除了所有MUI动画组件（Fade、Slide、Zoom）的持续transition干扰，修复了按钮hover时横向变大挤压其他元素的问题，统一了所有组件的动画效果为基于StatsCard和Chip组件的自然浮动效果，创建了unifiedAnimations配置系统进行集中管理

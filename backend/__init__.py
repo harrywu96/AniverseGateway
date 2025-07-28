@@ -1,4 +1,4 @@
-"""SubTranslate 后端包
+"""AniVerse Gateway 后端包
 
 提供视频字幕翻译系统的后端功能。
 """

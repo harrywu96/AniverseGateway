@@ -26,7 +26,7 @@ import {
   Error as ErrorIcon,
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
-import { VideoInfo } from '@subtranslate/shared';
+import { VideoInfo } from '@aniversegateway/shared';
 import { createUnifiedCardAnimation, createUnifiedIconAnimation, unifiedAnimations } from '../../utils/modernStyles';
 
 interface VideoCardProps {

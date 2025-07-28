@@ -1,4 +1,4 @@
-"""SubTranslate API 模块
+"""AniVerse Gateway API 模块
 
 提供FastAPI后端接口，与桌面应用集成。
 """
@@ -10,6 +10,7 @@ import uvicorn
 import logging
 
 from typing import Optional
+
 
 def start_api_server(
     host: str = "127.0.0.1",

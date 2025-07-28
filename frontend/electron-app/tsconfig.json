@@ -24,7 +24,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@subtranslate/shared/*": ["../shared/*"]
+      "@aniversegateway/shared/*": ["../shared/*"]
     },
 
     /* Node.js types */

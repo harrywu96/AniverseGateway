@@ -133,7 +133,7 @@ const Home: React.FC = () => {
       <HeroSection
         title="欢迎来到异世界语桥"
         subtitle="AniVerse Gateway"
-        description="在这里，语言不再是障碍，每一部动漫都将为你敞开大门。无论是热血的异世界冒险，还是温馨的日常物语，AI将为你架起通往每个精彩世界的桥梁。"
+        description="在这里，语言不再是障碍，每一部动漫都将为你敞开大门。无论是热血的异世界冒险，还是温馨的日常物语，异世界语桥将为你架起通往每个精彩世界的桥梁。"
         primaryAction={{
           label: '开始翻译',
           onClick: () => navigate('/videos'),
@@ -457,7 +457,7 @@ const Home: React.FC = () => {
             准备开始您的翻译之旅？
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
-            立即导入您的第一个视频文件，体验AI驱动的智能字幕翻译服务。
+            立即导入您的第一个视频文件，体验AI驱动的字幕翻译服务。
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
             <Button

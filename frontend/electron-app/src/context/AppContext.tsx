@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { VideoInfo } from '@subtranslate/shared';
+import { VideoInfo } from '@aniversegateway/shared';
 
 // 定义应用状态接口
 interface AppState {

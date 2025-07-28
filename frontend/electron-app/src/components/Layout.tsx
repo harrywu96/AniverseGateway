@@ -112,7 +112,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             fontSize: '1.1rem',
           }}
         >
-          SubTranslate
+          异世界语桥
         </Typography>
         <Typography
           variant="caption"
@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             mt: 0.5,
           }}
         >
-          AI 字幕翻译
+          AniVerse Gateway
         </Typography>
       </Box>
     </Box>
@@ -326,7 +326,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   fontSize: '1.25rem',
                 }}
               >
-                智能视频字幕翻译系统
+                异世界语桥
               </Typography>
               <Typography
                 variant="caption"
@@ -337,7 +337,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   lineHeight: 1,
                 }}
               >
-                Professional Subtitle Translation Platform
+                AniVerse Gateway
               </Typography>
             </Box>
           </Box>

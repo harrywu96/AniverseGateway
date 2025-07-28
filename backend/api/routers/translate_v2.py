@@ -33,7 +33,7 @@ from backend.services.video_storage import VideoStorageService
 from backend.api.websocket import manager  # 导入WebSocket管理器
 
 # 配置日志
-logger = logging.getLogger("subtranslate.api.translate_v2")
+logger = logging.getLogger("aniversegateway.api.translate_v2")
 
 # 创建独立路由器
 router = APIRouter()

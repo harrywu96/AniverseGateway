@@ -22,7 +22,7 @@ import {
   Translate as TranslateIcon
 } from '@mui/icons-material';
 import { binarySearch } from '../utils/performanceUtils';
-import { UnifiedSubtitleItem } from '@subtranslate/shared';
+import { UnifiedSubtitleItem } from '@aniversegateway/shared';
 import { timeUtils } from '../utils/timeUtils';
 import { subtitleDataUtils } from '../utils/subtitleDataUtils';
 

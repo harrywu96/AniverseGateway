@@ -107,3 +107,25 @@ build_package.bat
 
 # Electron log files
 electron-log/
+
+# 调试相关
+final_comprehensive_test.py
+clean_build.bat
+comprehensive_test_v2.py
+debug_app.py
+debug_backend.bat
+
+# docs
+docs/
+
+# ai agent user prompt
+.aguild v4.5
+.aguild v4.9.10
+.aguild.491
+.cursor-agent-terminal.md
+.cursorrules
+.cursor
+cursor/
+.cunzhi-memory
+.augment
+augment/

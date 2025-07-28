@@ -40,7 +40,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@subtranslate/shared': resolve(__dirname, '../shared'),
+      '@aniversegateway/shared': resolve(__dirname, '../shared'),
     },
   },
   build: {

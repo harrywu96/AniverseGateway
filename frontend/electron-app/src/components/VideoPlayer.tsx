@@ -29,7 +29,7 @@ import {
   ClosedCaption as SubtitlesIcon
 } from '@mui/icons-material';
 import { throttle } from '../utils/performanceUtils';
-import { UnifiedSubtitleItem, SubtitleStyle } from '@subtranslate/shared';
+import { UnifiedSubtitleItem, SubtitleStyle } from '@aniversegateway/shared';
 import { timeUtils } from '../utils/timeUtils';
 import { subtitleDataUtils } from '../utils/subtitleDataUtils';
 

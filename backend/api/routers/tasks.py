@@ -20,7 +20,7 @@ from backend.api.websocket import manager  # 从websocket模块导入manager
 
 
 # 配置日志
-logger = logging.getLogger("subtranslate.api.tasks")
+logger = logging.getLogger("aniversegateway.api.tasks")
 
 
 # 创建路由器

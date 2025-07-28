@@ -1,4 +1,4 @@
-import { API_PATHS, DEFAULT_API_BASE_URL, ApiResponse, AIProvider, AIModel } from '@subtranslate/shared';
+import { API_PATHS, DEFAULT_API_BASE_URL, ApiResponse, AIProvider, AIModel } from '@aniversegateway/shared';
 import '../electron.d.ts';
 
 interface ProviderDetails {

@@ -54,13 +54,13 @@ import {
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
-import { VideoInfo } from '@subtranslate/shared';
+import { VideoInfo } from '@aniversegateway/shared';
 import VideoPlayer, { VideoPlayerRef } from '../components/VideoPlayer';
 import ErrorSnackbar from '../components/ErrorSnackbar';
 import TranslationResultEditor from '../components/TranslationResultEditor';
 import TranslationTestPanel from '../components/TranslationTestPanel';
 import { createModernCardStyles, createModernPaperStyles, createModernFormStyles, createModernAlertStyles, createModernDialogStyles, createModernButtonStyles, createModernContainerStyles, createElegantAreaStyles } from '../utils/modernStyles';
-import { UnifiedSubtitleItem } from '@subtranslate/shared/src/types/subtitle';
+import { UnifiedSubtitleItem } from '@aniversegateway/shared/src/types/subtitle';
 import { timeUtils } from '../utils/timeUtils';
 
 // 翻译步骤枚举

@@ -1443,7 +1443,7 @@ class ProviderService:
                     }
 
                 # 确定配置文件路径
-                config_dir = os.path.expanduser("~/.subtranslate")
+                config_dir = os.path.expanduser("~/.aniversegateway")
                 os.makedirs(config_dir, exist_ok=True)
                 config_file = os.path.join(config_dir, "custom_providers.json")
 

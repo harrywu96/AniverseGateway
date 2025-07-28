@@ -3,14 +3,14 @@ requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "subtranslate"
+name = "aniversegateway"
 version = "0.1.0"
-description = "智能视频字幕翻译系统"
+description = "异世界语桥 - 动漫字幕翻译神器"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
-    {name = "SubTranslate Team"}
+    {name = "AniVerse Gateway Team"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -95,17 +95,17 @@ docs = [
 ]
 
 full = [
-    "subtranslate[dev,docs]",
+    "aniversegateway[dev,docs]",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/subtranslate"
-"Bug Tracker" = "https://github.com/yourusername/subtranslate/issues"
-"Documentation" = "https://subtranslate.readthedocs.io/"
-"Source" = "https://github.com/yourusername/subtranslate"
+"Homepage" = "https://github.com/yourusername/aniversegateway"
+"Bug Tracker" = "https://github.com/yourusername/aniversegateway/issues"
+"Documentation" = "https://aniversegateway.readthedocs.io/"
+"Source" = "https://github.com/yourusername/aniversegateway"
 
 [project.scripts]
-subtranslate = "backend.main:run_server"
+aniversegateway = "backend.main:run_server"
 
 [tool.setuptools]
 package-dir = {"" = "."}

@@ -40,7 +40,7 @@ import {
   Analytics as AnalyticsIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { VideoInfo } from '@subtranslate/shared';
+import { VideoInfo } from '@aniversegateway/shared';
 import VideoCard from '../components/ui/VideoCard';
 import VideoSkeleton from '../components/ui/VideoSkeleton';
 import ErrorSnackbar from '../components/ErrorSnackbar';

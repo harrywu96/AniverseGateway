@@ -40,7 +40,7 @@ import {
   Save as SaveIcon
 } from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
-import { VideoInfo, SubtitleTrack } from '@subtranslate/shared';
+import { VideoInfo, SubtitleTrack } from '@aniversegateway/shared';
 import VideoPlayer from '../components/VideoPlayer';
 import SubtitleEditor, { SubtitleItem } from '../components/SubtitleEditor';
 import { useDebouncedCallback } from '../utils/useDebounce';

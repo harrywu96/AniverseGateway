@@ -5,11 +5,11 @@
  * 确保向后兼容性和数据一致性。
  */
 
-import { 
-  UnifiedSubtitleItem, 
-  TranslationResult, 
-  SubtitleItem 
-} from '@subtranslate/shared';
+import {
+  UnifiedSubtitleItem,
+  TranslationResult,
+  SubtitleItem
+} from '@aniversegateway/shared';
 import { timeUtils } from './timeUtils';
 
 /**

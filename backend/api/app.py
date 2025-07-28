@@ -1,6 +1,6 @@
-"""SubTranslate API 服务器应用程序
+"""AniVerse Gateway API 服务器应用程序
 
-本模块提供SubTranslate的FastAPI后端服务实现，包括各种API端点和WebSocket支持。
+本模块提供AniVerse Gateway的FastAPI后端服务实现，包括各种API端点和WebSocket支持。
 """
 
 import logging
@@ -49,7 +49,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
-logger = logging.getLogger("subtranslate.api")
+logger = logging.getLogger("aniversegateway.api")
 
 
 @lru_cache()
@@ -61,8 +61,8 @@ def get_app() -> FastAPI:
     """
     # 创建应用程序
     app = FastAPI(
-        title="SubTranslate API",
-        description="SubTranslate智能视频字幕翻译系统API",
+        title="AniVerse Gateway API",
+        description="异世界语桥动漫字幕翻译系统API",
         version="0.1.0",
     )
 
@@ -217,7 +217,7 @@ async def validation_exception_handler(request, exc):
 @app.on_event("startup")
 async def startup_event():
     """应用启动时执行"""
-    logger.info("SubTranslate API服务启动")
+    logger.info("异世界语桥 API服务启动")
 
     # 直接输出特定的启动完成消息，以便Electron能够捕获
     print("INFO:     Application startup complete.", flush=True)
@@ -244,7 +244,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """应用关闭时执行"""
-    logger.info("SubTranslate API服务关闭")
+    logger.info("异世界语桥 API服务关闭")
 
 
 # 首页和健康检查端点
