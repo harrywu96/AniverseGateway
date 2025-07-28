@@ -18,6 +18,8 @@ import {
   Fade,
   useTheme,
   alpha,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -25,6 +27,7 @@ import {
   VideoLibrary as VideoIcon,
   Settings as SettingsIcon,
   Translate as TranslateIcon,
+  ChevronRight as ChevronRightIcon,
   PlayCircle as PlayIcon,
 } from '@mui/icons-material';
 import { unifiedAnimations } from '../utils/modernStyles';
@@ -64,6 +67,69 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+
+  // 获取面包屑导航路径
+  const getBreadcrumbPaths = () => {
+    const pathname = location.pathname;
+    const paths = [];
+
+    // 总是包含首页
+    paths.push({
+      name: '首页',
+      path: '/',
+      icon: <HomeIcon />,
+      isActive: pathname === '/'
+    });
+
+    // 根据路径生成面包屑
+    if (pathname.startsWith('/videos')) {
+      // 视频管理页面
+      paths.push({
+        name: '视频管理',
+        path: '/videos',
+        icon: <VideoIcon />,
+        isActive: pathname === '/videos'
+      });
+
+      // 视频详情页面
+      const videoIdMatch = pathname.match(/^\/videos\/([^\/]+)$/);
+      if (videoIdMatch) {
+        paths.push({
+          name: '视频详情',
+          path: pathname,
+          icon: <PlayIcon />,
+          isActive: true
+        });
+      }
+
+      // 视频翻译页面
+      const translateMatch = pathname.match(/^\/videos\/([^\/]+)\/translate$/);
+      if (translateMatch) {
+        const videoId = translateMatch[1];
+        paths.push({
+          name: '视频详情',
+          path: `/videos/${videoId}`,
+          icon: <PlayIcon />,
+          isActive: false
+        });
+        paths.push({
+          name: '字幕翻译',
+          path: pathname,
+          icon: <TranslateIcon />,
+          isActive: true
+        });
+      }
+    } else if (pathname === '/settings') {
+      paths.push({
+        name: '设置',
+        path: '/settings',
+        icon: <SettingsIcon />,
+        isActive: true
+      });
+    }
+
+    return paths;
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -310,36 +376,61 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </IconButton>
 
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            <PlayIcon
-              sx={{
-                mr: 2,
-                color: theme.palette.primary.main,
-                fontSize: 28,
-              }}
-            />
-            <Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: theme.palette.primary.main,
-                  fontSize: '1.25rem',
-                }}
-              >
-                异世界语桥
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontSize: '0.75rem',
-                  display: 'block',
-                  lineHeight: 1,
-                }}
-              >
-                AniVerse Gateway
-              </Typography>
-            </Box>
+            <Breadcrumbs
+              separator={<ChevronRightIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />}
+              sx={{ ml: 1 }}
+            >
+              {getBreadcrumbPaths().map((breadcrumb, index) => {
+                const isLast = index === getBreadcrumbPaths().length - 1;
+
+                if (isLast) {
+                  // 最后一个面包屑显示为当前页面
+                  return (
+                    <Typography
+                      key={breadcrumb.path}
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.primary.main,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {React.cloneElement(breadcrumb.icon, { sx: { mr: 0.5, fontSize: 18 } })}
+                      {breadcrumb.name}
+                    </Typography>
+                  );
+                } else {
+                  // 其他面包屑显示为可点击链接
+                  return (
+                    <Link
+                      key={breadcrumb.path}
+                      component="button"
+                      variant="body2"
+                      onClick={() => navigate(breadcrumb.path)}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: theme.palette.text.secondary,
+                        textDecoration: 'none',
+                        fontWeight: 400,
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: 'none',
+                        '&:hover': {
+                          color: theme.palette.primary.main,
+                        },
+                      }}
+                    >
+                      {React.cloneElement(breadcrumb.icon, { sx: { mr: 0.5, fontSize: 18 } })}
+                      {breadcrumb.name}
+                    </Link>
+                  );
+                }
+              })}
+            </Breadcrumbs>
           </Box>
 
 
