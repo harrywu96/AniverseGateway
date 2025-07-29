@@ -4,6 +4,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import fetch from 'node-fetch';
+import * as treeKill from 'tree-kill';
 
 // 定义全局变量
 let mainWindow: BrowserWindow | null = null;
@@ -11,10 +12,112 @@ let pythonProcess: ChildProcessWithoutNullStreams | null = null;
 let isBackendStarted = false;
 let apiCheckInterval: NodeJS.Timeout | null = null;
 let startupTimeout: NodeJS.Timeout | null = null;
+let isCleaningUp = false; // 防止重复清理的标志
 const tempDirPath = join(__dirname, '..', '..', 'temp'); // 定义 temp 目录路径
 
 // 是否是开发环境 - 使用app.isPackaged来区分
 const isDev = !app.isPackaged;
+
+/**
+ * 强力终止Python进程及其子进程树
+ * @param process Python进程对象
+ * @param timeout 超时时间（毫秒）
+ * @returns Promise<boolean> 是否成功终止
+ */
+async function killPythonProcessTree(process: ChildProcessWithoutNullStreams, timeout: number = 5000): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!process || process.killed) {
+      console.log('Python进程已经终止或不存在');
+      resolve(true);
+      return;
+    }
+
+    console.log(`正在强力终止Python进程 (PID: ${process.pid})...`);
+
+    // 设置超时
+    const timeoutId = setTimeout(() => {
+      console.warn('强力终止Python进程超时');
+      resolve(false);
+    }, timeout);
+
+    // 监听进程关闭事件
+    const onClose = () => {
+      clearTimeout(timeoutId);
+      console.log('Python进程已成功终止');
+      resolve(true);
+    };
+
+    process.once('close', onClose);
+
+    // 使用tree-kill强力终止进程树
+    if (process.pid) {
+      treeKill(process.pid, 'SIGKILL', (err) => {
+        if (err) {
+          console.error('tree-kill执行失败:', err);
+          // 如果tree-kill失败，尝试使用原生kill
+          try {
+            process.kill('SIGKILL');
+          } catch (killErr) {
+            console.error('原生kill也失败:', killErr);
+          }
+        } else {
+          console.log('tree-kill执行成功');
+        }
+      });
+    } else {
+      // 如果没有PID，直接使用原生kill
+      try {
+        process.kill('SIGKILL');
+      } catch (killErr) {
+        console.error('原生kill失败:', killErr);
+        clearTimeout(timeoutId);
+        resolve(false);
+      }
+    }
+  });
+}
+
+/**
+ * 按进程名称强力终止进程（Windows特定）
+ * @param processName 进程名称
+ * @returns Promise<boolean> 是否成功终止
+ */
+async function killProcessByName(processName: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const { exec } = require('child_process');
+
+    console.log(`[KILL] 正在按名称终止进程: ${processName}`);
+
+    // 首先检查进程是否存在
+    exec(`tasklist /FI "IMAGENAME eq ${processName}"`, (checkError: any, checkStdout: any) => {
+      if (checkError) {
+        console.log(`[KILL] 检查进程 ${processName} 时出错:`, checkError.message);
+        resolve(false);
+        return;
+      }
+
+      if (checkStdout.includes(processName)) {
+        console.log(`[KILL] 发现进程 ${processName}，正在终止...`);
+
+        // 使用Windows的taskkill命令强制终止进程
+        exec(`taskkill /F /IM "${processName}" /T`, (error: any, stdout: any, stderr: any) => {
+          if (error) {
+            console.log(`[KILL] 终止进程 ${processName} 失败:`, error.message);
+            if (stderr) console.log(`[KILL] stderr:`, stderr);
+            resolve(false);
+          } else {
+            console.log(`[KILL] 成功终止进程 ${processName}`);
+            if (stdout) console.log(`[KILL] stdout:`, stdout);
+            resolve(true);
+          }
+        });
+      } else {
+        console.log(`[KILL] 进程 ${processName} 不存在，跳过`);
+        resolve(true); // 进程不存在也算成功
+      }
+    });
+  });
+}
 
 /**
  * 创建主窗口
@@ -158,10 +261,10 @@ function startPythonBackend() {
     } else {
       // 生产环境路径 - 使用打包的Python可执行文件
       const resourcesPath = process.resourcesPath;
-      pythonPath = join(resourcesPath, 'backend.exe');
+      pythonPath = join(resourcesPath, 'aniverseGatewayBackend.exe');
       scriptPath = ''; // 不需要脚本路径，因为已经打包到可执行文件中
 
-      // 验证backend.exe是否存在
+      // 验证aniverseGatewayBackend.exe是否存在
       if (!fs.existsSync(pythonPath)) {
         console.error(`错误: 找不到后端可执行文件: ${pythonPath}`);
         console.log(`资源路径: ${resourcesPath}`);
@@ -217,7 +320,7 @@ function startPythonBackend() {
         console.error(`后端启动超时 (${timeoutDuration/1000}秒)`);
         if (mainWindow) {
           mainWindow.webContents.send('backend-error', {
-            message: `后端启动超时 (${timeoutDuration/1000}秒)，请检查backend.exe是否能正常运行`
+            message: `后端启动超时 (${timeoutDuration/1000}秒)，请检查aniverseGatewayBackend.exe是否能正常运行`
           });
         }
       }
@@ -346,7 +449,7 @@ function startPythonBackend() {
         // 如果是异常退出，发送错误信息
         if (code !== 0) {
           mainWindow.webContents.send('backend-error', {
-            message: `${errorMessage}\n请检查backend.exe是否能正常运行`
+            message: `${errorMessage}\n请检查aniverseGatewayBackend.exe是否能正常运行`
           });
         }
       }
@@ -503,17 +606,26 @@ function registerIpcHandlers() {
   });
 
   // 尝试重启后端
-  ipcMain.handle('restart-backend', () => {
+  ipcMain.handle('restart-backend', async () => {
     try {
       if (pythonProcess) {
-        pythonProcess.kill();
+        console.log('正在强力终止现有Python进程...');
+        const killed = await killPythonProcessTree(pythonProcess);
+        if (!killed) {
+          console.warn('无法完全终止Python进程，但将继续重启');
+        }
         pythonProcess = null;
+        isBackendStarted = false;
       }
+
+      // 等待一小段时间确保端口释放
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       startPythonBackend();
       return { success: true };
     } catch (error) {
       console.error('重启后端时出错', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
@@ -1208,35 +1320,71 @@ app.whenReady().then(() => {
 });
 
 // 应用退出前清理资源
-app.on('before-quit', () => {
+app.on('before-quit', async (event) => {
+  // 如果已经在清理中，直接允许退出
+  if (isCleaningUp) {
+    console.log('清理已在进行中，允许退出');
+    return;
+  }
+
+  // 阻止默认退出行为，等待我们完成清理
+  event.preventDefault();
+  isCleaningUp = true;
+
+  console.log('before-quit: 应用即将退出，开始清理资源...');
+
+  // 清理定时器
   if (startupTimeout) {
     clearTimeout(startupTimeout);
+    startupTimeout = null;
   }
   if (apiCheckInterval) {
     clearInterval(apiCheckInterval);
+    apiCheckInterval = null;
   }
+
+  // 强力终止Python进程
   if (pythonProcess) {
-    pythonProcess.kill();
+    console.log('before-quit: 正在强力终止Python后端进程...');
+    const killed = await killPythonProcessTree(pythonProcess, 8000); // 给8秒时间
+    if (killed) {
+      console.log('before-quit: Python后端进程已成功终止');
+    } else {
+      console.warn('before-quit: Python后端进程终止超时，尝试按名称终止...');
+    }
     pythonProcess = null;
+    isBackendStarted = false;
   }
+
+  // 额外保险：按进程名称终止所有相关进程
+  console.log('before-quit: 正在按名称终止所有相关进程...');
+  await killProcessByName('aniverseGatewayBackend.exe');
+  await killProcessByName('AniVerse Gateway.exe');
+  await killProcessByName('backend.exe'); // 兼容旧版本
+
+  console.log('before-quit: 清理完成，现在允许应用退出');
+  // 现在允许应用退出
+  app.quit();
 });
 
 // 应用退出前清理临时目录
 app.on('will-quit', async () => {
-  console.log('应用程序即将退出...');
+  console.log('will-quit事件触发，开始最终清理...');
 
-  // 1. 关闭 Python 后端服务
+  // 注意：Python进程应该已经在before-quit中被终止了
+  // 这里只做最后的检查和临时目录清理
   if (pythonProcess && !pythonProcess.killed) {
-    console.log('正在关闭 Python 后端服务...');
-    pythonProcess.kill();
-    // 等待一段时间确保进程关闭，或监听 'close' 事件
-    await new Promise(resolve => setTimeout(resolve, 500)); // 简单延时
-    console.log('Python 后端服务已发送关闭信号');
-  } else {
-    console.log('Python 后端服务未运行或已关闭');
+    console.warn('Python进程仍在运行，进行最后的强力终止...');
+    await killPythonProcessTree(pythonProcess, 3000); // 给3秒时间
+    pythonProcess = null;
   }
 
-  // 2. 清理 temp 目录
+  // 最后的保险措施：再次按名称终止进程
+  console.log('最后检查：按名称终止任何残留进程...');
+  await killProcessByName('aniverseGatewayBackend.exe');
+  await killProcessByName('backend.exe'); // 兼容旧版本
+
+  // 清理 temp 目录
   console.log(`准备清理临时目录: ${tempDirPath}`);
   try {
     await fsPromises.rm(tempDirPath, { recursive: true, force: true });
@@ -1244,12 +1392,49 @@ app.on('will-quit', async () => {
   } catch (error) {
     console.error(`清理临时目录失败: ${tempDirPath}`, error);
   }
+
+  console.log('应用清理完成，即将退出');
 });
 
 // 所有窗口关闭时退出应用 (Windows & Linux)
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  console.log(`[CLEANUP] window-all-closed 事件触发，平台: ${process.platform}`);
+
   // macOS的应用程序不会自动退出
   if (process.platform !== 'darwin') {
+    // 如果已经在清理中，直接退出
+    if (isCleaningUp) {
+      console.log('[CLEANUP] window-all-closed: 清理已在进行中，直接退出');
+      app.quit();
+      return;
+    }
+
+    isCleaningUp = true;
+    console.log('[CLEANUP] window-all-closed: 所有窗口已关闭，开始清理进程...');
+    console.log(`[CLEANUP] Python进程状态: ${pythonProcess ? `存在(PID: ${pythonProcess.pid})` : '不存在'}`);
+    console.log(`[CLEANUP] 后端启动状态: ${isBackendStarted}`);
+
+    // 立即清理进程，不等待before-quit事件
+    if (pythonProcess) {
+      console.log('[CLEANUP] window-all-closed: 正在强力终止Python后端进程...');
+      const killed = await killPythonProcessTree(pythonProcess, 5000);
+      console.log(`[CLEANUP] Python进程终止结果: ${killed}`);
+      pythonProcess = null;
+      isBackendStarted = false;
+    } else {
+      console.log('[CLEANUP] window-all-closed: 没有Python进程需要终止');
+    }
+
+    // 按名称终止所有相关进程
+    console.log('[CLEANUP] window-all-closed: 正在按名称终止所有相关进程...');
+    const results = await Promise.all([
+      killProcessByName('aniverseGatewayBackend.exe'),
+      killProcessByName('AniVerse Gateway.exe'),
+      killProcessByName('backend.exe') // 兼容旧版本
+    ]);
+    console.log(`[CLEANUP] 按名称终止进程结果: ${results}`);
+
+    console.log('[CLEANUP] window-all-closed: 进程清理完成，退出应用');
     app.quit();
   }
 });
