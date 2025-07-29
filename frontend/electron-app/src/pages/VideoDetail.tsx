@@ -122,13 +122,33 @@ const VideoDetailComponent: React.FC = () => {
         backendIndex: track.index
       }));
 
+      // 处理视频文件路径，确保正确的file://协议格式
+      const processVideoPath = (path: string): string => {
+        if (!path) return '';
+
+        // 如果已经是file://协议，直接返回
+        if (path.startsWith('file://')) {
+          return path;
+        }
+
+        // 规范化路径分隔符
+        const normalizedPath = path.replace(/\\/g, '/');
+
+        // 转换为file://协议
+        if (normalizedPath.startsWith('/')) {
+          return `file://${normalizedPath}`;
+        } else {
+          return `file:///${normalizedPath}`;
+        }
+      };
+
       const videoInfo = frontendVideo ? {
         ...frontendVideo,
         subtitleTracks: convertedTracks
       } : {
         id: backendData.id,
         fileName: backendData.filename,
-        filePath: backendData.path,
+        filePath: processVideoPath(backendData.path),
         format: backendData.format || '',
         duration: backendData.duration || 0,
         hasEmbeddedSubtitles: backendData.has_embedded_subtitle || false,
@@ -137,6 +157,7 @@ const VideoDetailComponent: React.FC = () => {
       };
 
       console.log('更新视频信息:', videoInfo);
+      console.log('处理后的视频路径:', videoInfo.filePath);
       setVideo(videoInfo);
       videoRef.current = videoInfo;
 

@@ -79,10 +79,12 @@ class VideoStorageService:
             logger.info(f"文件已复制到临时目录")
 
             # 创建视频信息对象
+            # 确保路径使用正确的格式，避免URL编码问题
+            normalized_path = str(target_path).replace("\\", "/")
             video_info = VideoInfo(
                 id=video_id,
                 filename=filename,
-                path=str(target_path),
+                path=normalized_path,
                 format=self._get_video_format_from_filename(filename),
             )
             logger.info(

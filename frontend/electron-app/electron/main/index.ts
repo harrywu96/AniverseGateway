@@ -2,9 +2,9 @@
 import { join } from 'path';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
-import * as fsPromises from 'fs/promises';
+
 import fetch from 'node-fetch';
-import * as treeKill from 'tree-kill';
+import treeKill from 'tree-kill';
 
 // 日志文件路径
 const logFilePath = join(__dirname, '..', '..', 'cleanup.log');
@@ -29,10 +29,22 @@ let isBackendStarted = false;
 let apiCheckInterval: NodeJS.Timeout | null = null;
 let startupTimeout: NodeJS.Timeout | null = null;
 let isCleaningUp = false; // 防止重复清理的标志
-const tempDirPath = join(__dirname, '..', '..', 'temp'); // 定义 temp 目录路径
 
 // 是否是开发环境 - 使用app.isPackaged来区分
 const isDev = !app.isPackaged;
+
+// 统一临时目录路径配置 - 确保与后端配置一致
+const getTempDirPath = () => {
+  if (isDev) {
+    // 开发环境：使用项目根目录下的temp
+    return join(__dirname, '..', '..', '..', '..', 'temp');
+  } else {
+    // 生产环境：使用应用数据目录下的temp
+    return join(app.getPath('userData'), 'temp');
+  }
+};
+
+const tempDirPath = getTempDirPath();
 
 /**
  * 强力终止Python进程及其子进程树
@@ -300,7 +312,11 @@ function startPythonBackend() {
     console.log(`脚本路径: ${scriptPath}`);
 
     // 设置环境变量确保UTF-8编码
-    const env: NodeJS.ProcessEnv = { ...process.env, PYTHONIOENCODING: 'utf-8' };
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      PYTHONIOENCODING: 'utf-8',
+      TEMP_DIR: tempDirPath, // 统一临时目录路径
+    };
 
     // 启动Python进程 - 使用低级端口以避免权限问题
     const port = process.env.API_PORT || '8000';
@@ -1336,6 +1352,18 @@ app.whenReady().then(() => {
   logToFile(`[STARTUP] 平台: ${process.platform}`);
   logToFile(`[STARTUP] 是否打包: ${app.isPackaged}`);
 
+  // 确保临时目录存在
+  try {
+    if (!fs.existsSync(tempDirPath)) {
+      fs.mkdirSync(tempDirPath, { recursive: true });
+      logToFile(`[STARTUP] 创建临时目录: ${tempDirPath}`);
+    } else {
+      logToFile(`[STARTUP] 临时目录已存在: ${tempDirPath}`);
+    }
+  } catch (error) {
+    logToFile(`[STARTUP] 创建临时目录失败: ${error}`);
+  }
+
   createWindow();
   startPythonBackend();
   registerIpcHandlers();
@@ -1400,14 +1428,9 @@ async function performAppCleanup(): Promise<void> {
       logToFile(`[CLEANUP] 按名称终止进程异常: ${error}`);
     }
 
-    // 4. 清理临时目录
-    logToFile(`[CLEANUP] 清理临时目录: ${tempDirPath}`);
-    try {
-      await fsPromises.rm(tempDirPath, { recursive: true, force: true });
-      logToFile(`[CLEANUP] 临时目录清理成功: ${tempDirPath}`);
-    } catch (error) {
-      logToFile(`[CLEANUP] 清理临时目录失败: ${tempDirPath} - ${error}`);
-    }
+    // 注意：临时目录不在应用退出时自动清理
+    // 只有用户在设置界面中主动点击清理缓存时才会清理临时目录
+    logToFile('[CLEANUP] 跳过临时目录清理（仅在用户主动清理缓存时执行）');
 
     logToFile('[CLEANUP] 应用清理流程完成');
   } catch (error) {
@@ -1422,6 +1445,12 @@ async function performAppCleanup(): Promise<void> {
 app.on('before-quit', async (event) => {
   logToFile('[CLEANUP] before-quit 事件触发');
 
+  // 如果已经在清理中，直接允许退出
+  if (isCleaningUp) {
+    logToFile('[CLEANUP] before-quit: 清理已在进行中，允许退出');
+    return;
+  }
+
   // 阻止默认退出行为，等待我们完成清理
   event.preventDefault();
 
@@ -1430,10 +1459,8 @@ app.on('before-quit', async (event) => {
 
   logToFile('[CLEANUP] before-quit: 清理完成，现在允许应用退出');
 
-  // 给一点时间让日志写入完成，然后退出
-  setTimeout(() => {
-    app.quit();
-  }, 500);
+  // 直接退出，不再调用app.quit()避免循环
+  app.exit(0);
 });
 
 // 所有窗口关闭时的简化处理 - 只负责退出决策

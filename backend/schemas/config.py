@@ -407,6 +407,38 @@ class SystemConfig(BaseModel):
     )
 
     @classmethod
+    def _get_temp_dir(cls) -> str:
+        """获取临时目录路径，确保在不同环境下使用正确的路径"""
+        import sys
+        import os
+        from pathlib import Path
+
+        # 优先使用环境变量
+        env_temp_dir = os.getenv("TEMP_DIR")
+        if env_temp_dir:
+            return env_temp_dir
+
+        # 检查是否在PyInstaller打包环境中
+        if getattr(sys, "frozen", False):
+            # 打包环境：使用用户数据目录
+            try:
+                import tempfile
+
+                user_temp = (
+                    Path(tempfile.gettempdir()) / "aniversegateway" / "temp"
+                )
+                user_temp.mkdir(parents=True, exist_ok=True)
+                return str(user_temp)
+            except Exception:
+                # 如果创建失败，使用系统临时目录
+                return str(
+                    Path(tempfile.gettempdir()) / "aniversegateway_temp"
+                )
+        else:
+            # 开发环境：使用项目根目录下的temp
+            return "./temp"
+
+    @classmethod
     def from_env(cls) -> "SystemConfig":
         """从环境变量加载配置
 
@@ -713,7 +745,7 @@ class SystemConfig(BaseModel):
             api=api_config,
             max_concurrent_tasks=int(os.getenv("MAX_CONCURRENT_TASKS", "2")),
             output_dir=os.getenv("DEFAULT_OUTPUT_DIR"),
-            temp_dir=os.getenv("TEMP_DIR", "./temp"),
+            temp_dir=cls._get_temp_dir(),
             allowed_formats=allowed_formats.split(","),
             debug=os.getenv("APP_DEBUG", "false").lower()
             in ("true", "1", "yes"),

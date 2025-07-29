@@ -273,15 +273,35 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(({
       console.log('加载视频:', src);
       try {
         if (src.startsWith('file://')) {
+          // 处理已经是file://协议的路径
           let formattedSrc = src;
+
+          // 确保Windows路径格式正确
           if (src.match(/^file:\/\/[A-Za-z]:/)) {
             formattedSrc = src.replace(/^file:\/\/([A-Za-z]:)/, 'file:///$1');
           }
+
+          // 解码URL编码的字符，但保持路径分隔符
+          try {
+            const url = new URL(formattedSrc);
+            // 只解码pathname部分，避免影响协议部分
+            url.pathname = decodeURIComponent(url.pathname);
+            formattedSrc = url.toString();
+          } catch (urlError) {
+            console.warn('URL解码失败，使用原始路径:', urlError);
+          }
+
           console.log('格式化后的视频URL:', formattedSrc);
           video.src = formattedSrc;
         } else {
+          // 处理普通文件路径
           if (!src.includes('://')) {
-            const fileUrl = `file:///${src.replace(/\\/g, '/')}`;
+            // 规范化路径分隔符
+            const normalizedPath = src.replace(/\\/g, '/');
+            // 确保绝对路径格式
+            const fileUrl = normalizedPath.startsWith('/')
+              ? `file://${normalizedPath}`
+              : `file:///${normalizedPath}`;
             console.log('转换为URL:', fileUrl);
             video.src = fileUrl;
           } else {
