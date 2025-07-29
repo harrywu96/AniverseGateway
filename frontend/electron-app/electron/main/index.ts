@@ -6,6 +6,22 @@ import * as fsPromises from 'fs/promises';
 import fetch from 'node-fetch';
 import * as treeKill from 'tree-kill';
 
+// 日志文件路径
+const logFilePath = join(__dirname, '..', '..', 'cleanup.log');
+
+// 日志函数
+function logToFile(message: string) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] ${message}\n`;
+  try {
+    fs.appendFileSync(logFilePath, logMessage);
+    console.log(message); // 同时输出到控制台（开发环境可见）
+  } catch (error) {
+    console.error('写入日志文件失败:', error);
+    console.log(message); // 至少输出到控制台
+  }
+}
+
 // 定义全局变量
 let mainWindow: BrowserWindow | null = null;
 let pythonProcess: ChildProcessWithoutNullStreams | null = null;
@@ -86,33 +102,33 @@ async function killProcessByName(processName: string): Promise<boolean> {
   return new Promise((resolve) => {
     const { exec } = require('child_process');
 
-    console.log(`[KILL] 正在按名称终止进程: ${processName}`);
+    logToFile(`[KILL] 正在按名称终止进程: ${processName}`);
 
     // 首先检查进程是否存在
     exec(`tasklist /FI "IMAGENAME eq ${processName}"`, (checkError: any, checkStdout: any) => {
       if (checkError) {
-        console.log(`[KILL] 检查进程 ${processName} 时出错:`, checkError.message);
+        logToFile(`[KILL] 检查进程 ${processName} 时出错: ${checkError.message}`);
         resolve(false);
         return;
       }
 
       if (checkStdout.includes(processName)) {
-        console.log(`[KILL] 发现进程 ${processName}，正在终止...`);
+        logToFile(`[KILL] 发现进程 ${processName}，正在终止...`);
 
         // 使用Windows的taskkill命令强制终止进程
         exec(`taskkill /F /IM "${processName}" /T`, (error: any, stdout: any, stderr: any) => {
           if (error) {
-            console.log(`[KILL] 终止进程 ${processName} 失败:`, error.message);
-            if (stderr) console.log(`[KILL] stderr:`, stderr);
+            logToFile(`[KILL] 终止进程 ${processName} 失败: ${error.message}`);
+            if (stderr) logToFile(`[KILL] stderr: ${stderr}`);
             resolve(false);
           } else {
-            console.log(`[KILL] 成功终止进程 ${processName}`);
-            if (stdout) console.log(`[KILL] stdout:`, stdout);
+            logToFile(`[KILL] 成功终止进程 ${processName}`);
+            if (stdout) logToFile(`[KILL] stdout: ${stdout.trim()}`);
             resolve(true);
           }
         });
       } else {
-        console.log(`[KILL] 进程 ${processName} 不存在，跳过`);
+        logToFile(`[KILL] 进程 ${processName} 不存在，跳过`);
         resolve(true); // 进程不存在也算成功
       }
     });
@@ -1307,6 +1323,19 @@ function getProviderModels(providerId) {
 
 // 应用启动完成时
 app.whenReady().then(() => {
+  // 清理旧的日志文件
+  try {
+    if (fs.existsSync(logFilePath)) {
+      fs.unlinkSync(logFilePath);
+    }
+  } catch (error) {
+    console.error('清理旧日志文件失败:', error);
+  }
+
+  logToFile('[STARTUP] 应用启动完成');
+  logToFile(`[STARTUP] 平台: ${process.platform}`);
+  logToFile(`[STARTUP] 是否打包: ${app.isPackaged}`);
+
   createWindow();
   startPythonBackend();
   registerIpcHandlers();
@@ -1319,122 +1348,102 @@ app.whenReady().then(() => {
   });
 });
 
-// 应用退出前清理资源
-app.on('before-quit', async (event) => {
-  // 如果已经在清理中，直接允许退出
+/**
+ * 执行应用清理逻辑
+ * 集中处理所有清理任务，防止重复执行
+ */
+async function performAppCleanup(): Promise<void> {
+  // 防止重入：如果已经在清理中，直接返回
   if (isCleaningUp) {
-    console.log('清理已在进行中，允许退出');
+    logToFile('[CLEANUP] 清理已在进行中，跳过重复执行');
     return;
   }
 
-  // 阻止默认退出行为，等待我们完成清理
-  event.preventDefault();
+  // 设置清理标志
   isCleaningUp = true;
+  logToFile('[CLEANUP] 开始应用清理流程...');
 
-  console.log('before-quit: 应用即将退出，开始清理资源...');
-
-  // 清理定时器
-  if (startupTimeout) {
-    clearTimeout(startupTimeout);
-    startupTimeout = null;
-  }
-  if (apiCheckInterval) {
-    clearInterval(apiCheckInterval);
-    apiCheckInterval = null;
-  }
-
-  // 强力终止Python进程
-  if (pythonProcess) {
-    console.log('before-quit: 正在强力终止Python后端进程...');
-    const killed = await killPythonProcessTree(pythonProcess, 8000); // 给8秒时间
-    if (killed) {
-      console.log('before-quit: Python后端进程已成功终止');
-    } else {
-      console.warn('before-quit: Python后端进程终止超时，尝试按名称终止...');
-    }
-    pythonProcess = null;
-    isBackendStarted = false;
-  }
-
-  // 额外保险：按进程名称终止所有相关进程
-  console.log('before-quit: 正在按名称终止所有相关进程...');
-  await killProcessByName('aniverseGatewayBackend.exe');
-  await killProcessByName('AniVerse Gateway.exe');
-  await killProcessByName('backend.exe'); // 兼容旧版本
-
-  console.log('before-quit: 清理完成，现在允许应用退出');
-  // 现在允许应用退出
-  app.quit();
-});
-
-// 应用退出前清理临时目录
-app.on('will-quit', async () => {
-  console.log('will-quit事件触发，开始最终清理...');
-
-  // 注意：Python进程应该已经在before-quit中被终止了
-  // 这里只做最后的检查和临时目录清理
-  if (pythonProcess && !pythonProcess.killed) {
-    console.warn('Python进程仍在运行，进行最后的强力终止...');
-    await killPythonProcessTree(pythonProcess, 3000); // 给3秒时间
-    pythonProcess = null;
-  }
-
-  // 最后的保险措施：再次按名称终止进程
-  console.log('最后检查：按名称终止任何残留进程...');
-  await killProcessByName('aniverseGatewayBackend.exe');
-  await killProcessByName('backend.exe'); // 兼容旧版本
-
-  // 清理 temp 目录
-  console.log(`准备清理临时目录: ${tempDirPath}`);
   try {
-    await fsPromises.rm(tempDirPath, { recursive: true, force: true });
-    console.log(`临时目录清理成功: ${tempDirPath}`);
-  } catch (error) {
-    console.error(`清理临时目录失败: ${tempDirPath}`, error);
-  }
-
-  console.log('应用清理完成，即将退出');
-});
-
-// 所有窗口关闭时退出应用 (Windows & Linux)
-app.on('window-all-closed', async () => {
-  console.log(`[CLEANUP] window-all-closed 事件触发，平台: ${process.platform}`);
-
-  // macOS的应用程序不会自动退出
-  if (process.platform !== 'darwin') {
-    // 如果已经在清理中，直接退出
-    if (isCleaningUp) {
-      console.log('[CLEANUP] window-all-closed: 清理已在进行中，直接退出');
-      app.quit();
-      return;
+    // 1. 清理定时器
+    logToFile('[CLEANUP] 清理定时器...');
+    if (startupTimeout) {
+      clearTimeout(startupTimeout);
+      startupTimeout = null;
+    }
+    if (apiCheckInterval) {
+      clearInterval(apiCheckInterval);
+      apiCheckInterval = null;
     }
 
-    isCleaningUp = true;
-    console.log('[CLEANUP] window-all-closed: 所有窗口已关闭，开始清理进程...');
-    console.log(`[CLEANUP] Python进程状态: ${pythonProcess ? `存在(PID: ${pythonProcess.pid})` : '不存在'}`);
-    console.log(`[CLEANUP] 后端启动状态: ${isBackendStarted}`);
-
-    // 立即清理进程，不等待before-quit事件
+    // 2. 强力终止Python进程
     if (pythonProcess) {
-      console.log('[CLEANUP] window-all-closed: 正在强力终止Python后端进程...');
-      const killed = await killPythonProcessTree(pythonProcess, 5000);
-      console.log(`[CLEANUP] Python进程终止结果: ${killed}`);
+      logToFile('[CLEANUP] 正在强力终止Python后端进程...');
+      try {
+        const killed = await killPythonProcessTree(pythonProcess, 5000);
+        logToFile(`[CLEANUP] Python后端进程终止结果: ${killed}`);
+      } catch (error) {
+        logToFile(`[CLEANUP] Python进程终止异常: ${error}`);
+      }
       pythonProcess = null;
       isBackendStarted = false;
-    } else {
-      console.log('[CLEANUP] window-all-closed: 没有Python进程需要终止');
     }
 
-    // 按名称终止所有相关进程
-    console.log('[CLEANUP] window-all-closed: 正在按名称终止所有相关进程...');
-    const results = await Promise.all([
-      killProcessByName('aniverseGatewayBackend.exe'),
-      killProcessByName('AniVerse Gateway.exe'),
-      killProcessByName('backend.exe') // 兼容旧版本
-    ]);
-    console.log(`[CLEANUP] 按名称终止进程结果: ${results}`);
+    // 3. 按进程名称终止所有相关进程
+    logToFile('[CLEANUP] 正在按名称终止所有相关进程...');
+    try {
+      await Promise.all([
+        killProcessByName('aniverseGatewayBackend.exe'),
+        killProcessByName('AniVerse Gateway.exe'),
+        killProcessByName('backend.exe') // 兼容旧版本
+      ]);
+    } catch (error) {
+      logToFile(`[CLEANUP] 按名称终止进程异常: ${error}`);
+    }
 
-    console.log('[CLEANUP] window-all-closed: 进程清理完成，退出应用');
+    // 4. 清理临时目录
+    logToFile(`[CLEANUP] 清理临时目录: ${tempDirPath}`);
+    try {
+      await fsPromises.rm(tempDirPath, { recursive: true, force: true });
+      logToFile(`[CLEANUP] 临时目录清理成功: ${tempDirPath}`);
+    } catch (error) {
+      logToFile(`[CLEANUP] 清理临时目录失败: ${tempDirPath} - ${error}`);
+    }
+
+    logToFile('[CLEANUP] 应用清理流程完成');
+  } catch (error) {
+    logToFile(`[CLEANUP] 清理过程中发生异常: ${error}`);
+  } finally {
+    // 确保清理标志被重置（虽然应用即将退出）
+    isCleaningUp = false;
+  }
+}
+
+// 应用退出前清理资源 - 统一清理入口
+app.on('before-quit', async (event) => {
+  logToFile('[CLEANUP] before-quit 事件触发');
+
+  // 阻止默认退出行为，等待我们完成清理
+  event.preventDefault();
+
+  // 执行统一的清理逻辑
+  await performAppCleanup();
+
+  logToFile('[CLEANUP] before-quit: 清理完成，现在允许应用退出');
+
+  // 给一点时间让日志写入完成，然后退出
+  setTimeout(() => {
     app.quit();
+  }, 500);
+});
+
+// 所有窗口关闭时的简化处理 - 只负责退出决策
+app.on('window-all-closed', () => {
+  logToFile(`[CLEANUP] window-all-closed 事件触发，平台: ${process.platform}`);
+
+  // macOS的应用程序不会自动退出，其他平台直接退出
+  // 清理逻辑将在 before-quit 中统一处理
+  if (process.platform !== 'darwin') {
+    logToFile('[CLEANUP] window-all-closed: 所有窗口已关闭，触发应用退出');
+    app.quit(); // 这将触发 before-quit 事件，在那里进行清理
   }
 });
