@@ -8,8 +8,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union, Any
 
 from backend.schemas.video import VideoFormat, VideoInfo
+from backend.core.logging_utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("aniversegateway.core.ffmpeg")
 
 
 class FFmpegError(Exception):
@@ -21,7 +22,9 @@ class FFmpegError(Exception):
 class FFmpegTool:
     """FFmpeg工具集成类，提供执行FFmpeg命令的封装"""
 
-    def __init__(self, ffmpeg_binary: str = "ffmpeg", ffprobe_binary: str = "ffprobe"):
+    def __init__(
+        self, ffmpeg_binary: str = "ffmpeg", ffprobe_binary: str = "ffprobe"
+    ):
         """初始化FFmpeg工具
 
         Args:
@@ -203,7 +206,10 @@ class FFmpegTool:
             # 如果format部分没有duration，尝试从流信息中获取
             streams = info.get("streams", [])
             for stream in streams:
-                if stream.get("codec_type") == "video" and "duration" in stream:
+                if (
+                    stream.get("codec_type") == "video"
+                    and "duration" in stream
+                ):
                     return float(stream["duration"])
 
             raise FFmpegError("无法从视频信息中获取持续时间")

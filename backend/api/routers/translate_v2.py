@@ -296,9 +296,7 @@ async def _configure_ai_service_from_provider_config_v2(
             api_host = provider_config.get("base_url", "")
 
         # 根据提供商ID确定类型
-        if provider_id in ["openai", "siliconflow"] or provider_id.startswith(
-            "custom-"
-        ):
+        if provider_id == "openai":
             config.ai_service.provider = AIProviderType.OPENAI
 
             # 确保 openai 配置对象存在
@@ -313,6 +311,56 @@ async def _configure_ai_service_from_provider_config_v2(
             if api_host:
                 config.ai_service.openai.base_url = api_host
             config.ai_service.openai.model = model_id
+
+        elif provider_id == "siliconflow":
+            config.ai_service.provider = AIProviderType.SILICONFLOW
+
+            # 确保 siliconflow 配置对象存在
+            if config.ai_service.siliconflow is None:
+                from backend.schemas.config import SiliconFlowConfig
+
+                config.ai_service.siliconflow = SiliconFlowConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.siliconflow.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.siliconflow.base_url = api_host
+            config.ai_service.siliconflow.model = model_id
+
+        elif provider_id.startswith("custom-"):
+            config.ai_service.provider = AIProviderType.CUSTOM
+
+            # 为自定义提供商创建 CustomProviderConfig 而不是 CustomAPIConfig
+            from backend.schemas.config import (
+                CustomAPIConfig,
+                CustomProviderConfig,
+            )
+
+            # 创建单个自定义提供商配置
+            custom_provider = CustomProviderConfig(
+                id=provider_id,
+                name=f"Custom Provider {provider_id}",
+                api_key=SecretStr(api_key) if api_key else SecretStr(""),
+                base_url=api_host if api_host else "",
+                model=model_id,
+            )
+
+            # 创建 CustomAPIConfig 并设置激活的提供商
+            config.ai_service.custom = CustomAPIConfig(
+                providers={provider_id: custom_provider},
+                active_provider=provider_id,
+            )
+
+            logger.info(f"创建自定义提供商配置: {provider_id}")
+            logger.info(
+                f"激活的提供商: {config.ai_service.custom.active_provider}"
+            )
+            logger.info(
+                f"提供商数量: {len(config.ai_service.custom.providers)}"
+            )
 
         elif provider_id == "ollama":
             config.ai_service.provider = AIProviderType.OLLAMA
@@ -344,6 +392,8 @@ async def _configure_ai_service_from_provider_config_v2(
             config.ai_service.openai.model = model_id
 
         logger.info(f"AI服务配置完成: {provider_id}, 模型: {model_id}")
+        logger.info(f"最终配置的提供商类型: {config.ai_service.provider}")
+        logger.info(f"API地址: {api_host}")
 
     except Exception as e:
         logger.error(f"配置AI服务失败: {e}", exc_info=True)
@@ -387,7 +437,7 @@ async def translate_video_subtitle_v2(
         # 获取独立的服务实例
         config = get_independent_system_config()
         video_storage = get_independent_video_storage()
-        translator = get_independent_subtitle_translator()
+        # 注意：translator 将在配置更新后创建
 
         # 验证视频是否存在
         video_info = video_storage.get_video(request.video_id)
@@ -596,28 +646,34 @@ async def translate_video_subtitle_v2(
                 if not subtitle_path or not os.path.exists(str(subtitle_path)):
                     raise Exception("提取字幕内容失败")
 
-                # 创建翻译任务
-                task = SubtitleTranslator.create_task(
-                    video_id=task_id,
-                    source_path=str(subtitle_path),
-                    source_language=request.source_language,
-                    target_language=request.target_language,
-                    style=request.style,
-                    preserve_formatting=request.preserve_formatting,
-                    context_preservation=request.context_preservation,
-                    chunk_size=request.chunk_size,
-                    context_window=request.context_window,
-                )
-
                 # 使用提供商配置创建临时AI服务配置
                 original_provider = config.ai_service.provider
 
                 try:
-                    # 根据提供商配置设置AI服务
+                    # 根据提供商配置设置AI服务（在创建翻译器之前）
                     await _configure_ai_service_from_provider_config_v2(
                         config,
                         request.provider_config,
                         request.model_id,
+                    )
+
+                    # 现在使用更新后的配置创建翻译器
+                    translator = SubtitleTranslator(config)
+                    logger.info(
+                        f"使用更新后的配置创建翻译器，提供商类型: {config.ai_service.provider}"
+                    )
+
+                    # 创建翻译任务
+                    task = SubtitleTranslator.create_task(
+                        video_id=task_id,
+                        source_path=str(subtitle_path),
+                        source_language=request.source_language,
+                        target_language=request.target_language,
+                        style=request.style,
+                        preserve_formatting=request.preserve_formatting,
+                        context_preservation=request.context_preservation,
+                        chunk_size=request.chunk_size,
+                        context_window=request.context_window,
                     )
 
                     # 设置回调函数的任务引用，以便获取翻译结果

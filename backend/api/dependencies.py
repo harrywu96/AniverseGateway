@@ -17,8 +17,9 @@ from backend.core.ffmpeg import FFmpegTool
 from backend.services.video_storage import VideoStorageService
 from backend.services.subtitle_storage import SubtitleStorageService
 from backend.services.provider_service import ProviderService
+from backend.core.logging_utils import get_logger
 
-logger = logging.getLogger("subtranslate.api.dependencies")
+logger = get_logger("aniversegateway.api.dependencies")
 
 # 定义API密钥安全依赖
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)

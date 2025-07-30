@@ -58,7 +58,7 @@ class TranslationValidator:
             Dict[str, Pattern]: 术语正则表达式字典
         """
         patterns = {}
-        logger.info(f"开始编译术语表正则表达式，术语表：{self.glossary}")
+        # logger.info(f"开始编译术语表正则表达式，术语表：{self.glossary}")
 
         try:
             for term in self.glossary.keys():
@@ -68,13 +68,13 @@ class TranslationValidator:
                         r"\b" + re.escape(term) + r"\b", re.IGNORECASE
                     )
                     patterns[term] = pattern
-                    logger.info(f"成功为术语 '{term}' 编译正则表达式")
+                    # logger.info(f"成功为术语 '{term}' 编译正则表达式")
                 except Exception as e:
                     logger.error(f"为术语 '{term}' 编译正则表达式失败: {e}")
         except Exception as e:
             logger.error(f"编译术语表正则表达式出错: {e}")
 
-        logger.info(f"完成术语表正则表达式编译，共 {len(patterns)} 个模式")
+        # logger.info(f"完成术语表正则表达式编译，共 {len(patterns)} 个模式")
         return patterns
 
     def validate_single_translation(
@@ -296,11 +296,11 @@ class TranslationValidator:
             ValidationResult: 验证结果
         """
         # 记录传入的参数
-        logger.info(
-            f"验证器接收参数: source_lang={source_language}, target_lang={target_language}"
-        )
-        logger.info(f"接收到的术语表: {glossary}")
-        logger.info(f"接收到的禁用词: {forbidden_terms}")
+        # logger.info(
+        #     f"验证器接收参数: source_lang={source_language}, target_lang={target_language}"
+        # )
+        # logger.info(f"接收到的术语表: {glossary}")
+        # logger.info(f"接收到的禁用词: {forbidden_terms}")
 
         # 使用临时验证器以避免修改当前实例的状态
         temp_validator = self
@@ -319,7 +319,7 @@ class TranslationValidator:
                     forbidden_terms=forbidden_terms
                     or list(self.forbidden_terms),
                 )
-                logger.info("成功创建临时验证器")
+                # logger.info("成功创建临时验证器")
             except Exception as e:
                 logger.error(f"创建临时验证器失败: {e}")
                 # 出错时继续使用原验证器
@@ -329,9 +329,9 @@ class TranslationValidator:
             result = temp_validator.validate_single_translation(
                 source_text, translated_text
             )
-            logger.info(
-                f"验证结果: 有效={result.is_valid}, 分数={result.score}"
-            )
+            # logger.info(
+            #     f"验证结果: 有效={result.is_valid}, 分数={result.score}"
+            # )
             return result
         except Exception as e:
             logger.error(f"执行验证失败: {e}")

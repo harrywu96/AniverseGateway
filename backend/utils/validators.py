@@ -59,7 +59,7 @@ class TranslationValidator:
             Dict[str, Pattern]: 术语正则表达式字典
         """
         patterns = {}
-        logger.info(f"开始编译术语表正则表达式，术语表：{self.glossary}")
+        # logger.info(f"开始编译术语表正则表达式，术语表：{self.glossary}")
 
         try:
             for term in self.glossary.keys():
@@ -69,13 +69,13 @@ class TranslationValidator:
                         r"\b" + re.escape(term) + r"\b", re.IGNORECASE
                     )
                     patterns[term] = pattern
-                    logger.info(f"成功为术语 '{term}' 编译正则表达式")
+                    # logger.info(f"成功为术语 '{term}' 编译正则表达式")
                 except Exception as e:
                     logger.error(f"为术语 '{term}' 编译正则表达式失败: {e}")
         except Exception as e:
             logger.error(f"编译术语表正则表达式出错: {e}")
 
-        logger.info(f"完成术语表正则表达式编译，共 {len(patterns)} 个模式")
+        # logger.info(f"完成术语表正则表达式编译，共 {len(patterns)} 个模式")
         return patterns
 
     def validate_single_translation(

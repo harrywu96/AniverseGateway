@@ -344,6 +344,47 @@ class LoggingConfig(BaseModel):
         description="日志格式",
     )
 
+    @classmethod
+    def get_log_file_path(cls, filename: str = "aniversegateway.log") -> str:
+        """获取日志文件的完整路径
+
+        Args:
+            filename: 日志文件名，默认为 aniversegateway.log
+
+        Returns:
+            str: 日志文件的完整路径
+        """
+        import sys
+        import os
+        from pathlib import Path
+
+        # 优先使用环境变量指定的日志文件路径
+        env_log_file = os.getenv("LOG_FILE")
+        if env_log_file:
+            return env_log_file
+
+        # 检查是否在PyInstaller打包环境中
+        if getattr(sys, "frozen", False):
+            # 打包环境：使用与temp目录相同的父目录
+            try:
+                import tempfile
+
+                log_dir = (
+                    Path(tempfile.gettempdir()) / "AniVerseGateway" / "logs"
+                )
+                log_dir.mkdir(parents=True, exist_ok=True)
+                return str(log_dir / filename)
+            except Exception:
+                # 如果创建失败，使用系统临时目录
+                return str(
+                    Path(tempfile.gettempdir()) / f"aniversegateway_{filename}"
+                )
+        else:
+            # 开发环境：使用项目根目录下的logs
+            log_dir = Path("./logs")
+            log_dir.mkdir(parents=True, exist_ok=True)
+            return str(log_dir / filename)
+
 
 class APIConfig(BaseModel):
     """API服务器配置模型"""
@@ -425,7 +466,7 @@ class SystemConfig(BaseModel):
                 import tempfile
 
                 user_temp = (
-                    Path(tempfile.gettempdir()) / "aniversegateway" / "temp"
+                    Path(tempfile.gettempdir()) / "AniVerseGateway" / "temp"
                 )
                 user_temp.mkdir(parents=True, exist_ok=True)
                 return str(user_temp)
@@ -437,6 +478,40 @@ class SystemConfig(BaseModel):
         else:
             # 开发环境：使用项目根目录下的temp
             return "./temp"
+
+    @classmethod
+    def _get_log_dir(cls) -> str:
+        """获取日志目录路径，确保在不同环境下使用正确的路径"""
+        import sys
+        import os
+        from pathlib import Path
+
+        # 优先使用环境变量
+        env_log_dir = os.getenv("LOG_DIR")
+        if env_log_dir:
+            return env_log_dir
+
+        # 检查是否在PyInstaller打包环境中
+        if getattr(sys, "frozen", False):
+            # 打包环境：使用与temp目录相同的父目录
+            try:
+                import tempfile
+
+                log_dir = (
+                    Path(tempfile.gettempdir()) / "AniVerseGateway" / "logs"
+                )
+                log_dir.mkdir(parents=True, exist_ok=True)
+                return str(log_dir)
+            except Exception:
+                # 如果创建失败，使用系统临时目录
+                return str(
+                    Path(tempfile.gettempdir()) / "aniversegateway_logs"
+                )
+        else:
+            # 开发环境：使用项目根目录下的logs
+            log_dir = Path("./logs")
+            log_dir.mkdir(parents=True, exist_ok=True)
+            return str(log_dir)
 
     @classmethod
     def from_env(cls) -> "SystemConfig":
@@ -715,7 +790,7 @@ class SystemConfig(BaseModel):
         # 创建日志配置
         logging_config = LoggingConfig(
             level=os.getenv("LOG_LEVEL", "INFO"),
-            file_path=os.getenv("LOG_FILE"),
+            file_path=LoggingConfig.get_log_file_path(),
             format=os.getenv(
                 "LOG_FORMAT",
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s",

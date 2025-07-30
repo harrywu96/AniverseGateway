@@ -14,8 +14,9 @@ from uuid import uuid4
 from datetime import datetime
 
 from backend.schemas.video import VideoInfo, VideoFormat
+from backend.core.logging_utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("aniversegateway.services.video_storage")
 
 
 class VideoStorageService:

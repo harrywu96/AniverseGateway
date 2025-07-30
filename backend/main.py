@@ -35,33 +35,30 @@ else:
 # 添加项目根目录到Python路径
 sys.path.insert(0, str(project_root))
 
-# 打印Python路径以便调试
-logger = logging.getLogger("api_server")
-logger.info(f"Python路径: {sys.path}")
+# 初始化日志配置
+from backend.core.logging_utils import (
+    setup_logging,
+    get_log_file_path,
+    configure_uvicorn_logging,
+)
 
-# 初始化日志 - 在打包环境中调整日志文件路径
-log_file_path = "api_server.log"
-if getattr(sys, "frozen", False):
-    # 在打包环境中，将日志文件写入用户数据目录或当前工作目录
-    import tempfile
-
-    log_file_path = os.path.join(
-        tempfile.gettempdir(), "subtranslate_api_server.log"
-    )
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(log_file_path, encoding="utf-8"),
-    ],
+# 设置统一的日志配置
+log_file_path = get_log_file_path("api_server.log")
+# 在生产环境中减少控制台输出，开发环境保持控制台输出
+is_production = getattr(sys, "frozen", False)
+setup_logging(
+    log_level="INFO",
+    log_file_path=log_file_path,
+    console_output=not is_production,  # 生产环境不输出到控制台，开发环境输出
 )
 
 logger = logging.getLogger("api_server")
 
-# 获取默认的Uvicorn日志配置
-log_config = uvicorn.config.LOGGING_CONFIG
+# 打印Python路径以便调试
+logger.info(f"Python路径: {sys.path}")
+
+# 获取配置的Uvicorn日志配置
+log_config = configure_uvicorn_logging(get_log_file_path("uvicorn.log"))
 # 确保不修改日志消息格式，特别是启动完成的消息
 log_config["formatters"]["default"]["fmt"] = "%(levelprefix)s %(message)s"
 

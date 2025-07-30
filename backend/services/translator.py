@@ -22,8 +22,9 @@ from backend.services.validators import (
     ValidationResult,
 )
 from backend.utils.srt_optimizer import SRTOptimizer
+from backend.core.logging_utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("aniversegateway.services.translator")
 
 
 # 添加语言代码到名称的映射
@@ -123,6 +124,12 @@ class SubtitleTranslator:
         self.ai_service = AIServiceFactory.create_service(
             provider_type, provider_config
         )
+        logger.info(
+            f"SubtitleTranslator创建的AI服务类型: {type(self.ai_service).__name__}"
+        )
+        logger.info(f"提供商类型: {provider_type}")
+        if hasattr(provider_config, "base_url"):
+            logger.info(f"API地址: {provider_config.base_url}")
         self.template_dir = template_dir
         self.default_templates: Dict[str, PromptTemplate] = (
             self._load_default_templates()

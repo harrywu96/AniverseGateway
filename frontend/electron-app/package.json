@@ -51,7 +51,7 @@
                         },
     "build":  {
                   "appId":  "com.aniversegateway.app",
-                  "productName":  "AniVerse Gateway",
+                  "productName":  "AniVerseGateway",
                   "directories":  {
                                       "output":  "dist-electron-20250729_183412",
                                       "buildResources":  "build-resources"

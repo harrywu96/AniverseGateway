@@ -44,12 +44,10 @@ from .routers import (
 )
 
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger("aniversegateway.api")
+# 配置日志 - 使用统一的日志配置工具
+from backend.core.logging_utils import get_logger
+
+logger = get_logger("aniversegateway.api")
 
 
 @lru_cache()

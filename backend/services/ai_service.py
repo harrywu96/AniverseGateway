@@ -25,8 +25,9 @@ from backend.schemas.config import (
     GeminiConfig,
 )
 from backend.utils import async_retry, TokenCounter
+from backend.core.logging_utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("aniversegateway.services.ai_service")
 
 
 class AIService(abc.ABC):
@@ -108,6 +109,10 @@ class OpenAIService(AIService):
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
         }
+
+        # 添加日志输出，显示实际的请求URL
+        logger.info(f"发送请求到: {url}")
+        logger.debug(f"请求数据: {payload}")
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(url, headers=headers, json=payload)
