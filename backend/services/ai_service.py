@@ -82,7 +82,6 @@ class OpenAIService(AIService):
         self.timeout = config.timeout
         self.max_retries = config.max_retries
 
-    @async_retry(exceptions=(httpx.HTTPError, json.JSONDecodeError))
     async def _make_chat_request(
         self, messages: List[Dict[str, str]]
     ) -> Dict[str, Any]:
@@ -194,7 +193,6 @@ class ZhipuAIService(AIService):
         self.timeout = config.timeout
         self.max_retries = config.max_retries
 
-    @async_retry(exceptions=(httpx.HTTPError, json.JSONDecodeError))
     async def _make_chat_request(
         self, messages: List[Dict[str, str]]
     ) -> Dict[str, Any]:
@@ -857,12 +855,6 @@ class SiliconFlowService(AIService):
             "Content-Type": "application/json",
         }
 
-    @async_retry(
-        max_retries=3,
-        retry_delay=1,
-        backoff_factor=2,
-        exceptions=(httpx.HTTPError,),
-    )
     async def chat_completion(
         self,
         system_prompt: str,
@@ -953,12 +945,6 @@ class SiliconFlowService(AIService):
                     logger.error(err_msg)
             raise
 
-    @async_retry(
-        max_retries=3,
-        retry_delay=1,
-        backoff_factor=2,
-        exceptions=(httpx.HTTPError,),
-    )
     async def get_token_count(self, text: str) -> int:
         """计算文本的token数量
 
@@ -993,7 +979,6 @@ class GeminiService(AIService):
         self.timeout = config.timeout
         self.max_retries = config.max_retries
 
-    @async_retry(exceptions=(httpx.HTTPError, json.JSONDecodeError))
     async def _make_chat_request(
         self, messages: List[Dict[str, str]]
     ) -> Dict[str, Any]:

@@ -511,7 +511,6 @@ class EnhancedCustomAPIService(AIService):
                         response_data
                     )
 
-    @async_retry(max_retries=3, retry_delay=1, backoff_factor=2)
     async def chat_completion(
         self,
         system_prompt: str,

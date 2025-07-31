@@ -38,6 +38,7 @@ class SubtitleTranslator:
         self.service_translator = ServiceTranslator(
             ai_service_config=config.ai_service,
             template_dir=self.template_dir,
+            max_requests_per_minute=config.max_requests_per_minute,
         )
 
     async def translate_task(

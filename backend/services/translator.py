@@ -21,10 +21,14 @@ from backend.services.validators import (
     ValidationLevel,
     ValidationResult,
 )
+from backend.services.utils import RateLimiter
 from backend.utils.srt_optimizer import SRTOptimizer
 from backend.core.logging_utils import get_logger
 
 logger = get_logger("aniversegateway.services.translator")
+
+# 全局请求频率限制器实例（将在初始化时设置）
+global_rate_limiter = None
 
 
 # 添加语言代码到名称的映射
@@ -107,13 +111,19 @@ class SubtitleTranslator:
         self,
         ai_service_config: AIServiceConfig,
         template_dir: Optional[str] = None,
+        max_requests_per_minute: int = 45,
     ):
         """初始化字幕翻译器
 
         Args:
             ai_service_config: AI服务配置
             template_dir: 提示模板目录，默认为None
+            max_requests_per_minute: 每分钟最大请求数
         """
+        # 初始化全局频率限制器
+        global global_rate_limiter
+        if global_rate_limiter is None:
+            global_rate_limiter = RateLimiter(max_requests_per_minute)
         # 根据配置的提供商类型获取相应的配置对象
         provider_type = ai_service_config.provider.value
         provider_config = ai_service_config.get_provider_config()
@@ -490,12 +500,17 @@ class SubtitleTranslator:
         print("!!!system_prompt:", system_prompt)
         print("!!!user_prompt:", user_prompt)
 
-        # 翻译重试
+        # 翻译重试 - 优化重试逻辑，减少重复请求
         max_retries = task.config.max_retries
         last_error = None
 
         for attempt in range(max_retries):
             try:
+                # 应用全局请求频率限制
+                await global_rate_limiter.acquire()
+
+                logger.info(f"开始翻译chunk，尝试 {attempt + 1}/{max_retries}")
+
                 # 调用AI服务进行翻译
                 response = await self.ai_service.chat_completion(
                     system_prompt=system_prompt,
@@ -543,10 +558,55 @@ class SubtitleTranslator:
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"翻译尝试 {attempt+1}/{max_retries} 失败: {e}")
-                # 如果不是最后一次尝试，等待一段时间再重试
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(2**attempt)  # 指数退避
+                error_msg = str(e).lower()
+
+                # 区分不同类型的错误，决定是否重试
+                should_retry = True
+                retry_delay = 2**attempt  # 指数退避
+
+                # 检查是否是频率限制错误
+                if any(
+                    keyword in error_msg
+                    for keyword in [
+                        "rate limit",
+                        "too many requests",
+                        "429",
+                        "quota",
+                    ]
+                ):
+                    logger.warning(f"检测到频率限制错误，延长等待时间: {e}")
+                    retry_delay = max(retry_delay, 60)  # 至少等待60秒
+                # 检查是否是认证错误（不应重试）
+                elif any(
+                    keyword in error_msg
+                    for keyword in [
+                        "unauthorized",
+                        "401",
+                        "invalid api key",
+                        "authentication",
+                    ]
+                ):
+                    logger.error(f"认证错误，停止重试: {e}")
+                    should_retry = False
+                # 检查是否是网络超时（可以重试）
+                elif any(
+                    keyword in error_msg
+                    for keyword in ["timeout", "connection", "network"]
+                ):
+                    logger.warning(f"网络错误，将重试: {e}")
+                    retry_delay = min(retry_delay, 30)  # 网络错误不需要等太久
+                else:
+                    logger.warning(
+                        f"翻译尝试 {attempt+1}/{max_retries} 失败: {e}"
+                    )
+
+                # 如果不应该重试或已达最大重试次数，跳出循环
+                if not should_retry or attempt >= max_retries - 1:
+                    break
+
+                # 等待后重试
+                logger.info(f"等待 {retry_delay} 秒后重试...")
+                await asyncio.sleep(retry_delay)
 
         # 超过最大重试次数，抛出异常
         if last_error:

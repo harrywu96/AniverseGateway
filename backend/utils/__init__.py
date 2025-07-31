@@ -5,7 +5,12 @@
 """
 
 # 从 backend.services.utils 导入工具函数和类
-from backend.services.utils import async_retry, sync_retry, TokenCounter
+from backend.services.utils import (
+    async_retry,
+    sync_retry,
+    TokenCounter,
+    RateLimiter,
+)
 
 # 从 backend.utils.srt_optimizer 导入 SRT 优化器
 from backend.utils.srt_optimizer import SRTOptimizer
@@ -15,5 +20,6 @@ __all__ = [
     "async_retry",
     "sync_retry",
     "TokenCounter",
+    "RateLimiter",
     "SRTOptimizer",
 ]

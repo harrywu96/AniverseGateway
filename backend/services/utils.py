@@ -153,6 +153,56 @@ def sync_retry(
     return decorator
 
 
+class RateLimiter:
+    """请求频率限制器，用于控制API请求的频率"""
+
+    def __init__(self, max_requests_per_minute: int = 50):
+        """初始化频率限制器
+
+        Args:
+            max_requests_per_minute: 每分钟最大请求数
+        """
+        self.max_requests_per_minute = max_requests_per_minute
+        self.request_times = []
+        self._lock = asyncio.Lock()
+
+    async def acquire(self):
+        """获取请求许可，如果超过频率限制则等待"""
+        async with self._lock:
+            now = time.time()
+
+            # 清理超过1分钟的请求记录
+            cutoff_time = now - 60
+            self.request_times = [
+                t for t in self.request_times if t > cutoff_time
+            ]
+
+            # 如果当前请求数已达上限，计算需要等待的时间
+            if len(self.request_times) >= self.max_requests_per_minute:
+                # 找到最早的请求时间
+                oldest_request = min(self.request_times)
+                wait_time = (
+                    60 - (now - oldest_request) + 0.1
+                )  # 额外等待0.1秒确保安全
+
+                if wait_time > 0:
+                    logger.info(f"请求频率限制：等待 {wait_time:.2f} 秒")
+                    await asyncio.sleep(wait_time)
+
+                    # 重新清理过期记录
+                    now = time.time()
+                    cutoff_time = now - 60
+                    self.request_times = [
+                        t for t in self.request_times if t > cutoff_time
+                    ]
+
+            # 记录当前请求时间
+            self.request_times.append(now)
+            logger.debug(
+                f"当前分钟内请求数: {len(self.request_times)}/{self.max_requests_per_minute}"
+            )
+
+
 class TokenCounter:
     """Token计数器，用于估算和限制API请求的token使用量"""
 

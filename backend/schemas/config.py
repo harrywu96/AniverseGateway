@@ -437,6 +437,9 @@ class SystemConfig(BaseModel):
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     api: APIConfig = Field(default_factory=APIConfig)
     max_concurrent_tasks: int = Field(default=2, description="最大并发任务数")
+    max_requests_per_minute: int = Field(
+        default=45, description="每分钟最大API请求数"
+    )
     output_dir: Optional[str] = Field(None, description="默认输出目录")
     temp_dir: str = Field(default="./temp", description="临时文件目录")
     allowed_formats: List[str] = Field(
@@ -819,6 +822,9 @@ class SystemConfig(BaseModel):
             logging=logging_config,
             api=api_config,
             max_concurrent_tasks=int(os.getenv("MAX_CONCURRENT_TASKS", "2")),
+            max_requests_per_minute=int(
+                os.getenv("MAX_REQUESTS_PER_MINUTE", "45")
+            ),
             output_dir=os.getenv("DEFAULT_OUTPUT_DIR"),
             temp_dir=cls._get_temp_dir(),
             allowed_formats=allowed_formats.split(","),
