@@ -11,12 +11,10 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from backend.schemas.config import (
-    CustomAPIConfig,
     FormatType,
     ModelCapability,
-    ChatRole,
 )
-from backend.services.ai_service import AIService, async_retry
+from backend.services.ai_service import AIService
 from backend.utils import TokenCounter
 
 logger = logging.getLogger(__name__)
@@ -198,6 +196,109 @@ class EnhancedCustomAPIService(AIService):
         self.parser = CustomResponseParser()
         self.token_counter = TokenCounter()
 
+    def _is_streaming_response(self, response_text: str) -> bool:
+        """检测响应是否为流式响应格式
+
+        Args:
+            response_text: 响应文本
+
+        Returns:
+            bool: 是否为流式响应
+        """
+        # 检查是否包含 SSE 格式的 data: 前缀
+        lines = response_text.strip().split("\n")
+
+        # 如果有多行且包含 data: 前缀，很可能是流式响应
+        data_lines = [
+            line for line in lines if line.strip().startswith("data:")
+        ]
+
+        return len(data_lines) > 0 and len(lines) > 1
+
+    def _parse_streaming_response(self, response_text: str) -> str:
+        """解析流式响应并合并为完整内容
+
+        Args:
+            response_text: 流式响应文本
+
+        Returns:
+            str: 合并后的完整响应内容
+        """
+        logger.info("检测到流式响应，开始解析...")
+
+        lines = response_text.strip().split("\n")
+        content_parts = []
+        reasoning_parts = []
+
+        for line in lines:
+            line = line.strip()
+            if not line.startswith("data:"):
+                continue
+
+            # 移除 data: 前缀
+            json_str = line[5:].strip()
+
+            # 跳过 [DONE] 信号
+            if json_str == "[DONE]":
+                continue
+
+            try:
+                chunk_data = json.loads(json_str)
+
+                # 检查是否有 choices
+                if "choices" in chunk_data and chunk_data["choices"]:
+                    choice = chunk_data["choices"][0]
+
+                    # 处理 delta 格式（流式响应）
+                    if "delta" in choice:
+                        delta = choice["delta"]
+
+                        # 提取 reasoning_content
+                        if (
+                            "reasoning_content" in delta
+                            and delta["reasoning_content"]
+                        ):
+                            reasoning_parts.append(delta["reasoning_content"])
+
+                        # 提取 content
+                        if "content" in delta and delta["content"]:
+                            content_parts.append(delta["content"])
+
+                    # 处理 message 格式（非流式响应）
+                    elif "message" in choice:
+                        message = choice["message"]
+
+                        # 提取 reasoning_content
+                        if (
+                            "reasoning_content" in message
+                            and message["reasoning_content"]
+                        ):
+                            reasoning_parts.append(
+                                message["reasoning_content"]
+                            )
+
+                        # 提取 content
+                        if "content" in message and message["content"]:
+                            content_parts.append(message["content"])
+
+            except json.JSONDecodeError as e:
+                logger.warning(
+                    f"跳过无效的JSON块: {json_str[:100]}..., 错误: {e}"
+                )
+                continue
+
+        # 合并所有内容
+        full_content = "".join(content_parts)
+        full_reasoning = "".join(reasoning_parts)
+
+        logger.info(
+            f"流式响应解析完成，内容长度: {len(full_content)}, 推理长度: {len(full_reasoning)}"
+        )
+
+        # 如果有推理内容，可以选择是否包含在最终结果中
+        # 这里只返回主要内容，推理内容作为思考过程不直接显示
+        return full_content if full_content else full_reasoning
+
     def _get_endpoint_url(
         self, capability: ModelCapability = ModelCapability.CHAT
     ) -> str:
@@ -299,6 +400,7 @@ class EnhancedCustomAPIService(AIService):
             "model": self.model,  # 保持原始模型名称不变
             "messages": messages,
             "max_tokens": self.max_tokens,
+            "stream": False,  # 默认禁用流式响应
         }
 
         # 对于非DeepSeek模型，添加temperature参数
@@ -384,6 +486,7 @@ class EnhancedCustomAPIService(AIService):
             "messages": messages,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
+            "stream": False,  # 默认禁用流式响应
         }
 
         # 安全地添加模型参数，确保可序列化
@@ -436,6 +539,7 @@ class EnhancedCustomAPIService(AIService):
             "prompt": prompt,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
+            "stream": False,  # 默认禁用流式响应
         }
 
         # 安全地添加模型参数，确保可序列化
@@ -596,7 +700,13 @@ class EnhancedCustomAPIService(AIService):
 
                 response.raise_for_status()
 
-                # 尝试解析JSON
+                # 检查是否为流式响应
+                if self._is_streaming_response(response_text):
+                    # 处理流式响应
+                    logger.info("检测到流式响应，使用流式解析器处理")
+                    return self._parse_streaming_response(response_text)
+
+                # 尝试解析JSON（非流式响应）
                 try:
                     data = response.json()
                 except json.JSONDecodeError as e:
