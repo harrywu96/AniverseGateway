@@ -29,6 +29,7 @@ import {
   Stack,
   Divider
 } from '@mui/material';
+import { useAppContext } from '../context/AppContext';
 import {
   Settings as SettingsIcon,
   SmartToy as AIIcon,
@@ -127,11 +128,14 @@ const Settings: React.FC = () => {
 
   // AI 服务设置
   const dispatch = useAppDispatch();
-  const { 
-    providers, 
-    currentProviderId, 
-    currentModelId 
+  const {
+    providers,
+    currentProviderId,
+    currentModelId
   } = useAppSelector((state) => state.provider);
+
+  // 视频状态管理
+  const { clearVideos } = useAppContext();
 
   const [currentApiKeyInput, setCurrentApiKeyInput] = useState('');
   const [currentBaseUrlInput, setCurrentBaseUrlInput] = useState('');
@@ -1137,6 +1141,9 @@ const Settings: React.FC = () => {
                               message: `缓存清除成功！${result.message || ''}`,
                               type: 'success'
                             });
+
+                            // 清除缓存成功后，清空前端视频状态
+                            clearVideos();
                           } else {
                             setStatusMessage({
                               message: `缓存清除失败：${result.error || '未知错误'}`,

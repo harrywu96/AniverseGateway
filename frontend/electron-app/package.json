@@ -53,7 +53,7 @@
                   "appId":  "com.aniversegateway.app",
                   "productName":  "AniVerseGateway",
                   "directories":  {
-                                      "output":  "dist-electron-20250729_183412",
+                                      "output":  "dist-electron-20250731_095602",
                                       "buildResources":  "build-resources"
                                   },
                   "asar":  true,

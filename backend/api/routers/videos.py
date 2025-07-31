@@ -1238,6 +1238,12 @@ async def clear_cache(
             temp_dir.mkdir(exist_ok=True)
             (temp_dir / "subtitles").mkdir(exist_ok=True)
 
+        # 删除视频存储的持久化文件
+        storage_file = temp_dir / "video_storage.json"
+        if storage_file.exists():
+            storage_file.unlink()
+            logger.info(f"已删除视频存储持久化文件: {storage_file}")
+
         return APIResponse(
             success=True,
             message=f"清除缓存成功，删除了{video_count}个视频和{subtitle_count}个字幕文件",

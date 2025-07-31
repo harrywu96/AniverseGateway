@@ -1119,9 +1119,9 @@ const VideoDetailWithTranslation: React.FC = () => {
         {/* 右侧：翻译配置和进度 */}
         <Grid item xs={12} lg={6}>
           {/* 测试翻译面板 */}
-          <Box sx={{ mb: 3 }}>
-            <TranslationTestPanel onTestResults={handleTestResults} />
-          </Box>
+          {/* <Box sx={{ mb: 3 }}> */}
+            {/* <TranslationTestPanel onTestResults={handleTestResults} /> */}
+          {/* </Box> */}
 
           <Card
             sx={{
