@@ -1575,11 +1575,17 @@ const VideoDetailWithTranslation: React.FC = () => {
               }}
               label="AI提供商"
             >
-              {activeProviders.map((provider) => (
-                <MenuItem key={provider.id} value={provider.id}>
-                  {provider.name}
+              {activeProviders.length === 0 ? (
+                <MenuItem value="" disabled>
+                  无激活的提供商，请到设置中添加
                 </MenuItem>
-              ))}
+              ) : (
+                activeProviders.map((provider) => (
+                  <MenuItem key={provider.id} value={provider.id}>
+                    {provider.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
