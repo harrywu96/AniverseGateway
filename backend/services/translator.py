@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Callable, Any
 
@@ -509,13 +510,35 @@ class SubtitleTranslator:
                 # 应用全局请求频率限制
                 await global_rate_limiter.acquire()
 
-                logger.info(f"开始翻译chunk，尝试 {attempt + 1}/{max_retries}")
+                # 详细日志：记录API调用信息
+                import time
+
+                current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+                logger.info(
+                    f"[API调用] {current_time} - 开始翻译chunk，尝试 {attempt + 1}/{max_retries}"
+                )
+                logger.info(
+                    f"[API调用] 当前chunk包含 {len(chunk.lines)} 行字幕"
+                )
+                logger.info(
+                    f"[API调用] 使用AI服务: {type(self.ai_service).__name__}"
+                )
 
                 # 调用AI服务进行翻译
+                start_time = time.time()
                 response = await self.ai_service.chat_completion(
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
                     examples=template.examples,
+                )
+                end_time = time.time()
+
+                # 记录API调用完成信息
+                logger.info(
+                    f"[API调用] API响应耗时: {end_time - start_time:.2f}秒"
+                )
+                logger.info(
+                    f"[API调用] 响应长度: {len(response) if response else 0} 字符"
                 )
 
                 print("翻译后的结果response", response)
@@ -560,6 +583,14 @@ class SubtitleTranslator:
                 last_error = e
                 error_msg = str(e).lower()
 
+                # 详细错误日志
+                current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+                logger.error(
+                    f"[API错误] {current_time} - 翻译尝试 {attempt + 1}/{max_retries} 失败"
+                )
+                logger.error(f"[API错误] 错误类型: {type(e).__name__}")
+                logger.error(f"[API错误] 错误信息: {str(e)}")
+
                 # 区分不同类型的错误，决定是否重试
                 should_retry = True
                 retry_delay = 2**attempt  # 指数退避
@@ -574,7 +605,9 @@ class SubtitleTranslator:
                         "quota",
                     ]
                 ):
-                    logger.warning(f"检测到频率限制错误，延长等待时间: {e}")
+                    logger.warning(
+                        f"[API错误] 检测到频率限制错误，延长等待时间: {e}"
+                    )
                     retry_delay = max(retry_delay, 60)  # 至少等待60秒
                 # 检查是否是认证错误（不应重试）
                 elif any(
@@ -586,26 +619,29 @@ class SubtitleTranslator:
                         "authentication",
                     ]
                 ):
-                    logger.error(f"认证错误，停止重试: {e}")
+                    logger.error(f"[API错误] 认证错误，停止重试: {e}")
                     should_retry = False
                 # 检查是否是网络超时（可以重试）
                 elif any(
                     keyword in error_msg
                     for keyword in ["timeout", "connection", "network"]
                 ):
-                    logger.warning(f"网络错误，将重试: {e}")
+                    logger.warning(f"[API错误] 网络错误，将重试: {e}")
                     retry_delay = min(retry_delay, 30)  # 网络错误不需要等太久
                 else:
                     logger.warning(
-                        f"翻译尝试 {attempt+1}/{max_retries} 失败: {e}"
+                        f"[API错误] 翻译尝试 {attempt+1}/{max_retries} 失败: {e}"
                     )
 
                 # 如果不应该重试或已达最大重试次数，跳出循环
                 if not should_retry or attempt >= max_retries - 1:
+                    logger.info(
+                        f"[API错误] 停止重试 - should_retry: {should_retry}, attempt: {attempt+1}/{max_retries}"
+                    )
                     break
 
                 # 等待后重试
-                logger.info(f"等待 {retry_delay} 秒后重试...")
+                logger.info(f"[API错误] 等待 {retry_delay} 秒后重试...")
                 await asyncio.sleep(retry_delay)
 
         # 超过最大重试次数，抛出异常
@@ -730,6 +766,8 @@ class SubtitleTranslator:
 
             # 逐块翻译
             translated_lines = []
+            logger.info(f"[翻译任务] 开始翻译，总共 {total_chunks} 个chunk")
+
             for i, chunk in enumerate(chunks):
                 # 检查任务是否被取消
                 if cancellation_manager.is_cancelled(task.id):
@@ -739,9 +777,20 @@ class SubtitleTranslator:
                     # 抛出取消异常
                     raise Exception("翻译任务被用户取消")
 
+                # 记录chunk开始信息
+                current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+                logger.info(
+                    f"[翻译任务] {current_time} - 开始处理第 {i + 1}/{total_chunks} 个chunk"
+                )
+
                 # 翻译当前块
                 chunk_result = await self.translate_chunk(chunk, task)
                 translated_lines.extend(chunk_result)
+
+                # 记录chunk完成信息
+                logger.info(
+                    f"[翻译任务] 第 {i + 1}/{total_chunks} 个chunk翻译完成"
+                )
 
                 # 更新进度
                 task.update_chunk_progress(i + 1)

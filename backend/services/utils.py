@@ -170,12 +170,22 @@ class RateLimiter:
         """获取请求许可，如果超过频率限制则等待"""
         async with self._lock:
             now = time.time()
+            current_time_str = time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(now)
+            )
 
             # 清理超过1分钟的请求记录
             cutoff_time = now - 60
+            old_count = len(self.request_times)
             self.request_times = [
                 t for t in self.request_times if t > cutoff_time
             ]
+            cleaned_count = old_count - len(self.request_times)
+
+            if cleaned_count > 0:
+                logger.info(
+                    f"[频率限制] {current_time_str} - 清理了 {cleaned_count} 个过期请求记录"
+                )
 
             # 如果当前请求数已达上限，计算需要等待的时间
             if len(self.request_times) >= self.max_requests_per_minute:
@@ -186,7 +196,9 @@ class RateLimiter:
                 )  # 额外等待0.1秒确保安全
 
                 if wait_time > 0:
-                    logger.info(f"请求频率限制：等待 {wait_time:.2f} 秒")
+                    logger.warning(
+                        f"[频率限制] {current_time_str} - 达到频率限制 {len(self.request_times)}/{self.max_requests_per_minute}，等待 {wait_time:.2f} 秒"
+                    )
                     await asyncio.sleep(wait_time)
 
                     # 重新清理过期记录
@@ -198,8 +210,8 @@ class RateLimiter:
 
             # 记录当前请求时间
             self.request_times.append(now)
-            logger.debug(
-                f"当前分钟内请求数: {len(self.request_times)}/{self.max_requests_per_minute}"
+            logger.info(
+                f"[频率限制] {current_time_str} - 获得请求许可，当前分钟内请求数: {len(self.request_times)}/{self.max_requests_per_minute}"
             )
 
 

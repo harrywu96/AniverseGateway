@@ -874,6 +874,15 @@ class SiliconFlowService(AIService):
         Raises:
             Exception: 请求失败时抛出
         """
+        import time
+
+        # 记录API调用开始
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        logger.info(
+            f"[SiliconFlow API] {current_time} - 开始发送请求到 {self.base_url}"
+        )
+        logger.info(f"[SiliconFlow API] 使用模型: {self.model}")
+
         url = f"{self.base_url}/chat/completions"
 
         # 构建消息列表
@@ -915,34 +924,57 @@ class SiliconFlowService(AIService):
 
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                logger.info(f"发送请求到SiliconFlow: {url}")
-                logger.debug(f"请求数据: {data}")
+                logger.info(f"[SiliconFlow API] 发送请求到: {url}")
+                logger.debug(f"[SiliconFlow API] 请求数据: {data}")
 
+                # 记录请求开始时间
+                start_time = time.time()
                 response = await client.post(
                     url, headers=self.headers, json=data
                 )
+                end_time = time.time()
+
                 response.raise_for_status()
 
                 result = response.json()
-                logger.debug(f"SiliconFlow响应: {result}")
+                logger.info(
+                    f"[SiliconFlow API] 请求成功，耗时: {end_time - start_time:.2f}秒"
+                )
+                logger.debug(f"[SiliconFlow API] 响应: {result}")
 
                 if "choices" in result and len(result["choices"]) > 0:
                     message = result["choices"][0]["message"]
                     if "content" in message:
-                        return message["content"]
+                        content = message["content"]
+                        logger.info(
+                            f"[SiliconFlow API] 响应内容长度: {len(content)} 字符"
+                        )
+                        return content
 
                 # 如果没有内容，抛出异常
                 err_msg = f"响应格式错误: {result}"
+                logger.error(f"[SiliconFlow API] {err_msg}")
                 raise Exception(err_msg)
         except httpx.HTTPError as e:
-            logger.error(f"SiliconFlow服务请求失败: {str(e)}")
-            if e.response and e.response.content:
-                try:
-                    error_data = e.response.json()
-                    logger.error(f"错误详情: {error_data}")
-                except json.JSONDecodeError:
-                    err_msg = f"错误响应: {e.response.content}"
-                    logger.error(err_msg)
+            current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+            logger.error(
+                f"[SiliconFlow API] {current_time} - 请求失败: {str(e)}"
+            )
+            logger.error(f"[SiliconFlow API] 错误类型: {type(e).__name__}")
+
+            if e.response:
+                logger.error(
+                    f"[SiliconFlow API] HTTP状态码: {e.response.status_code}"
+                )
+                if e.response.content:
+                    try:
+                        error_data = e.response.json()
+                        logger.error(
+                            f"[SiliconFlow API] 错误详情: {error_data}"
+                        )
+                    except json.JSONDecodeError:
+                        err_msg = f"错误响应: {e.response.content}"
+                        logger.error(f"[SiliconFlow API] {err_msg}")
             raise
 
     async def get_token_count(self, text: str) -> int:
