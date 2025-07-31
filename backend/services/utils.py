@@ -187,6 +187,23 @@ class RateLimiter:
                     f"[频率限制] {current_time_str} - 清理了 {cleaned_count} 个过期请求记录"
                 )
 
+            # 强制请求间隔：确保每个请求之间至少间隔一定时间
+            min_interval = 60.0 / self.max_requests_per_minute  # 计算最小间隔
+
+            if self.request_times:
+                last_request_time = max(self.request_times)
+                time_since_last = now - last_request_time
+
+                if time_since_last < min_interval:
+                    wait_time = (
+                        min_interval - time_since_last + 0.1
+                    )  # 额外0.1秒缓冲
+                    logger.info(
+                        f"[频率限制] {current_time_str} - 强制间隔等待 {wait_time:.2f} 秒 (最小间隔: {min_interval:.2f}秒)"
+                    )
+                    await asyncio.sleep(wait_time)
+                    now = time.time()  # 更新当前时间
+
             # 如果当前请求数已达上限，计算需要等待的时间
             if len(self.request_times) >= self.max_requests_per_minute:
                 # 找到最早的请求时间
