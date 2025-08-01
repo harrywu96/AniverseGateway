@@ -666,6 +666,11 @@ class SubtitleTranslator:
         """
         # 尝试解析结构化返回
         try:
+            # 记录原始响应的前几行用于调试
+            response_lines = response.split('\n')[:5]
+            logger.info(f"开始解析翻译响应，前5行: {response_lines}")
+            logger.info(f"响应总长度: {len(response)} 字符，总行数: {len(response.split('\\n'))}")
+
             if response.startswith("```") and response.endswith("```"):
                 response = response.strip("```")
 
@@ -682,42 +687,105 @@ class SubtitleTranslator:
                 except json.JSONDecodeError:
                     pass
 
-            # 主要解析方式：匹配编号格式: "1. 翻译文本"
-            number_pattern = r"(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
-            matches = re.findall(number_pattern, response)
+            # 主要解析方式：匹配编号格式
+            # 首先尝试匹配双重编号格式: "1. 91. 翻译文本"
+            double_number_pattern = (
+                r"(\d+)\.\s*(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
+            )
+            double_matches = re.findall(double_number_pattern, response)
 
             # 创建结果字典，以确保按正确顺序匹配原始行
             result_dict = {}
-            for match in matches:
-                index = int(match[0])
-                text = match[1].strip()
-                result_dict[index] = text
+
+            if double_matches:
+                # 处理双重编号格式
+                logger.info(
+                    f"检测到双重编号格式，共 {len(double_matches)} 个匹配"
+                )
+                for match in double_matches:
+                    sequence_num = int(match[0])  # 序列号 (1, 2, 3...)
+                    original_index = int(match[1])  # 原始行号 (91, 92, 93...)
+                    text = match[2].strip()
+                    result_dict[original_index] = text
+                    logger.debug(
+                        f"双重编号解析: 序列{sequence_num} -> 行{original_index}: {text[:50]}..."
+                    )
+            else:
+                # 回退到单一编号格式: "91. 翻译文本"
+                single_number_pattern = r"(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
+                single_matches = re.findall(single_number_pattern, response)
+
+                if single_matches:
+                    logger.info(
+                        f"使用单一编号格式，共 {len(single_matches)} 个匹配"
+                    )
+                    for match in single_matches:
+                        index = int(match[0])
+                        text = match[1].strip()
+                        result_dict[index] = text
+                        logger.debug(
+                            f"单一编号解析: 行{index}: {text[:50]}..."
+                        )
+                else:
+                    logger.warning("未匹配到任何编号格式")
 
             # 按照原始行顺序整理结果
             result = []
+            found_count = 0
             for line in original_lines:
                 if line.index in result_dict:
                     result.append(result_dict[line.index])
+                    found_count += 1
                 else:
                     # 如果没有找到对应的翻译，使用原文
                     logger.warning(f"未找到行 {line.index} 的翻译，使用原文")
                     result.append(line.text)
 
+            # 记录解析统计信息
+            logger.info(
+                f"翻译解析完成: 成功匹配 {found_count}/{len(original_lines)} 行"
+            )
+
             # 如果结果不为空，返回
             if result:
                 return result
 
-            # 如果以上解析失败，简单地按行拆分并过滤空行
-            lines = [
-                line.strip() for line in response.split("\n") if line.strip()
-            ]
+            # 如果以上解析失败，尝试智能解析
+            logger.warning("编号格式解析失败，尝试智能解析")
 
-            # 如果行数匹配，直接返回
+            # 尝试按行解析，去除可能的编号前缀
+            lines = []
+            for line in response.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+
+                # 尝试移除各种可能的编号前缀
+                # 匹配 "1. 91. 文本" 或 "91. 文本" 或 "1. 文本"
+                clean_line = re.sub(r"^\d+\.\s*(?:\d+\.\s*)?", "", line)
+                if clean_line:
+                    lines.append(clean_line)
+
+            # 如果解析出的行数与原始行数匹配，直接返回
             if len(lines) == len(original_lines):
+                logger.info(f"智能解析成功，匹配 {len(lines)} 行")
                 return lines
 
+            # 如果行数不匹配，尝试按顺序分配
+            if lines:
+                logger.warning(
+                    f"智能解析行数不匹配: 解析出{len(lines)}行，期望{len(original_lines)}行"
+                )
+                result = []
+                for i, original_line in enumerate(original_lines):
+                    if i < len(lines):
+                        result.append(lines[i])
+                    else:
+                        result.append(original_line.text)  # 使用原文
+                return result
+
             # 最后的后备方案，返回原始响应作为单一翻译
-            logger.warning("解析翻译响应失败，返回原始响应")
+            logger.error("所有解析方案都失败，返回原始响应")
             return [response] + [""] * (len(original_lines) - 1)
 
         except Exception as e:
