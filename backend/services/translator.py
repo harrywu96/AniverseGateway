@@ -103,6 +103,7 @@ class SubtitleChunk(BaseModel):
     lines: List[SubtitleLine]
     context_before: List[SubtitleLine] = []
     context_after: List[SubtitleLine] = []
+    translated_history: List[SubtitleLine] = []  # 前一个chunk的翻译历史
 
 
 class SubtitleTranslator:
@@ -181,10 +182,13 @@ class SubtitleTranslator:
                     "- **严格保留序号和时间戳**: 不要翻译或删除原文的序号、开始时间和结束时间。\n"
                     "- **保留样式标签**: 遇到如 `{{\\an8}}`、`{{\\k34}}` 等ASS/SSA格式标签，必须原封不动地保留在原文位置。\n"
                     "- **输出格式**: 严格按照“序号. 译文内容”的格式进行输出，每条字幕后保留换行。\n\n"
-                    "### 上下文参考信息:\n"
+                    "### 翻译上下文信息参考 (重要):\n"
+                    # "# 以下是前面已翻译的字幕内容，请参考其中的术语翻译、角色称呼、语言风格等，确保翻译的一致性。\n"
+                    # "已翻译参考: \n{translated_context}\n\n"
+                    # "### 上下文参考信息:\n"
                     "# 如果提供了前序字幕，请务必仔细阅读，理解对话的衔接和剧情发展。\n"
                     "# 如果提供了术语表，请严格按照其中的定义进行翻译。\n"
-                    "前序字幕参考: \n{context}\n\n"
+                    "前序字幕参考: \n{translated_context}\n\n"
                     # "术语表: \n{glossary}\n\n"
                     "### 待翻译的字幕:\n"
                     "```\n"
@@ -204,6 +208,7 @@ class SubtitleTranslator:
                 user_prompt=(
                     "请将以下字幕从{source_language}直译成{target_language}，"
                     "尽可能忠实原文，保持原文的句式结构。\n\n"
+                    "翻译一致性参考（如有）：\n{translated_context}\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
                     "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
@@ -223,6 +228,7 @@ class SubtitleTranslator:
                 user_prompt=(
                     "请将以下字幕从{source_language}翻译成口语化的{target_language}，"
                     "使用常见的口语表达，就像人们日常交谈那样。\n\n"
+                    "翻译一致性参考（如有）：\n{translated_context}\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
                     "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
@@ -242,6 +248,7 @@ class SubtitleTranslator:
                 user_prompt=(
                     "请将以下字幕从{source_language}翻译成正式的{target_language}，"
                     "使用规范、庄重的表达方式，避免口语化和俚语表达。\n\n"
+                    "翻译一致性参考（如有）：\n{translated_context}\n\n"
                     "如果有特定术语或专有名词，请按照以下对照表进行翻译：\n{glossary}\n\n"
                     "请保持字幕的格式，只翻译内容部分。"
                     "如果遇到如{{\\an8}}、{{\\an1}}等字段，"
@@ -346,7 +353,7 @@ class SubtitleTranslator:
     def split_into_chunks(
         self, lines: List[SubtitleLine], chunk_size: int, context_window: int
     ) -> List[SubtitleChunk]:
-        """将字幕行分割成带上下文的块
+        """将字幕行分割成带上下文的块，支持滑动窗口翻译历史
 
         Args:
             lines: 字幕行列表
@@ -372,11 +379,20 @@ class SubtitleTranslator:
                 context_end = min(len(lines), i + chunk_size + context_window)
                 context_after = lines[i + chunk_size : context_end]
 
+            # 滑动窗口：添加前一个chunk的翻译历史作为上下文
+            translated_history = []
+            if i > 0:
+                # 获取前一个chunk的范围
+                prev_chunk_start = max(0, i - chunk_size)
+                prev_chunk_end = i
+                translated_history = lines[prev_chunk_start:prev_chunk_end]
+
             chunks.append(
                 SubtitleChunk(
                     lines=chunk_lines,
                     context_before=context_before,
                     context_after=context_after,
+                    translated_history=translated_history,
                 )
             )
 
@@ -388,7 +404,7 @@ class SubtitleTranslator:
         task: SubtitleTask,
         style_name: str,
     ) -> Dict[str, str]:
-        """准备翻译参数
+        """准备翻译参数，支持滑动窗口翻译历史
 
         Args:
             chunk: 字幕块
@@ -419,6 +435,26 @@ class SubtitleTranslator:
 
         context = "\n".join(context_texts)
 
+        # 准备翻译历史上下文（滑动窗口核心功能）
+        translated_context = ""
+        if chunk.translated_history and len(chunk.translated_history) > 0:
+            # 格式化翻译历史为参考上下文
+            history_items = []
+            for line in chunk.translated_history:
+                if line.translated_text:
+                    # 原文 -> 译文 的对照格式
+                    history_items.append(f"[原文] {line.text}")
+                    history_items.append(f"[译文] {line.translated_text}")
+                    history_items.append("")  # 空行分隔
+
+            if history_items:
+                translated_context = "\n".join(
+                    history_items[:-1]
+                )  # 移除最后的空行
+
+        if not translated_context:
+            translated_context = "无翻译历史参考"
+
         # 准备术语表
         glossary_text = ""
         if task.config.glossary and len(task.config.glossary) > 0:
@@ -439,6 +475,7 @@ class SubtitleTranslator:
             "subtitle_text": subtitle_text,
             "context": context
             or "无上下文",  # 确保 context 参数存在，即使为空
+            "translated_context": translated_context,  # 新增：翻译历史上下文
             "glossary": glossary_text,
         }
 
@@ -667,9 +704,12 @@ class SubtitleTranslator:
         # 尝试解析结构化返回
         try:
             # 记录原始响应的前几行用于调试
-            response_lines = response.split('\n')[:5]
+            response_lines = response.split("\n")[:5]
             logger.info(f"开始解析翻译响应，前5行: {response_lines}")
-            logger.info(f"响应总长度: {len(response)} 字符，总行数: {len(response.split('\\n'))}")
+            newline_char = "\n"
+            logger.info(
+                f"响应总长度: {len(response)} 字符，总行数: {len(response.split(newline_char))}"
+            )
 
             if response.startswith("```") and response.endswith("```"):
                 response = response.strip("```")
@@ -687,47 +727,54 @@ class SubtitleTranslator:
                 except json.JSONDecodeError:
                     pass
 
-            # 主要解析方式：匹配编号格式
-            # 首先尝试匹配双重编号格式: "1. 91. 翻译文本"
-            double_number_pattern = (
-                r"(\d+)\.\s*(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
-            )
-            double_matches = re.findall(double_number_pattern, response)
+            # 主要解析方式：使用空行分割 + 简单正则匹配
+            # 先按空行分割响应为独立的字幕块
+            subtitle_blocks = re.split(r"\n\s*\n", response.strip())
 
             # 创建结果字典，以确保按正确顺序匹配原始行
             result_dict = {}
 
-            if double_matches:
-                # 处理双重编号格式
-                logger.info(
-                    f"检测到双重编号格式，共 {len(double_matches)} 个匹配"
+            logger.info(f"按空行分割得到 {len(subtitle_blocks)} 个字幕块")
+
+            # 处理每个字幕块
+            for block in subtitle_blocks:
+                block = block.strip()
+                if not block:
+                    continue
+
+                # 尝试匹配双重编号格式: "1. 91. 翻译文本"
+                double_match = re.match(
+                    r"(\d+)\.\s*(\d+)\.\s*(.*)", block, re.DOTALL
                 )
-                for match in double_matches:
-                    sequence_num = int(match[0])  # 序列号 (1, 2, 3...)
-                    original_index = int(match[1])  # 原始行号 (91, 92, 93...)
-                    text = match[2].strip()
+                if double_match:
+                    sequence_num = int(
+                        double_match.group(1)
+                    )  # 序列号 (1, 2, 3...)
+                    original_index = int(
+                        double_match.group(2)
+                    )  # 原始行号 (91, 92, 93...)
+                    text = double_match.group(3).strip()
                     result_dict[original_index] = text
                     logger.debug(
                         f"双重编号解析: 序列{sequence_num} -> 行{original_index}: {text[:50]}..."
                     )
-            else:
-                # 回退到单一编号格式: "91. 翻译文本"
-                single_number_pattern = r"(\d+)\.\s*(.*(?:\n(?!\d+\.).*)*)"
-                single_matches = re.findall(single_number_pattern, response)
+                    continue
 
-                if single_matches:
-                    logger.info(
-                        f"使用单一编号格式，共 {len(single_matches)} 个匹配"
-                    )
-                    for match in single_matches:
-                        index = int(match[0])
-                        text = match[1].strip()
-                        result_dict[index] = text
-                        logger.debug(
-                            f"单一编号解析: 行{index}: {text[:50]}..."
-                        )
-                else:
-                    logger.warning("未匹配到任何编号格式")
+                # 尝试匹配单一编号格式: "91. 翻译文本"
+                single_match = re.match(r"(\d+)\.\s*(.*)", block, re.DOTALL)
+                if single_match:
+                    index = int(single_match.group(1))
+                    text = single_match.group(2).strip()
+                    result_dict[index] = text
+                    logger.debug(f"单一编号解析: 行{index}: {text[:50]}...")
+                    continue
+
+                # 如果都不匹配，记录警告
+                logger.warning(f"无法解析字幕块: {block[:100]}...")
+
+            # 记录解析统计
+            if result_dict:
+                logger.info(f"成功解析 {len(result_dict)} 个字幕条目")
 
             # 按照原始行顺序整理结果
             result = []
@@ -832,7 +879,7 @@ class SubtitleTranslator:
             total_chunks = len(chunks)
             task.total_chunks = total_chunks
 
-            # 逐块翻译
+            # 逐块翻译，支持滑动窗口翻译历史
             translated_lines = []
             logger.info(f"[翻译任务] 开始翻译，总共 {total_chunks} 个chunk")
 
@@ -844,6 +891,17 @@ class SubtitleTranslator:
                     cancellation_manager.remove_task(task.id)
                     # 抛出取消异常
                     raise Exception("翻译任务被用户取消")
+
+                # 滑动窗口：更新当前chunk的翻译历史
+                if i > 0 and translated_lines:
+                    # 获取前一个chunk的翻译结果
+                    prev_chunk_size = len(chunks[i - 1].lines)
+                    prev_translated = translated_lines[-prev_chunk_size:]
+                    # 更新当前chunk的翻译历史
+                    chunk.translated_history = prev_translated
+                    logger.info(
+                        f"[滑动窗口] 为第 {i + 1} 个chunk添加了 {len(prev_translated)} 条翻译历史"
+                    )
 
                 # 记录chunk开始信息
                 current_time = time.strftime("%Y-%m-%d %H:%M:%S")
