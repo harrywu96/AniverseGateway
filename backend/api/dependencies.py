@@ -102,7 +102,7 @@ def get_provider_service(
 
 
 def get_subtitle_translator(
-    config: SystemConfig = get_system_config(),
+    config: SystemConfig = Depends(get_system_config),
 ) -> SubtitleTranslator:
     """获取字幕翻译器实例
 
@@ -116,7 +116,7 @@ def get_subtitle_translator(
 
 
 def get_subtitle_extractor(
-    config: SystemConfig = get_system_config(),
+    config: SystemConfig = Depends(get_system_config),
 ) -> SubtitleExtractor:
     """获取字幕提取器实例
 
@@ -131,7 +131,7 @@ def get_subtitle_extractor(
 
 
 def get_video_storage(
-    config: SystemConfig = get_system_config(),
+    config: SystemConfig = Depends(get_system_config),
 ) -> VideoStorageService:
     """获取视频存储服务实例
 
@@ -161,7 +161,7 @@ def get_video_storage(
 
 
 def get_subtitle_storage(
-    config: SystemConfig = get_system_config(),
+    config: SystemConfig = Depends(get_system_config),
 ) -> SubtitleStorageService:
     """获取字幕存储服务实例
 
@@ -190,7 +190,7 @@ _task_managers: Dict[str, object] = {}
 
 
 def get_task_manager(
-    task_type: str, config: SystemConfig = get_system_config()
+    task_type: str, config: SystemConfig = Depends(get_system_config)
 ):
     """获取特定类型的任务管理器
 

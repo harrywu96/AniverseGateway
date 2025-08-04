@@ -1,13 +1,16 @@
-"""实时翻译API路由模块
+"""翻译API路由模块
 
-提供单行翻译和字幕片段翻译功能。
+提供视频字幕翻译、单行翻译等功能，支持动态AI提供商配置。
+已修复依赖注入问题，支持前端界面配置的自定义提供商。
 """
 
 import logging
 import os
+import re
 import uuid
 import json
 from typing import Optional, Dict, List, Any
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import (
@@ -15,76 +18,216 @@ from fastapi import (
     Depends,
     HTTPException,
     BackgroundTasks,
-    UploadFile,
-    File,
-    Form,
+    Request,
     WebSocket,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
-from backend.schemas.api import APIResponse, ProgressUpdateEvent
+from backend.schemas.api import APIResponse
 from backend.schemas.task import (
     TranslationConfig,
     TranslationStyle,
-    SubtitleTask,
 )
 from backend.schemas.config import SystemConfig, AIProviderType
 from backend.core.subtitle_translator import SubtitleTranslator
 from backend.services.utils import SRTOptimizer
-from backend.api.dependencies import (
-    get_system_config,
-    get_subtitle_translator,
-    get_video_storage,
-)
-from backend.api.websocket import manager  # 导入WebSocket管理器
 from backend.services.video_storage import VideoStorageService
-
+from backend.api.websocket import manager  # 导入WebSocket管理器
 
 # 配置日志
-logger = logging.getLogger("subtranslate.api.translate")
+logger = logging.getLogger("aniversegateway.api.translate")
 
-
-# 创建路由器
+# 创建独立路由器
 router = APIRouter()
 
-
-# 单行翻译请求模型
-class LineTranslateRequest(BaseModel):
-    """单行翻译请求模型"""
-
-    text: str = Field(..., description="待翻译文本")
-    source_language: str = Field(default="en", description="源语言")
-    target_language: str = Field(default="zh", description="目标语言")
-    style: TranslationStyle = Field(
-        default=TranslationStyle.NATURAL, description="翻译风格"
-    )
-    context: Optional[List[Dict[str, str]]] = Field(
-        None, description="上下文内容"
-    )
-    glossary: Optional[Dict[str, str]] = Field(None, description="术语表")
-    ai_provider: Optional[AIProviderType] = Field(
-        None, description="AI服务提供商"
-    )
-    template_name: Optional[str] = Field(None, description="提示模板名称")
-    service_type: Optional[str] = Field(
-        default="network_provider",
-        description="翻译服务类型，可选值：network_provider, local_ollama",
-    )
+# 创建额外的路由器用于 /api/translation 前缀（兼容旧的前端调用）
+translation_router = APIRouter()
 
 
-# 片段翻译请求模型
-class SectionTranslateRequest(BaseModel):
-    """字幕片段翻译请求模型"""
+# 独立的依赖项函数，避免使用全局依赖
+def get_independent_system_config() -> SystemConfig:
+    """获取独立的系统配置实例"""
+    try:
+        return SystemConfig.from_env()
+    except Exception as e:
+        logger.error(f"加载系统配置失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"加载系统配置失败: {str(e)}"
+        )
 
-    lines: List[Dict[str, Any]] = Field(..., description="字幕行列表")
-    source_language: str = Field(default="en", description="源语言")
-    target_language: str = Field(default="zh", description="目标语言")
-    config: Optional[TranslationConfig] = Field(None, description="翻译配置")
+
+def get_independent_video_storage() -> VideoStorageService:
+    """获取独立的视频存储服务实例（实际使用全局共享实例）"""
+    try:
+        # 导入全局依赖项函数
+        from backend.api.dependencies import get_video_storage
+
+        # 使用全局共享的视频存储实例，而不是创建新实例
+        return get_video_storage()
+    except Exception as e:
+        logger.error(f"获取视频存储服务失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"获取视频存储服务失败: {str(e)}"
+        )
 
 
-# 视频字幕翻译请求模型
-class VideoSubtitleTranslateRequest(BaseModel):
-    """视频字幕翻译请求模型"""
+def get_independent_subtitle_translator() -> SubtitleTranslator:
+    """获取独立的字幕翻译器实例"""
+    try:
+        config = get_independent_system_config()
+        return SubtitleTranslator(config)
+    except Exception as e:
+        logger.error(f"创建字幕翻译器失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"创建字幕翻译器失败: {str(e)}"
+        )
+
+
+# SRT解析和时间转换工具函数
+def srt_time_to_seconds(time_str: str) -> float:
+    """SRT时间格式转秒数
+
+    Args:
+        time_str: SRT时间格式字符串，如 "00:01:23,456"
+
+    Returns:
+        float: 秒数，如 83.456
+    """
+    try:
+        # 处理逗号或点号分隔的毫秒
+        if "," in time_str:
+            time_part, ms_part = time_str.split(",")
+        elif "." in time_str:
+            time_part, ms_part = time_str.split(".")
+        else:
+            time_part = time_str
+            ms_part = "000"
+
+        hours, minutes, seconds = map(int, time_part.split(":"))
+        milliseconds = int(ms_part)
+
+        return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
+    except Exception as e:
+        logger.error(f"时间格式转换失败: {time_str}, 错误: {e}")
+        return 0.0
+
+
+def parse_srt_content(
+    srt_content: str, original_subtitles: List[Dict] = None
+) -> List[Dict]:
+    """解析SRT内容为前端格式
+
+    Args:
+        srt_content: SRT文件内容（翻译后的）
+        original_subtitles: 原始字幕数据列表
+
+    Returns:
+        List[Dict]: 前端期望的翻译结果格式
+    """
+    results = []
+    try:
+        if not srt_content or not srt_content.strip():
+            logger.warning("SRT内容为空")
+            return results
+
+        # 记录SRT内容的行数和前200个字符
+        logger.info(f"SRT内容行数: {len(srt_content.splitlines())}")
+        logger.info(f"SRT内容预览: {repr(srt_content[:200])}")
+
+        # 改进的SRT格式正则表达式 - 处理多种格式变体
+        # 支持逗号和点作为毫秒分隔符，支持不同的换行符
+        patterns = [
+            # 标准格式：数字 + 换行 + 时间 + 换行 + 文本
+            r"(\d+)\s*[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*[\r\n]+(.*?)(?=\s*[\r\n]+\d+\s*[\r\n]+|\s*$)",
+            # 紧凑格式：可能没有空行分隔
+            r"(\d+)[\r\n]+(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})[\r\n]+(.*?)(?=[\r\n]*\d+[\r\n]+|[\r\n]*$)",
+        ]
+
+        matches = []
+        for pattern in patterns:
+            matches = re.findall(
+                pattern, srt_content, re.DOTALL | re.MULTILINE
+            )
+            if matches:
+                logger.info(f"使用模式匹配到 {len(matches)} 条字幕")
+                break
+
+        if not matches:
+            logger.warning("没有匹配到任何字幕条目")
+            # 尝试按行解析
+            lines = srt_content.strip().split("\n")
+            logger.info(f"尝试按行解析，共 {len(lines)} 行")
+            for i, line in enumerate(lines[:5]):  # 只记录前5行
+                logger.info(f"第{i+1}行: {repr(line)}")
+            return results
+
+        for i, match in enumerate(matches):
+            try:
+                index, start_time, end_time, translated_text = match
+
+                # 清理文本内容
+                translated_text = translated_text.strip()
+                if not translated_text:
+                    logger.warning(f"第{i+1}条字幕文本为空")
+                    continue
+
+                # 转换时间为秒数
+                start_seconds = srt_time_to_seconds(start_time)
+                end_seconds = srt_time_to_seconds(end_time)
+
+                # 获取对应的原文
+                original_text = "原文未找到"  # 默认值
+                if original_subtitles:
+                    # 优先根据索引匹配
+                    for orig_sub in original_subtitles:
+                        if orig_sub.get("index") == int(index):
+                            original_text = orig_sub.get("text", "原文未找到")
+                            break
+
+                    # 如果索引匹配失败，尝试时间匹配
+                    if original_text == "原文未找到":
+                        for orig_sub in original_subtitles:
+                            orig_start = orig_sub.get("startTime", 0)
+                            orig_end = orig_sub.get("endTime", 0)
+                            if (
+                                abs(orig_start - start_seconds) < 1.0
+                                and abs(orig_end - end_seconds) < 1.0
+                            ):
+                                original_text = orig_sub.get(
+                                    "text", "原文未找到"
+                                )
+                                break
+
+                result_item = {
+                    "index": int(index),
+                    "startTime": start_seconds,
+                    "endTime": end_seconds,
+                    "startTimeStr": start_time,
+                    "endTimeStr": end_time,
+                    "original": original_text,  # 原始字幕内容
+                    "translated": translated_text,  # 翻译后的内容
+                }
+                results.append(result_item)
+
+                # 记录前几条结果用于调试
+                if i < 3:
+                    logger.info(f"解析结果 {i+1}: {result_item}")
+
+            except Exception as e:
+                logger.error(f"解析第{i+1}条字幕失败: {e}")
+                continue
+
+        logger.info(f"成功解析 {len(results)} 条字幕")
+
+    except Exception as e:
+        logger.error(f"解析SRT内容失败: {e}", exc_info=True)
+
+    return results
+
+
+# 视频字幕翻译请求模型 - 简化版本
+class VideoSubtitleTranslateRequestV2(BaseModel):
+    """视频字幕翻译请求模型 v2 - 简化版本"""
 
     video_id: str = Field(..., description="视频ID")
     track_index: int = Field(..., description="字幕轨道索引")
@@ -106,10 +249,14 @@ class VideoSubtitleTranslateRequest(BaseModel):
     )
     preserve_formatting: bool = Field(default=True, description="保留原格式")
 
+    class Config:
+        # 允许额外字段，提高兼容性
+        extra = "allow"
+
 
 # 视频字幕翻译响应模型
-class VideoSubtitleTranslateResponse(APIResponse):
-    """视频字幕翻译响应模型"""
+class VideoSubtitleTranslateResponseV2(APIResponse):
+    """视频字幕翻译响应模型 v2"""
 
     class Config:
         json_schema_extra = {
@@ -128,25 +275,529 @@ class VideoSubtitleTranslateResponse(APIResponse):
         }
 
 
-# 翻译响应模型
-class TranslateResponse(APIResponse):
-    """翻译响应模型"""
+# 辅助函数：配置AI服务
+async def _configure_ai_service_from_provider_config_v2(
+    config: SystemConfig,
+    provider_config: Dict[str, Any],
+    model_id: str,
+):
+    """根据提供商配置设置AI服务 v2"""
+    try:
+        from pydantic import SecretStr
+        from backend.schemas.config import OpenAIConfig, OllamaConfig
+
+        # 根据提供商类型设置配置
+        # 支持前端发送的字段名：id, apiKey, apiHost
+        provider_id = provider_config.get("id", "")
+        api_key = provider_config.get("apiKey", "")
+        api_host = provider_config.get("apiHost", "")
+
+        # 也支持标准字段名作为备选
+        if not provider_id:
+            provider_id = provider_config.get("provider_type", "openai")
+        if not api_key:
+            api_key = provider_config.get("api_key", "")
+        if not api_host:
+            api_host = provider_config.get("base_url", "")
+
+        # 根据提供商ID确定类型
+        if provider_id == "openai":
+            config.ai_service.provider = AIProviderType.OPENAI
+
+            # 确保 openai 配置对象存在
+            if config.ai_service.openai is None:
+                config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.openai.base_url = api_host
+            config.ai_service.openai.model = model_id
+
+        elif provider_id == "siliconflow":
+            config.ai_service.provider = AIProviderType.SILICONFLOW
+
+            # 确保 siliconflow 配置对象存在
+            if config.ai_service.siliconflow is None:
+                from backend.schemas.config import SiliconFlowConfig
+
+                config.ai_service.siliconflow = SiliconFlowConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.siliconflow.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.siliconflow.base_url = api_host
+            config.ai_service.siliconflow.model = model_id
+
+        elif provider_id.startswith("custom-"):
+            config.ai_service.provider = AIProviderType.CUSTOM
+
+            # 为自定义提供商创建 CustomProviderConfig 而不是 CustomAPIConfig
+            from backend.schemas.config import (
+                CustomAPIConfig,
+                CustomProviderConfig,
+            )
+
+            # 创建单个自定义提供商配置
+            custom_provider = CustomProviderConfig(
+                id=provider_id,
+                name=f"Custom Provider {provider_id}",
+                api_key=SecretStr(api_key) if api_key else SecretStr(""),
+                base_url=api_host if api_host else "",
+                model=model_id,
+            )
+
+            # 创建 CustomAPIConfig 并设置激活的提供商
+            config.ai_service.custom = CustomAPIConfig(
+                providers={provider_id: custom_provider},
+                active_provider=provider_id,
+            )
+
+            logger.info(f"创建自定义提供商配置: {provider_id}")
+            logger.info(
+                f"激活的提供商: {config.ai_service.custom.active_provider}"
+            )
+            logger.info(
+                f"提供商数量: {len(config.ai_service.custom.providers)}"
+            )
+
+        elif provider_id == "ollama":
+            config.ai_service.provider = AIProviderType.OLLAMA
+
+            # 确保 ollama 配置对象存在
+            if config.ai_service.ollama is None:
+                config.ai_service.ollama = OllamaConfig(model=model_id)
+
+            # 更新配置
+            if api_host:
+                config.ai_service.ollama.base_url = api_host
+            config.ai_service.ollama.model = model_id
+
+        else:
+            # 默认使用 OpenAI 兼容接口
+            config.ai_service.provider = AIProviderType.OPENAI
+
+            # 确保 openai 配置对象存在
+            if config.ai_service.openai is None:
+                config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                config.ai_service.openai.base_url = api_host
+            config.ai_service.openai.model = model_id
+
+        logger.info(f"AI服务配置完成: {provider_id}, 模型: {model_id}")
+        logger.info(f"最终配置的提供商类型: {config.ai_service.provider}")
+        logger.info(f"API地址: {api_host}")
+
+    except Exception as e:
+        logger.error(f"配置AI服务失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=400, detail=f"配置AI服务失败: {str(e)}"
+        )
+
+
+@router.post(
+    "/video-subtitle",
+    response_model=VideoSubtitleTranslateResponseV2,
+    tags=["视频字幕翻译"],
+)
+async def translate_video_subtitle(
+    request: VideoSubtitleTranslateRequestV2,
+    background_tasks: BackgroundTasks,
+    raw_request: Request,
+):
+    """翻译视频字幕轨道 v2 - 独立版本
+
+    这是一个完全独立的视频字幕翻译接口，避免全局配置冲突。
+
+    Args:
+        request: 视频字幕翻译请求
+        background_tasks: FastAPI后台任务
+        raw_request: 原始请求对象，用于调试
+
+    Returns:
+        VideoSubtitleTranslateResponseV2: 翻译响应
+    """
+    try:
+        # 记录请求信息用于调试
+        logger.info(
+            f"收到视频字幕翻译请求v2: video_id={request.video_id}, track_index={request.track_index}"
+        )
+        logger.info(f"请求头: {dict(raw_request.headers)}")
+        logger.info(
+            f"请求体大小: {len(await raw_request.body()) if hasattr(raw_request, 'body') else 'unknown'}"
+        )
+
+        # 获取独立的服务实例
+        config = get_independent_system_config()
+        video_storage = get_independent_video_storage()
+        # 注意：translator 将在配置更新后创建
+
+        # 验证视频是否存在
+        video_info = video_storage.get_video(request.video_id)
+        if not video_info:
+            raise HTTPException(status_code=404, detail="视频不存在")
+
+        # 验证字幕轨道是否存在
+        if (
+            not video_info.subtitle_tracks
+            or len(video_info.subtitle_tracks) <= request.track_index
+        ):
+            raise HTTPException(status_code=404, detail="字幕轨道不存在")
+
+        # 生成任务ID
+        task_id = str(uuid.uuid4())
+
+        # 创建临时目录
+        temp_dir = config.temp_dir
+        os.makedirs(temp_dir, exist_ok=True)
+
+        logger.info(
+            f"开始翻译视频字幕v2，视频ID: {request.video_id}, 轨道索引: {request.track_index}, 任务ID: {task_id}"
+        )
+
+        # 定义进度回调函数
+        async def callback(progress: float, status: str, message: str):
+            """进度回调函数"""
+            try:
+                # 根据状态创建前端期望的消息格式
+                if status == "completed":
+                    # 获取翻译结果
+                    translation_results = []
+                    try:
+                        # 从翻译任务中获取结果
+                        task = getattr(callback, "_current_task", None)
+                        if task:
+                            logger.info(
+                                f"任务对象存在，result_path: {getattr(task, 'result_path', 'None')}"
+                            )
+
+                            # 尝试多种方式获取翻译结果文件
+                            result_file_paths = []
+
+                            # 方式1：从任务对象获取
+                            if (
+                                hasattr(task, "result_path")
+                                and task.result_path
+                            ):
+                                result_file_paths.append(task.result_path)
+
+                            # 方式2：从临时目录构建路径
+                            if hasattr(task, "id"):
+                                temp_result_file = os.path.join(
+                                    temp_dir, f"{task.id}_result.srt"
+                                )
+                                result_file_paths.append(temp_result_file)
+
+                            # 方式3：使用任务ID构建路径
+                            task_result_file = os.path.join(
+                                temp_dir, f"{task_id}_result.srt"
+                            )
+                            result_file_paths.append(task_result_file)
+
+                            # 方式4：查找临时目录中的所有SRT文件
+                            if os.path.exists(temp_dir):
+                                for file in os.listdir(temp_dir):
+                                    if (
+                                        file.endswith(".srt")
+                                        and task_id in file
+                                    ):
+                                        result_file_paths.append(
+                                            os.path.join(temp_dir, file)
+                                        )
+
+                            logger.info(
+                                f"尝试的结果文件路径: {result_file_paths}"
+                            )
+
+                            # 尝试读取翻译结果
+                            srt_content = None
+                            for path in result_file_paths:
+                                if path and os.path.exists(path):
+                                    try:
+                                        with open(
+                                            path, "r", encoding="utf-8"
+                                        ) as f:
+                                            srt_content = f.read()
+                                            logger.info(
+                                                f"成功从 {path} 读取翻译结果"
+                                            )
+                                            break
+                                    except Exception as e:
+                                        logger.warning(
+                                            f"读取文件 {path} 失败: {e}"
+                                        )
+                                        continue
+
+                            if srt_content:
+                                # 获取原始字幕数据
+                                original_subtitles = getattr(
+                                    callback, "_original_subtitles", None
+                                )
+                                logger.info(
+                                    f"原始字幕数据条数: {len(original_subtitles) if original_subtitles else 0}"
+                                )
+                                if (
+                                    original_subtitles
+                                    and len(original_subtitles) > 0
+                                ):
+                                    logger.info(
+                                        f"第一条原始字幕: {original_subtitles[0]}"
+                                    )
+
+                                # 解析翻译结果
+                                translation_results = parse_srt_content(
+                                    srt_content, original_subtitles
+                                )
+
+                                # 记录解析结果
+                                logger.info(
+                                    f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
+                                )
+                                if translation_results:
+                                    logger.info(
+                                        f"第一条翻译结果: {translation_results[0]}"
+                                    )
+                            else:
+                                logger.error("无法找到或读取翻译结果文件")
+                        else:
+                            logger.error("任务对象不存在")
+
+                    except Exception as e:
+                        logger.error(f"获取翻译结果失败: {e}", exc_info=True)
+                        translation_results = []
+
+                    websocket_message = {
+                        "type": "completed",
+                        "message": message,
+                        "results": translation_results,  # ✅ 实际翻译结果
+                    }
+
+                    # 记录WebSocket消息
+                    logger.info(
+                        f"准备发送WebSocket消息: type={websocket_message['type']}, results_count={len(translation_results)}"
+                    )
+                elif status == "failed":
+                    websocket_message = {"type": "error", "message": message}
+                else:
+                    # 进行中状态
+                    websocket_message = {
+                        "type": "progress",
+                        "percentage": progress,
+                        "current": 0,  # 当前处理项
+                        "total": 0,  # 总项数
+                        "currentItem": message,
+                        "estimatedTime": None,
+                    }
+
+                # 通过WebSocket广播进度更新
+                await manager.broadcast(task_id, websocket_message)
+
+                logger.info(
+                    f"任务 {task_id} 进度: {progress}%, 状态: {status}, 消息: {message}"
+                )
+            except Exception as e:
+                logger.error(f"进度回调失败: {e}")
+
+        # 后台翻译任务
+        async def process_video_subtitle_translation():
+            """处理视频字幕翻译的后台任务"""
+            try:
+                # 获取字幕轨道
+                subtitle_track = video_info.subtitle_tracks[
+                    request.track_index
+                ]
+
+                # 检查字幕轨道是否存在
+                if not subtitle_track:
+                    raise Exception(
+                        f"字幕轨道索引 {request.track_index} 不存在"
+                    )
+
+                # 提取字幕内容到临时文件
+                from backend.core.subtitle_extractor import SubtitleExtractor
+                from backend.core.ffmpeg import FFmpegTool
+                from pathlib import Path
+
+                # 创建字幕提取器实例
+                ffmpeg_tool = FFmpegTool()
+                extractor = SubtitleExtractor(ffmpeg_tool)
+
+                # 创建临时目录
+                output_dir = Path(config.temp_dir) / "subtitles"
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                # 提取字幕内容
+                subtitle_path = extractor.extract_embedded_subtitle(
+                    video_info,
+                    track_index=request.track_index,
+                    output_dir=output_dir,
+                    target_format="srt",
+                )
+
+                if not subtitle_path or not os.path.exists(str(subtitle_path)):
+                    raise Exception("提取字幕内容失败")
+
+                # 使用提供商配置创建临时AI服务配置
+                original_provider = config.ai_service.provider
+
+                try:
+                    # 根据提供商配置设置AI服务（在创建翻译器之前）
+                    await _configure_ai_service_from_provider_config_v2(
+                        config,
+                        request.provider_config,
+                        request.model_id,
+                    )
+
+                    # 现在使用更新后的配置创建翻译器
+                    translator = SubtitleTranslator(config)
+                    logger.info(
+                        f"使用更新后的配置创建翻译器，提供商类型: {config.ai_service.provider}"
+                    )
+
+                    # 创建翻译任务
+                    task = SubtitleTranslator.create_task(
+                        video_id=task_id,
+                        source_path=str(subtitle_path),
+                        source_language=request.source_language,
+                        target_language=request.target_language,
+                        style=request.style,
+                        preserve_formatting=request.preserve_formatting,
+                        context_preservation=request.context_preservation,
+                        chunk_size=request.chunk_size,
+                        context_window=request.context_window,
+                    )
+
+                    # 设置回调函数的任务引用，以便获取翻译结果
+                    callback._current_task = task
+
+                    # 读取并解析原始字幕数据
+                    original_subtitles = []
+                    try:
+                        if os.path.exists(task.source_path):
+                            with open(
+                                task.source_path, "r", encoding="utf-8"
+                            ) as f:
+                                source_srt_content = f.read()
+                                # 解析原始SRT内容
+                                pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+                                matches = re.findall(
+                                    pattern, source_srt_content, re.DOTALL
+                                )
+
+                                for match in matches:
+                                    index, start_time, end_time, text = match
+                                    original_subtitles.append(
+                                        {
+                                            "index": int(index),
+                                            "startTime": srt_time_to_seconds(
+                                                start_time
+                                            ),
+                                            "endTime": srt_time_to_seconds(
+                                                end_time
+                                            ),
+                                            "text": text.strip(),
+                                        }
+                                    )
+                                logger.info(
+                                    f"成功解析原始字幕，共 {len(original_subtitles)} 条"
+                                )
+                    except Exception as e:
+                        logger.error(f"解析原始字幕失败: {e}")
+                        original_subtitles = []
+
+                    # 保存原始字幕数据到回调函数
+                    callback._original_subtitles = original_subtitles
+
+                    # 执行翻译任务
+                    success = await translator.translate_task(task, callback)
+
+                    if success:
+                        await callback(100.0, "completed", "翻译完成")
+                    else:
+                        await callback(
+                            task.progress,
+                            "failed",
+                            task.error_message or "翻译失败",
+                        )
+
+                finally:
+                    # 恢复原始提供商配置
+                    config.ai_service.provider = original_provider
+
+            except Exception as e:
+                logger.error(
+                    f"视频字幕翻译任务 {task_id} 异常: {e}", exc_info=True
+                )
+                await callback(0.0, "failed", f"任务失败: {str(e)}")
+
+        # 添加到后台任务
+        background_tasks.add_task(process_video_subtitle_translation)
+
+        # 返回任务信息
+        return VideoSubtitleTranslateResponseV2(
+            success=True,
+            message="视频字幕翻译任务已提交v2",
+            data={
+                "task_id": task_id,
+                "video_id": request.video_id,
+                "track_index": request.track_index,
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "style": request.style.value,
+                "version": "v2",
+            },
+        )
+
+    except ValidationError as e:
+        logger.error(f"请求验证失败v2: {e}", exc_info=True)
+        raise HTTPException(status_code=422, detail=f"请求验证失败: {str(e)}")
+    except HTTPException:
+        # 重新抛出HTTP异常
+        raise
+    except Exception as e:
+        logger.error(f"提交视频字幕翻译任务失败v2: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"提交翻译任务失败: {str(e)}"
+        )
+
+
+# 单行翻译请求模型 v2
+class LineTranslateRequestV2(BaseModel):
+    """单行翻译请求模型 v2"""
+
+    text: str = Field(..., description="待翻译文本")
+    source_language: str = Field(default="en", description="源语言")
+    target_language: str = Field(default="zh", description="目标语言")
+    style: TranslationStyle = Field(
+        default=TranslationStyle.NATURAL, description="翻译风格"
+    )
+    context: Optional[List[Dict[str, str]]] = Field(
+        None, description="上下文内容"
+    )
+    glossary: Optional[Dict[str, str]] = Field(None, description="术语表")
+    ai_provider: Optional[AIProviderType] = Field(
+        None, description="AI服务提供商"
+    )
+    template_name: Optional[str] = Field(None, description="提示模板名称")
+    service_type: Optional[str] = Field(
+        default="network_provider",
+        description="翻译服务类型，可选值：network_provider, local_ollama",
+    )
 
     class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "message": "翻译成功",
-                "data": {
-                    "translated_text": "这是翻译后的文本",
-                    "original_text": "This is the original text",
-                    "source_language": "en",
-                    "target_language": "zh",
-                    "style": "natural",
-                    "model_used": "gpt-4",
-                },
-            }
-        }
+        extra = "allow"
 
 
 # 翻译结果保存请求模型
@@ -158,6 +809,9 @@ class TranslationSaveRequest(BaseModel):
     targetLanguage: str = Field(..., description="目标语言")
     fileName: str = Field(..., description="文件名")
     edited: bool = Field(default=False, description="是否为编辑后的结果")
+    isRealTranslation: bool = Field(
+        default=True, description="是否为真实翻译结果"
+    )
 
 
 # 翻译结果加载请求模型
@@ -175,93 +829,60 @@ class TranslationSaveResponse(APIResponse):
     pass
 
 
-async def _configure_ai_service_from_provider_config(
-    config: SystemConfig, provider_config: Dict[str, Any], model_id: str
-):
-    """根据提供商配置动态设置AI服务
+# 片段翻译请求模型 v2
+class SectionTranslateRequestV2(BaseModel):
+    """字幕片段翻译请求模型 v2"""
 
-    Args:
-        config: 系统配置
-        provider_config: 提供商配置信息
-        model_id: 模型ID
-    """
-    from pydantic import SecretStr
+    lines: List[Dict[str, Any]] = Field(..., description="字幕行列表")
+    source_language: str = Field(default="en", description="源语言")
+    target_language: str = Field(default="zh", description="目标语言")
+    config: Optional[TranslationConfig] = Field(None, description="翻译配置")
 
-    # 根据提供商类型设置相应的配置
-    provider_id = provider_config.get("id", "")
-    api_key = provider_config.get("apiKey", "")
-    base_url = provider_config.get("apiHost", "")
-
-    if provider_id == "openai" or provider_id.startswith("custom-"):
-        # OpenAI或自定义提供商
-        from backend.schemas.config import OpenAIConfig
-
-        config.ai_service.openai = OpenAIConfig(
-            api_key=SecretStr(api_key),
-            base_url=base_url,
-            model=model_id,
-        )
-        config.ai_service.provider = AIProviderType.OPENAI
-
-    elif provider_id == "siliconflow":
-        # SiliconFlow提供商
-        from backend.schemas.config import SiliconFlowConfig
-
-        config.ai_service.siliconflow = SiliconFlowConfig(
-            api_key=SecretStr(api_key),
-            base_url=base_url or "https://api.siliconflow.cn/v1",
-            model=model_id,
-        )
-        config.ai_service.provider = AIProviderType.SILICONFLOW
-
-    else:
-        # 其他提供商可以在这里添加
-        logger.warning(f"未知的提供商类型: {provider_id}")
-        raise HTTPException(
-            status_code=400, detail=f"不支持的提供商类型: {provider_id}"
-        )
+    class Config:
+        extra = "allow"
 
 
-async def progress_callback(
-    task_id: str, progress: float, status: str, message: Optional[str] = None
-):
-    """任务进度回调函数，用于向WebSocket客户端推送进度更新
+# 翻译响应模型 v2
+class TranslateResponseV2(APIResponse):
+    """翻译响应模型 v2"""
 
-    Args:
-        task_id: 任务ID
-        progress: 进度百分比
-        status: 任务状态
-        message: 状态消息
-    """
-    # 创建进度更新事件
-    event = ProgressUpdateEvent(
-        task_id=task_id, progress=progress, status=status, message=message
-    )
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "翻译成功",
+                "data": {
+                    "translated_text": "这是翻译后的文本",
+                    "original_text": "This is the original text",
+                    "source_language": "en",
+                    "target_language": "zh",
+                    "style": "natural",
+                    "model_used": "gpt-4",
+                    "version": "v2",
+                },
+            }
+        }
 
-    # 广播给所有订阅此任务的客户端
-    await manager.broadcast(task_id, event.model_dump())
-    logger.info(f"任务 {task_id} 进度: {progress:.2f}% - 状态: {status}")
 
-
-@router.post("/line", response_model=TranslateResponse, tags=["实时翻译"])
+@router.post("/line", response_model=TranslateResponseV2, tags=["实时翻译"])
 async def translate_line(
-    request: LineTranslateRequest,
-    config: SystemConfig = Depends(get_system_config),
-    translator: SubtitleTranslator = Depends(get_subtitle_translator),
+    request: LineTranslateRequestV2,
 ):
-    """翻译单行字幕
+    """翻译单行字幕 v2 - 独立版本
 
     实时翻译单行字幕文本，用于预览或单句编辑。
 
     Args:
         request: 翻译请求
-        config: 系统配置
-        translator: 字幕翻译器
 
     Returns:
-        TranslateResponse: 翻译响应
+        TranslateResponseV2: 翻译响应
     """
     try:
+        # 获取独立的服务实例
+        config = get_independent_system_config()
+        translator = get_independent_subtitle_translator()
+
         # 准备翻译服务
         service_translator = translator.service_translator
 
@@ -272,13 +893,13 @@ async def translate_line(
         if request.service_type == "local_ollama":
             # 使用Ollama服务
             ai_service_config.provider = AIProviderType.OLLAMA
-            logger.info("使用本地Ollama模型进行翻译")
+            logger.info("使用本地Ollama模型进行翻译v2")
         elif request.service_type == "network_provider":
             # 使用网络翻译服务
             if request.ai_provider:
                 ai_service_config.provider = request.ai_provider
             logger.info(
-                f"使用网络翻译服务进行翻译: {ai_service_config.provider}"
+                f"使用网络翻译服务进行翻译v2: {ai_service_config.provider}"
             )
 
         # 获取模板
@@ -288,7 +909,7 @@ async def translate_line(
             if request.template_name in templates:
                 template = templates[request.template_name]
             else:
-                return TranslateResponse(
+                return TranslateResponseV2(
                     success=False,
                     message=f"提示模板 '{request.template_name}' 不存在",
                     data=None,
@@ -329,9 +950,9 @@ async def translate_line(
             )
 
         # 返回翻译结果
-        return TranslateResponse(
+        return TranslateResponseV2(
             success=True,
-            message="翻译成功",
+            message="翻译成功v2",
             data={
                 "translated_text": translated_text,
                 "original_text": request.text,
@@ -341,292 +962,102 @@ async def translate_line(
                 "model_used": result.get("model_used", ""),
                 "provider": str(ai_service_config.provider),
                 "details": result.get("details", {}),
+                "version": "v2",
             },
         )
 
     except Exception as e:
-        logger.error(f"翻译单行字幕失败: {e}", exc_info=True)
+        logger.error(f"翻译单行字幕失败v2: {e}", exc_info=True)
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"翻译失败: {str(e)}")
 
 
-@router.post("/section", response_model=TranslateResponse, tags=["实时翻译"])
+@router.post("/section", response_model=TranslateResponseV2, tags=["实时翻译"])
 async def translate_section(
-    request: SectionTranslateRequest,
-    config: SystemConfig = Depends(get_system_config),
-    translator: SubtitleTranslator = Depends(get_subtitle_translator),
+    request: SectionTranslateRequestV2,
 ):
-    """翻译字幕片段
+    """翻译字幕片段 v2 - 独立版本
 
     翻译一组连续的字幕行，保持上下文一致性。
 
     Args:
         request: 翻译请求
-        config: 系统配置
-        translator: 字幕翻译器
 
     Returns:
-        TranslateResponse: 翻译响应
+        TranslateResponseV2: 翻译响应
     """
     try:
         # 这是一个更复杂的功能，需要处理多行字幕和上下文
-        # 由于实现复杂，目前返回未实现错误
-        raise HTTPException(status_code=501, detail="功能未实现")
+        # 目前返回未实现错误，但不会有422问题
+        logger.info(f"收到字幕片段翻译请求v2: {len(request.lines)} 行字幕")
+
+        return TranslateResponseV2(
+            success=False,
+            message="字幕片段翻译功能v2暂未实现，但请求解析正常",
+            data={
+                "lines_count": len(request.lines),
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "version": "v2",
+                "status": "not_implemented",
+            },
+        )
 
     except Exception as e:
-        logger.error(f"翻译字幕片段失败: {e}", exc_info=True)
+        logger.error(f"翻译字幕片段失败v2: {e}", exc_info=True)
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail=f"翻译失败: {str(e)}")
 
 
-@router.post(
-    "/video-subtitle-fixed",
-    response_model=VideoSubtitleTranslateResponse,
-    tags=["视频字幕翻译"],
-)
-async def translate_video_subtitle(
-    request: VideoSubtitleTranslateRequest,
-    background_tasks: BackgroundTasks,
-    config: SystemConfig = Depends(get_system_config),
-    video_storage: VideoStorageService = Depends(get_video_storage),
-):
-    """翻译视频字幕轨道
-
-    对指定视频的字幕轨道进行翻译，支持自定义提供商配置。
-
-    Args:
-        request: 视频字幕翻译请求
-        background_tasks: FastAPI后台任务
-        config: 系统配置
-        video_storage: 视频存储服务
-
-    Returns:
-        VideoSubtitleTranslateResponse: 翻译响应
-    """
-    try:
-        # 验证视频是否存在
-        video_info = video_storage.get_video(request.video_id)
-        if not video_info:
-            raise HTTPException(status_code=404, detail="视频不存在")
-
-        # 验证字幕轨道是否存在
-        if (
-            not video_info.subtitle_tracks
-            or len(video_info.subtitle_tracks) <= request.track_index
-        ):
-            raise HTTPException(status_code=404, detail="字幕轨道不存在")
-
-        # 生成任务ID
-        task_id = str(uuid.uuid4())
-
-        # 创建临时目录
-        temp_dir = config.temp_dir
-        os.makedirs(temp_dir, exist_ok=True)
-
-        logger.info(
-            f"开始翻译视频字幕，视频ID: {request.video_id}, 轨道索引: {request.track_index}"
-        )
-
-        # 定义异步翻译函数
-        async def process_video_subtitle_translation():
-            try:
-                # 在函数内部创建SubtitleTranslator实例，避免依赖注入问题
-                translator = SubtitleTranslator(config)
-
-                # 设置进度回调
-                async def callback(
-                    progress: float, status: str, message: Optional[str] = None
-                ):
-                    await progress_callback(task_id, progress, status, message)
-
-                # 获取字幕内容
-                from backend.core.subtitle_extractor import SubtitleExtractor
-                from backend.core.ffmpeg import FFmpegTool
-                from pathlib import Path
-
-                # 创建字幕提取器实例
-                ffmpeg_tool = FFmpegTool()
-                extractor = SubtitleExtractor(ffmpeg_tool)
-
-                # 提取字幕内容到临时文件
-                output_dir = Path(temp_dir) / "subtitles"
-                output_dir.mkdir(parents=True, exist_ok=True)
-
-                subtitle_path = extractor.extract_embedded_subtitle(
-                    video_info,
-                    track_index=request.track_index,
-                    output_dir=output_dir,
-                    target_format="srt",
-                )
-
-                if not subtitle_path or not os.path.exists(str(subtitle_path)):
-                    raise Exception("提取字幕内容失败")
-
-                # 创建翻译任务
-                task = SubtitleTranslator.create_task(
-                    video_id=task_id,
-                    source_path=str(subtitle_path),
-                    source_language=request.source_language,
-                    target_language=request.target_language,
-                    style=request.style,
-                    preserve_formatting=request.preserve_formatting,
-                    context_preservation=request.context_preservation,
-                    chunk_size=request.chunk_size,
-                    context_window=request.context_window,
-                )
-
-                # 使用提供商配置创建临时AI服务配置
-                original_provider = config.ai_service.provider
-
-                try:
-                    # 根据提供商配置设置AI服务
-                    await _configure_ai_service_from_provider_config(
-                        config,
-                        request.provider_config,
-                        request.model_id,
-                    )
-
-                    # 执行翻译任务
-                    success = await translator.translate_task(task, callback)
-
-                    if success:
-                        await callback(100.0, "completed", "翻译完成")
-                    else:
-                        await callback(
-                            task.progress,
-                            "failed",
-                            task.error_message or "翻译失败",
-                        )
-
-                finally:
-                    # 恢复原始提供商配置
-                    config.ai_service.provider = original_provider
-
-            except Exception as e:
-                logger.error(
-                    f"视频字幕翻译任务 {task_id} 异常: {e}", exc_info=True
-                )
-                await callback(0.0, "failed", f"任务失败: {str(e)}")
-
-        # 添加到后台任务
-        background_tasks.add_task(process_video_subtitle_translation)
-
-        # 返回任务信息
-        return VideoSubtitleTranslateResponse(
-            success=True,
-            message="视频字幕翻译任务已提交",
-            data={
-                "task_id": task_id,
-                "video_id": request.video_id,
-                "track_index": request.track_index,
-                "source_language": request.source_language,
-                "target_language": request.target_language,
-                "style": request.style.value,
-            },
-        )
-
-    except Exception as e:
-        logger.error(f"提交视频字幕翻译任务失败: {e}", exc_info=True)
-        if isinstance(e, HTTPException):
-            raise
-        raise HTTPException(
-            status_code=500, detail=f"提交翻译任务失败: {str(e)}"
-        )
-
-
-@router.get("/providers", response_model=APIResponse, tags=["实时翻译"])
-async def list_ai_providers(config: SystemConfig = Depends(get_system_config)):
-    """获取可用AI服务提供商列表
-
-    获取系统支持的AI服务提供商列表及其配置状态。
-
-    Args:
-        config: 系统配置
-
-    Returns:
-        APIResponse: 提供商列表响应
-    """
-    # 获取所有可用提供商
-    providers = [provider.value for provider in AIProviderType]
-
-    # 当前激活的提供商
-    active_provider = config.ai_service.provider.value
-
-    # 已配置的提供商（有API密钥的）
-    configured_providers = []
-
-    provider_config = config.ai_service.get_provider_config()
-    if (
-        provider_config
-        and provider_config.api_key
-        and provider_config.api_key.get_secret_value()
-    ):
-        configured_providers.append(active_provider)
-
+# 健康检查端点
+@router.get("/health", response_model=APIResponse, tags=["健康检查"])
+async def health_check():
+    """健康检查端点"""
     return APIResponse(
         success=True,
-        message="获取AI服务提供商列表成功",
-        data={
-            "providers": providers,
-            "active_provider": active_provider,
-            "configured_providers": configured_providers,
-        },
+        message="翻译服务健康状态正常",
+        data={"status": "healthy"},
     )
 
 
-@router.get("/templates", response_model=APIResponse, tags=["实时翻译"])
-async def list_templates(
-    translator: SubtitleTranslator = Depends(get_subtitle_translator),
-):
-    """获取可用翻译提示模板列表
-
-    获取系统内置和用户自定义的提示模板列表。
+@router.websocket("/ws/{task_id}")
+async def websocket_translation_progress(websocket: WebSocket, task_id: str):
+    """WebSocket端点，用于实时推送翻译进度
 
     Args:
-        translator: 字幕翻译器
-
-    Returns:
-        APIResponse: 模板列表响应
+        websocket: WebSocket连接
+        task_id: 翻译任务ID
     """
+    await manager.connect(websocket, task_id)
     try:
-        # 获取所有可用模板
-        templates = translator.get_available_templates()
-
-        # 转换为可序列化的字典
-        template_list = []
-        for name, template in templates.items():
-            template_dict = template.model_dump()
-            template_dict["name"] = name
-            template_list.append(template_dict)
-
-        return APIResponse(
-            success=True, message="获取提示模板列表成功", data=template_list
-        )
-
+        while True:
+            # 保持连接活跃，等待客户端消息
+            await websocket.receive_text()
     except Exception as e:
-        logger.error(f"获取模板列表失败: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"获取模板列表失败: {str(e)}"
-        )
+        logger.info(f"WebSocket连接断开: {task_id}, 原因: {e}")
+    finally:
+        manager.disconnect(websocket, task_id)
 
 
+# 添加缺失的保存和加载接口
 @router.post(
     "/save", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
 )
 async def save_translation_results(
     request: TranslationSaveRequest,
-    config: SystemConfig = Depends(get_system_config),
+    config: SystemConfig = Depends(get_independent_system_config),
 ):
     """保存翻译结果
 
+    保存视频字幕的翻译结果到文件系统。
+
     Args:
-        request: 保存请求
-        config: 系统配置
+        request: 保存请求，包含videoId、results、targetLanguage、fileName等字段
 
     Returns:
-        TranslationSaveResponse: 保存响应
+        APIResponse: 保存结果响应
     """
     try:
         # 创建保存目录
@@ -647,7 +1078,8 @@ async def save_translation_results(
             "fileName": request.fileName,
             "edited": request.edited,
             "results": request.results,
-            "savedAt": str(uuid.uuid4()),  # 简单的时间戳替代
+            "isRealTranslation": request.isRealTranslation,
+            "savedAt": datetime.now().isoformat(),
         }
 
         with open(file_path, "w", encoding="utf-8") as f:
@@ -671,16 +1103,17 @@ async def save_translation_results(
 )
 async def load_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_system_config),
+    config: SystemConfig = Depends(get_independent_system_config),
 ):
     """加载翻译结果
 
+    从文件系统加载之前保存的翻译结果。
+
     Args:
-        request: 加载请求
-        config: 系统配置
+        request: 加载请求，包含videoId、targetLanguage、fileName等字段
 
     Returns:
-        TranslationSaveResponse: 加载响应
+        APIResponse: 加载结果响应
     """
     try:
         save_dir = Path(config.temp_dir) / "translations"
@@ -725,7 +1158,7 @@ async def load_translation_results(
 )
 async def clear_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_system_config),
+    config: SystemConfig = Depends(get_independent_system_config),
 ):
     """清空指定视频的所有翻译结果
 
@@ -789,7 +1222,7 @@ async def clear_translation_results(
 )
 async def delete_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_system_config),
+    config: SystemConfig = Depends(get_independent_system_config),
 ):
     """删除指定视频的翻译结果（用户主动删除）
 
@@ -848,7 +1281,9 @@ async def delete_translation_results(
         raise HTTPException(status_code=500, detail=f"删除失败: {str(e)}")
 
 
-@router.post("/cancel/{task_id}", response_model=APIResponse)
+@router.post(
+    "/cancel/{task_id}", response_model=APIResponse, tags=["翻译任务管理"]
+)
 async def cancel_translation_task(task_id: str):
     """取消翻译任务
 
@@ -886,20 +1321,40 @@ async def cancel_translation_task(task_id: str):
         raise HTTPException(status_code=500, detail=f"取消任务失败: {str(e)}")
 
 
-@router.websocket("/ws/{task_id}")
-async def websocket_translation_progress(websocket: WebSocket, task_id: str):
-    """WebSocket端点，用于实时推送翻译进度
+# 为兼容性添加 /api/translation 前缀的接口
+@translation_router.post(
+    "/save", response_model=TranslationSaveResponse, tags=["翻译结果管理"]
+)
+async def save_translation_result_compat(
+    request: dict,
+):
+    """保存翻译结果 (兼容性接口)
+
+    这是为了兼容前端现有调用而提供的接口，功能与 /api/translate/save 相同。
 
     Args:
-        websocket: WebSocket连接
-        task_id: 翻译任务ID
+        request: 保存请求，包含videoId、results、targetLanguage、fileName等字段
+
+    Returns:
+        TranslationSaveResponse: 保存结果响应
     """
-    await manager.connect(websocket, task_id)
     try:
-        while True:
-            # 保持连接活跃，等待客户端消息
-            await websocket.receive_text()
+        # 将 dict 转换为 TranslationSaveRequest 模型
+        save_request = TranslationSaveRequest(
+            videoId=request.get("videoId"),
+            results=request.get("results", []),
+            targetLanguage=request.get("targetLanguage", "zh"),
+            fileName=request.get("fileName", "translation"),
+            edited=request.get("edited", False),
+            isRealTranslation=request.get("isRealTranslation", True),
+        )
+
+        # 获取配置
+        config = get_independent_system_config()
+
+        # 调用主要的保存函数
+        return await save_translation_results(save_request, config)
+
     except Exception as e:
-        logger.info(f"WebSocket连接断开: {task_id}, 原因: {e}")
-    finally:
-        manager.disconnect(websocket, task_id)
+        logger.error(f"兼容性保存接口失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"保存失败: {str(e)}")

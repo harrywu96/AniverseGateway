@@ -729,12 +729,12 @@ export async function saveOllamaConfig(config: any) {
 }
 
 /**
- * 翻译单行字幕 - 使用v2接口解决422错误
+ * 翻译单行字幕
  */
 export async function translateSubtitleLine(request: any) {
   try {
     const apiPort = '8000';
-    const url = `http://localhost:${apiPort}/api/translate/line-v2`;
+    const url = `http://localhost:${apiPort}/api/translate/line`;
 
     // 确保请求中包含服务类型
     const requestWithServiceType = {
@@ -804,7 +804,7 @@ export async function testVideoSubtitleRequest(request: any) {
 }
 
 /**
- * 翻译视频字幕轨道 - 使用v2接口解决422错误
+ * 翻译视频字幕轨道
  */
 export async function translateVideoSubtitle(request: {
   video_id: string;
@@ -821,9 +821,9 @@ export async function translateVideoSubtitle(request: {
 }) {
   try {
     const apiPort = '8000';
-    const url = `http://localhost:${apiPort}/api/translate/video-subtitle-v2`;
+    const url = `http://localhost:${apiPort}/api/translate/video-subtitle`;
 
-    console.log('发送v2翻译请求:', url, request);
+    console.log('发送翻译请求:', url, request);
 
     const response = await fetch(url, {
       method: 'POST',

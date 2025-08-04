@@ -30,9 +30,7 @@ from .dependencies import (
 from .routers import (
     subtitles,
     videos,
-    translate,
-    translate_v2,  # 添加新的独立翻译路由v2
-    translate_fixed,  # 添加修复版翻译路由
+    translate,  # 统一的翻译路由，已修复依赖注入问题
     test_translation,  # 添加测试翻译路由
     tasks,
     export,
@@ -104,19 +102,15 @@ def get_app() -> FastAPI:
         prefix="/api/videos",
         dependencies=[Depends(verify_api_key)],
     )
+    # 统一的翻译路由，已修复依赖注入问题，支持动态AI提供商配置
     app.include_router(
         translate.router,
         prefix="/api/translate",
     )
-    # 添加独立的翻译路由v2，不使用API密钥验证，避免中间件冲突
+    # 兼容性翻译路由，支持旧的 /api/translation 前缀
     app.include_router(
-        translate_v2.router,
-        prefix="/api/translate",
-    )
-    # 添加修复版翻译路由，解决依赖注入问题
-    app.include_router(
-        translate_fixed.router,
-        prefix="/api/translate",
+        translate.translation_router,
+        prefix="/api/translation",
     )
     app.include_router(
         tasks.router,
