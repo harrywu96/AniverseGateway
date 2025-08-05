@@ -44,42 +44,150 @@ router = APIRouter()
 translation_router = APIRouter()
 
 
-# 独立的依赖项函数，避免使用全局依赖
-def get_independent_system_config() -> SystemConfig:
-    """获取独立的系统配置实例"""
+# 导入标准依赖
+from backend.api.dependencies import get_system_config, get_video_storage
+
+
+# 辅助函数：创建一个临时的、请求专用的配置副本
+def _create_request_specific_config(
+    base_config: SystemConfig,
+    provider_config: Dict[str, Any],
+    model_id: str,
+) -> SystemConfig:
+    """根据请求参数创建一个临时的、一次性的配置副本，不修改原始配置。
+
+    Args:
+        base_config: 基础系统配置
+        provider_config: 提供商配置信息
+        model_id: 模型ID
+
+    Returns:
+        SystemConfig: 请求专用的配置副本
+    """
+    from copy import deepcopy
+    from pydantic import SecretStr
+    from backend.schemas.config import (
+        OpenAIConfig,
+        OllamaConfig,
+        CustomAPIConfig,
+        CustomProviderConfig,
+    )
+
+    # 创建基础配置的深拷贝，确保不影响全局配置
+    request_config = deepcopy(base_config)
+
     try:
-        return SystemConfig.from_env()
-    except Exception as e:
-        logger.error(f"加载系统配置失败: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"加载系统配置失败: {str(e)}"
+        # 根据提供商类型设置配置
+        provider_id = provider_config.get("id", "")
+        api_key = provider_config.get("apiKey", "")
+        api_host = provider_config.get("apiHost", "")
+
+        # 也支持标准字段名作为备选
+        if not provider_id:
+            provider_id = provider_config.get("provider_type", "openai")
+        if not api_key:
+            api_key = provider_config.get("api_key", "")
+        if not api_host:
+            api_host = provider_config.get("base_url", "")
+
+        logger.info(
+            f"为请求创建专用配置: 提供商={provider_id}, 模型={model_id}"
         )
 
+        if provider_id == "openai":
+            request_config.ai_service.provider = AIProviderType.OPENAI
 
-def get_independent_video_storage() -> VideoStorageService:
-    """获取独立的视频存储服务实例（实际使用全局共享实例）"""
-    try:
-        # 导入全局依赖项函数
-        from backend.api.dependencies import get_video_storage
+            # 确保 openai 配置对象存在
+            if request_config.ai_service.openai is None:
+                request_config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
 
-        # 使用全局共享的视频存储实例，而不是创建新实例
-        return get_video_storage()
-    except Exception as e:
-        logger.error(f"获取视频存储服务失败: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"获取视频存储服务失败: {str(e)}"
+            # 更新配置
+            if api_key:
+                request_config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                request_config.ai_service.openai.base_url = api_host
+            request_config.ai_service.openai.model = model_id
+
+        elif provider_id == "siliconflow":
+            request_config.ai_service.provider = AIProviderType.SILICONFLOW
+
+            # 确保 siliconflow 配置对象存在
+            if request_config.ai_service.siliconflow is None:
+                from backend.schemas.config import SiliconFlowConfig
+
+                request_config.ai_service.siliconflow = SiliconFlowConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                request_config.ai_service.siliconflow.api_key = SecretStr(
+                    api_key
+                )
+            if api_host:
+                request_config.ai_service.siliconflow.base_url = api_host
+            request_config.ai_service.siliconflow.model = model_id
+
+        elif provider_id.startswith("custom-"):
+            request_config.ai_service.provider = AIProviderType.CUSTOM
+
+            # 创建单个自定义提供商配置
+            custom_provider = CustomProviderConfig(
+                id=provider_id,
+                name=f"Custom Provider {provider_id}",
+                api_key=SecretStr(api_key) if api_key else SecretStr(""),
+                base_url=api_host if api_host else "",
+                model=model_id,
+            )
+
+            # 创建 CustomAPIConfig 并设置激活的提供商
+            request_config.ai_service.custom = CustomAPIConfig(
+                providers={provider_id: custom_provider},
+                active_provider=provider_id,
+            )
+
+        elif provider_id == "ollama":
+            request_config.ai_service.provider = AIProviderType.OLLAMA
+
+            # 确保 ollama 配置对象存在
+            if request_config.ai_service.ollama is None:
+                request_config.ai_service.ollama = OllamaConfig(model=model_id)
+
+            # 更新配置
+            if api_host:
+                request_config.ai_service.ollama.base_url = api_host
+            request_config.ai_service.ollama.model = model_id
+
+        else:
+            # 默认使用 OpenAI 兼容接口
+            request_config.ai_service.provider = AIProviderType.OPENAI
+
+            # 确保 openai 配置对象存在
+            if request_config.ai_service.openai is None:
+                request_config.ai_service.openai = OpenAIConfig(
+                    api_key=SecretStr(""), model=model_id
+                )
+
+            # 更新配置
+            if api_key:
+                request_config.ai_service.openai.api_key = SecretStr(api_key)
+            if api_host:
+                request_config.ai_service.openai.base_url = api_host
+            request_config.ai_service.openai.model = model_id
+
+        logger.info(f"请求专用配置创建完成: {provider_id}, 模型: {model_id}")
+        logger.info(
+            f"最终配置的提供商类型: {request_config.ai_service.provider}"
         )
 
+        return request_config
 
-def get_independent_subtitle_translator() -> SubtitleTranslator:
-    """获取独立的字幕翻译器实例"""
-    try:
-        config = get_independent_system_config()
-        return SubtitleTranslator(config)
     except Exception as e:
-        logger.error(f"创建字幕翻译器失败: {e}", exc_info=True)
+        logger.error(f"创建请求专用配置失败: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"创建字幕翻译器失败: {str(e)}"
+            status_code=400, detail=f"创建请求专用配置失败: {str(e)}"
         )
 
 
@@ -275,138 +383,6 @@ class VideoSubtitleTranslateResponseV2(APIResponse):
         }
 
 
-# 辅助函数：配置AI服务
-async def _configure_ai_service_from_provider_config_v2(
-    config: SystemConfig,
-    provider_config: Dict[str, Any],
-    model_id: str,
-):
-    """根据提供商配置设置AI服务 v2"""
-    try:
-        from pydantic import SecretStr
-        from backend.schemas.config import OpenAIConfig, OllamaConfig
-
-        # 根据提供商类型设置配置
-        # 支持前端发送的字段名：id, apiKey, apiHost
-        provider_id = provider_config.get("id", "")
-        api_key = provider_config.get("apiKey", "")
-        api_host = provider_config.get("apiHost", "")
-
-        # 也支持标准字段名作为备选
-        if not provider_id:
-            provider_id = provider_config.get("provider_type", "openai")
-        if not api_key:
-            api_key = provider_config.get("api_key", "")
-        if not api_host:
-            api_host = provider_config.get("base_url", "")
-
-        # 根据提供商ID确定类型
-        if provider_id == "openai":
-            config.ai_service.provider = AIProviderType.OPENAI
-
-            # 确保 openai 配置对象存在
-            if config.ai_service.openai is None:
-                config.ai_service.openai = OpenAIConfig(
-                    api_key=SecretStr(""), model=model_id
-                )
-
-            # 更新配置
-            if api_key:
-                config.ai_service.openai.api_key = SecretStr(api_key)
-            if api_host:
-                config.ai_service.openai.base_url = api_host
-            config.ai_service.openai.model = model_id
-
-        elif provider_id == "siliconflow":
-            config.ai_service.provider = AIProviderType.SILICONFLOW
-
-            # 确保 siliconflow 配置对象存在
-            if config.ai_service.siliconflow is None:
-                from backend.schemas.config import SiliconFlowConfig
-
-                config.ai_service.siliconflow = SiliconFlowConfig(
-                    api_key=SecretStr(""), model=model_id
-                )
-
-            # 更新配置
-            if api_key:
-                config.ai_service.siliconflow.api_key = SecretStr(api_key)
-            if api_host:
-                config.ai_service.siliconflow.base_url = api_host
-            config.ai_service.siliconflow.model = model_id
-
-        elif provider_id.startswith("custom-"):
-            config.ai_service.provider = AIProviderType.CUSTOM
-
-            # 为自定义提供商创建 CustomProviderConfig 而不是 CustomAPIConfig
-            from backend.schemas.config import (
-                CustomAPIConfig,
-                CustomProviderConfig,
-            )
-
-            # 创建单个自定义提供商配置
-            custom_provider = CustomProviderConfig(
-                id=provider_id,
-                name=f"Custom Provider {provider_id}",
-                api_key=SecretStr(api_key) if api_key else SecretStr(""),
-                base_url=api_host if api_host else "",
-                model=model_id,
-            )
-
-            # 创建 CustomAPIConfig 并设置激活的提供商
-            config.ai_service.custom = CustomAPIConfig(
-                providers={provider_id: custom_provider},
-                active_provider=provider_id,
-            )
-
-            logger.info(f"创建自定义提供商配置: {provider_id}")
-            logger.info(
-                f"激活的提供商: {config.ai_service.custom.active_provider}"
-            )
-            logger.info(
-                f"提供商数量: {len(config.ai_service.custom.providers)}"
-            )
-
-        elif provider_id == "ollama":
-            config.ai_service.provider = AIProviderType.OLLAMA
-
-            # 确保 ollama 配置对象存在
-            if config.ai_service.ollama is None:
-                config.ai_service.ollama = OllamaConfig(model=model_id)
-
-            # 更新配置
-            if api_host:
-                config.ai_service.ollama.base_url = api_host
-            config.ai_service.ollama.model = model_id
-
-        else:
-            # 默认使用 OpenAI 兼容接口
-            config.ai_service.provider = AIProviderType.OPENAI
-
-            # 确保 openai 配置对象存在
-            if config.ai_service.openai is None:
-                config.ai_service.openai = OpenAIConfig(
-                    api_key=SecretStr(""), model=model_id
-                )
-
-            # 更新配置
-            if api_key:
-                config.ai_service.openai.api_key = SecretStr(api_key)
-            if api_host:
-                config.ai_service.openai.base_url = api_host
-            config.ai_service.openai.model = model_id
-
-        logger.info(f"AI服务配置完成: {provider_id}, 模型: {model_id}")
-        logger.info(f"最终配置的提供商类型: {config.ai_service.provider}")
-        logger.info(f"API地址: {api_host}")
-
-    except Exception as e:
-        logger.error(f"配置AI服务失败: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=400, detail=f"配置AI服务失败: {str(e)}"
-        )
-
-
 @router.post(
     "/video-subtitle",
     response_model=VideoSubtitleTranslateResponseV2,
@@ -416,15 +392,19 @@ async def translate_video_subtitle(
     request: VideoSubtitleTranslateRequestV2,
     background_tasks: BackgroundTasks,
     raw_request: Request,
+    base_config: SystemConfig = Depends(get_system_config),
+    video_storage: VideoStorageService = Depends(get_video_storage),
 ):
-    """翻译视频字幕轨道 v2 - 独立版本
+    """翻译视频字幕轨道 v2 - 重构版本
 
-    这是一个完全独立的视频字幕翻译接口，避免全局配置冲突。
+    使用标准依赖注入和请求专用配置副本，避免全局配置污染。
 
     Args:
         request: 视频字幕翻译请求
         background_tasks: FastAPI后台任务
         raw_request: 原始请求对象，用于调试
+        base_config: 基础系统配置
+        video_storage: 视频存储服务
 
     Returns:
         VideoSubtitleTranslateResponseV2: 翻译响应
@@ -438,11 +418,6 @@ async def translate_video_subtitle(
         logger.info(
             f"请求体大小: {len(await raw_request.body()) if hasattr(raw_request, 'body') else 'unknown'}"
         )
-
-        # 获取独立的服务实例
-        config = get_independent_system_config()
-        video_storage = get_independent_video_storage()
-        # 注意：translator 将在配置更新后创建
 
         # 验证视频是否存在
         video_info = video_storage.get_video(request.video_id)
@@ -460,7 +435,7 @@ async def translate_video_subtitle(
         task_id = str(uuid.uuid4())
 
         # 创建临时目录
-        temp_dir = config.temp_dir
+        temp_dir = base_config.temp_dir
         os.makedirs(temp_dir, exist_ok=True)
 
         logger.info(
@@ -635,7 +610,7 @@ async def translate_video_subtitle(
                 extractor = SubtitleExtractor(ffmpeg_tool)
 
                 # 创建临时目录
-                output_dir = Path(config.temp_dir) / "subtitles"
+                output_dir = Path(base_config.temp_dir) / "subtitles"
                 output_dir.mkdir(parents=True, exist_ok=True)
 
                 # 提取字幕内容
@@ -649,92 +624,84 @@ async def translate_video_subtitle(
                 if not subtitle_path or not os.path.exists(str(subtitle_path)):
                     raise Exception("提取字幕内容失败")
 
-                # 使用提供商配置创建临时AI服务配置
-                original_provider = config.ai_service.provider
+                # 创建一个专用于本次翻译任务的配置副本
+                request_specific_config = _create_request_specific_config(
+                    base_config,
+                    request.provider_config,
+                    request.model_id,
+                )
 
+                # 使用这个临时配置来创建一次性的翻译器
+                translator = SubtitleTranslator(request_specific_config)
+                logger.info(
+                    f"使用请求专用配置创建了临时的 SubtitleTranslator 实例。"
+                )
+
+                # 创建翻译任务
+                task = SubtitleTranslator.create_task(
+                    video_id=task_id,
+                    source_path=str(subtitle_path),
+                    source_language=request.source_language,
+                    target_language=request.target_language,
+                    style=request.style,
+                    preserve_formatting=request.preserve_formatting,
+                    context_preservation=request.context_preservation,
+                    chunk_size=request.chunk_size,
+                    context_window=request.context_window,
+                )
+
+                # 设置回调函数的任务引用，以便获取翻译结果
+                callback._current_task = task
+
+                # 读取并解析原始字幕数据
+                original_subtitles = []
                 try:
-                    # 根据提供商配置设置AI服务（在创建翻译器之前）
-                    await _configure_ai_service_from_provider_config_v2(
-                        config,
-                        request.provider_config,
-                        request.model_id,
-                    )
+                    if os.path.exists(task.source_path):
+                        with open(
+                            task.source_path, "r", encoding="utf-8"
+                        ) as f:
+                            source_srt_content = f.read()
+                            # 解析原始SRT内容
+                            pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+                            matches = re.findall(
+                                pattern, source_srt_content, re.DOTALL
+                            )
 
-                    # 现在使用更新后的配置创建翻译器
-                    translator = SubtitleTranslator(config)
-                    logger.info(
-                        f"使用更新后的配置创建翻译器，提供商类型: {config.ai_service.provider}"
-                    )
-
-                    # 创建翻译任务
-                    task = SubtitleTranslator.create_task(
-                        video_id=task_id,
-                        source_path=str(subtitle_path),
-                        source_language=request.source_language,
-                        target_language=request.target_language,
-                        style=request.style,
-                        preserve_formatting=request.preserve_formatting,
-                        context_preservation=request.context_preservation,
-                        chunk_size=request.chunk_size,
-                        context_window=request.context_window,
-                    )
-
-                    # 设置回调函数的任务引用，以便获取翻译结果
-                    callback._current_task = task
-
-                    # 读取并解析原始字幕数据
+                            for match in matches:
+                                index, start_time, end_time, text = match
+                                original_subtitles.append(
+                                    {
+                                        "index": int(index),
+                                        "startTime": srt_time_to_seconds(
+                                            start_time
+                                        ),
+                                        "endTime": srt_time_to_seconds(
+                                            end_time
+                                        ),
+                                        "text": text.strip(),
+                                    }
+                                )
+                            logger.info(
+                                f"成功解析原始字幕，共 {len(original_subtitles)} 条"
+                            )
+                except Exception as e:
+                    logger.error(f"解析原始字幕失败: {e}")
                     original_subtitles = []
-                    try:
-                        if os.path.exists(task.source_path):
-                            with open(
-                                task.source_path, "r", encoding="utf-8"
-                            ) as f:
-                                source_srt_content = f.read()
-                                # 解析原始SRT内容
-                                pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
-                                matches = re.findall(
-                                    pattern, source_srt_content, re.DOTALL
-                                )
 
-                                for match in matches:
-                                    index, start_time, end_time, text = match
-                                    original_subtitles.append(
-                                        {
-                                            "index": int(index),
-                                            "startTime": srt_time_to_seconds(
-                                                start_time
-                                            ),
-                                            "endTime": srt_time_to_seconds(
-                                                end_time
-                                            ),
-                                            "text": text.strip(),
-                                        }
-                                    )
-                                logger.info(
-                                    f"成功解析原始字幕，共 {len(original_subtitles)} 条"
-                                )
-                    except Exception as e:
-                        logger.error(f"解析原始字幕失败: {e}")
-                        original_subtitles = []
+                # 保存原始字幕数据到回调函数
+                callback._original_subtitles = original_subtitles
 
-                    # 保存原始字幕数据到回调函数
-                    callback._original_subtitles = original_subtitles
+                # 执行翻译任务
+                success = await translator.translate_task(task, callback)
 
-                    # 执行翻译任务
-                    success = await translator.translate_task(task, callback)
-
-                    if success:
-                        await callback(100.0, "completed", "翻译完成")
-                    else:
-                        await callback(
-                            task.progress,
-                            "failed",
-                            task.error_message or "翻译失败",
-                        )
-
-                finally:
-                    # 恢复原始提供商配置
-                    config.ai_service.provider = original_provider
+                if success:
+                    await callback(100.0, "completed", "翻译完成")
+                else:
+                    await callback(
+                        task.progress,
+                        "failed",
+                        task.error_message or "翻译失败",
+                    )
 
             except Exception as e:
                 logger.error(
@@ -867,27 +834,38 @@ class TranslateResponseV2(APIResponse):
 @router.post("/line", response_model=TranslateResponseV2, tags=["实时翻译"])
 async def translate_line(
     request: LineTranslateRequestV2,
+    base_config: SystemConfig = Depends(get_system_config),
 ):
-    """翻译单行字幕 v2 - 独立版本
+    """翻译单行字幕 v2 - 重构版本
 
     实时翻译单行字幕文本，用于预览或单句编辑。
 
     Args:
         request: 翻译请求
+        base_config: 基础系统配置
 
     Returns:
         TranslateResponseV2: 翻译响应
     """
     try:
-        # 获取独立的服务实例
-        config = get_independent_system_config()
-        translator = get_independent_subtitle_translator()
+        # 创建请求专用配置（如果需要自定义提供商）
+        if hasattr(request, "provider_config") and request.provider_config:
+            request_config = _create_request_specific_config(
+                base_config,
+                request.provider_config,
+                getattr(request, "model_id", "gpt-3.5-turbo"),
+            )
+        else:
+            request_config = base_config
+
+        # 使用配置创建翻译器
+        translator = SubtitleTranslator(request_config)
 
         # 准备翻译服务
         service_translator = translator.service_translator
 
         # 使用用户指定的AI提供商或默认配置
-        ai_service_config = config.ai_service
+        ai_service_config = request_config.ai_service
 
         # 根据service_type选择不同的翻译服务
         if request.service_type == "local_ollama":
@@ -1047,7 +1025,7 @@ async def websocket_translation_progress(websocket: WebSocket, task_id: str):
 )
 async def save_translation_results(
     request: TranslationSaveRequest,
-    config: SystemConfig = Depends(get_independent_system_config),
+    config: SystemConfig = Depends(get_system_config),
 ):
     """保存翻译结果
 
@@ -1103,7 +1081,7 @@ async def save_translation_results(
 )
 async def load_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_independent_system_config),
+    config: SystemConfig = Depends(get_system_config),
 ):
     """加载翻译结果
 
@@ -1158,7 +1136,7 @@ async def load_translation_results(
 )
 async def clear_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_independent_system_config),
+    config: SystemConfig = Depends(get_system_config),
 ):
     """清空指定视频的所有翻译结果
 
@@ -1222,7 +1200,7 @@ async def clear_translation_results(
 )
 async def delete_translation_results(
     request: TranslationLoadRequest,
-    config: SystemConfig = Depends(get_independent_system_config),
+    config: SystemConfig = Depends(get_system_config),
 ):
     """删除指定视频的翻译结果（用户主动删除）
 
@@ -1350,7 +1328,7 @@ async def save_translation_result_compat(
         )
 
         # 获取配置
-        config = get_independent_system_config()
+        config = SystemConfig.from_env()
 
         # 调用主要的保存函数
         return await save_translation_results(save_request, config)
