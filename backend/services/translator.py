@@ -727,9 +727,18 @@ class SubtitleTranslator:
                 except json.JSONDecodeError:
                     pass
 
-            # 主要解析方式：使用空行分割 + 简单正则匹配
-            # 先按空行分割响应为独立的字幕块
+            # 主要解析方式：智能分割 + 简单正则匹配
+            # 先尝试按空行分割，如果只得到一个块，则按单行分割
             subtitle_blocks = re.split(r"\n\s*\n", response.strip())
+
+            # 如果按空行分割只得到一个块，说明可能是单换行符格式，改用单行分割
+            if len(subtitle_blocks) == 1 and len(response.split("\n")) > 1:
+                logger.info("检测到单换行符格式，改用单行分割")
+                subtitle_blocks = [
+                    line.strip()
+                    for line in response.split("\n")
+                    if line.strip()
+                ]
 
             # 创建结果字典，以确保按正确顺序匹配原始行
             result_dict = {}
