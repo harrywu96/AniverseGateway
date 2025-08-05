@@ -4,6 +4,7 @@
 已修复依赖注入问题，支持前端界面配置的自定义提供商。
 """
 
+import asyncio
 import logging
 import os
 import re
@@ -17,7 +18,6 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    BackgroundTasks,
     Request,
     WebSocket,
 )
@@ -36,6 +36,10 @@ from backend.api.websocket import manager  # 导入WebSocket管理器
 
 # 配置日志
 logger = logging.getLogger("aniversegateway.api.translate")
+
+# 全局任务管理器：存储正在运行的翻译任务
+# 格式为: { "task_id": asyncio.Task }
+running_tasks: Dict[str, asyncio.Task] = {}
 
 # 创建独立路由器
 router = APIRouter()
@@ -390,7 +394,6 @@ class VideoSubtitleTranslateResponseV2(APIResponse):
 )
 async def translate_video_subtitle(
     request: VideoSubtitleTranslateRequestV2,
-    background_tasks: BackgroundTasks,
     raw_request: Request,
     base_config: SystemConfig = Depends(get_system_config),
     video_storage: VideoStorageService = Depends(get_video_storage),
@@ -703,14 +706,28 @@ async def translate_video_subtitle(
                         task.error_message or "翻译失败",
                     )
 
+            except asyncio.CancelledError:
+                # 任务被取消
+                logger.info(f"任务 {task_id} 已被成功取消")
+                await callback(0.0, "failed", "任务已被用户取消")
             except Exception as e:
                 logger.error(
                     f"视频字幕翻译任务 {task_id} 异常: {e}", exc_info=True
                 )
                 await callback(0.0, "failed", f"任务失败: {str(e)}")
+            finally:
+                # 无论任务成功、失败或取消，都从管理器中移除
+                if task_id in running_tasks:
+                    del running_tasks[task_id]
+                    logger.info(f"任务 {task_id} 已从管理器中移除")
 
-        # 添加到后台任务
-        background_tasks.add_task(process_video_subtitle_translation)
+        # 使用 asyncio.create_task 而不是 background_tasks.add_task
+        task_obj = asyncio.create_task(process_video_subtitle_translation())
+
+        # 将任务对象存储到全局管理器中
+        running_tasks[task_id] = task_obj
+
+        logger.info(f"翻译任务 {task_id} 已创建并在后台运行")
 
         # 返回任务信息
         return VideoSubtitleTranslateResponseV2(
@@ -1277,10 +1294,15 @@ async def cancel_translation_task(task_id: str):
             cancellation_manager,
         )
 
-        # 标记任务为取消状态
-        success = cancellation_manager.cancel_task(task_id)
+        # 标记任务为取消状态（保留原有逻辑用于兼容性）
+        cancellation_manager.cancel_task(task_id)
 
-        if success:
+        # 【核心修改】从全局管理器中找到并取消 asyncio.Task
+        task_to_cancel = running_tasks.get(task_id)
+        if task_to_cancel:
+            task_to_cancel.cancel()  # 这会立即向任务注入一个 CancelledError
+            logger.info(f"已向 asyncio 任务 {task_id} 发送取消请求")
+
             # 通过WebSocket通知前端任务已取消
             await manager.broadcast(
                 task_id,
@@ -1290,9 +1312,10 @@ async def cancel_translation_task(task_id: str):
             logger.info(f"翻译任务 {task_id} 取消请求已处理")
             return APIResponse(success=True, message="翻译任务取消请求已提交")
         else:
-            return APIResponse(
-                success=False, message="任务已经被标记为取消或不存在"
+            logger.warning(
+                f"尝试取消任务 {task_id}，但在运行列表中未找到。可能已完成或失败"
             )
+            return APIResponse(success=False, message="任务不存在或已完成")
 
     except Exception as e:
         logger.error(f"取消翻译任务失败: {e}", exc_info=True)

@@ -544,6 +544,17 @@ class SubtitleTranslator:
 
         for attempt in range(max_retries):
             try:
+                # 导入任务取消管理器
+                from backend.services.task_cancellation_manager import (
+                    cancellation_manager,
+                )
+
+                # 在API调用前检查任务是否被取消
+                if cancellation_manager.is_cancelled(task.id):
+                    logger.info(f"任务 {task.id} 在API调用前被取消")
+                    cancellation_manager.remove_task(task.id)
+                    raise asyncio.CancelledError("翻译任务被用户取消")
+
                 # 应用全局请求频率限制
                 await global_rate_limiter.acquire()
 
@@ -893,48 +904,55 @@ class SubtitleTranslator:
             logger.info(f"[翻译任务] 开始翻译，总共 {total_chunks} 个chunk")
 
             for i, chunk in enumerate(chunks):
-                # 检查任务是否被取消
-                if cancellation_manager.is_cancelled(task.id):
-                    logger.info(f"任务 {task.id} 被用户取消，停止翻译")
+                try:
+                    # 检查任务是否被取消
+                    if cancellation_manager.is_cancelled(task.id):
+                        logger.info(f"任务 {task.id} 被用户取消，停止翻译")
+                        # 从取消列表中移除任务
+                        cancellation_manager.remove_task(task.id)
+                        # 抛出取消异常
+                        raise asyncio.CancelledError("翻译任务被用户取消")
+
+                    # 滑动窗口：更新当前chunk的翻译历史
+                    if i > 0 and translated_lines:
+                        # 获取前一个chunk的翻译结果
+                        prev_chunk_size = len(chunks[i - 1].lines)
+                        prev_translated = translated_lines[-prev_chunk_size:]
+                        # 更新当前chunk的翻译历史
+                        chunk.translated_history = prev_translated
+                        logger.info(
+                            f"[滑动窗口] 为第 {i + 1} 个chunk添加了 {len(prev_translated)} 条翻译历史"
+                        )
+
+                    # 记录chunk开始信息
+                    current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+                    logger.info(
+                        f"[翻译任务] {current_time} - 开始处理第 {i + 1}/{total_chunks} 个chunk"
+                    )
+
+                    # 翻译当前块
+                    chunk_result = await self.translate_chunk(chunk, task)
+                    translated_lines.extend(chunk_result)
+
+                    # 记录chunk完成信息
+                    logger.info(
+                        f"[翻译任务] 第 {i + 1}/{total_chunks} 个chunk翻译完成"
+                    )
+
+                    # 更新进度
+                    task.update_chunk_progress(i + 1)
+                    if progress_callback:
+                        await progress_callback(
+                            task.progress,
+                            "processing",
+                            f"正在翻译第 {i + 1}/{total_chunks} 块",
+                        )
+
+                except asyncio.CancelledError:
+                    logger.info(f"任务 {task.id} 在处理 chunk {i+1} 时被取消")
                     # 从取消列表中移除任务
                     cancellation_manager.remove_task(task.id)
-                    # 抛出取消异常
-                    raise Exception("翻译任务被用户取消")
-
-                # 滑动窗口：更新当前chunk的翻译历史
-                if i > 0 and translated_lines:
-                    # 获取前一个chunk的翻译结果
-                    prev_chunk_size = len(chunks[i - 1].lines)
-                    prev_translated = translated_lines[-prev_chunk_size:]
-                    # 更新当前chunk的翻译历史
-                    chunk.translated_history = prev_translated
-                    logger.info(
-                        f"[滑动窗口] 为第 {i + 1} 个chunk添加了 {len(prev_translated)} 条翻译历史"
-                    )
-
-                # 记录chunk开始信息
-                current_time = time.strftime("%Y-%m-%d %H:%M:%S")
-                logger.info(
-                    f"[翻译任务] {current_time} - 开始处理第 {i + 1}/{total_chunks} 个chunk"
-                )
-
-                # 翻译当前块
-                chunk_result = await self.translate_chunk(chunk, task)
-                translated_lines.extend(chunk_result)
-
-                # 记录chunk完成信息
-                logger.info(
-                    f"[翻译任务] 第 {i + 1}/{total_chunks} 个chunk翻译完成"
-                )
-
-                # 更新进度
-                task.update_chunk_progress(i + 1)
-                if progress_callback:
-                    await progress_callback(
-                        task.progress,
-                        "processing",
-                        f"正在翻译第 {i + 1}/{total_chunks} 块",
-                    )
+                    raise  # 重新抛出异常，让外层的 try...except 捕获
 
             # 生成翻译后的SRT内容
             translated_srt = self._generate_translated_content(
@@ -950,6 +968,10 @@ class SubtitleTranslator:
                 ),
             }
 
+        except asyncio.CancelledError:
+            # 如果异常被重新抛出到这里，直接再次抛出
+            logger.info(f"翻译任务 {task.id} 被取消")
+            raise
         except Exception as e:
             logger.error(f"文件翻译失败: {e}")
             import traceback
