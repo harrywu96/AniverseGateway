@@ -137,7 +137,7 @@ def _create_request_specific_config(
         elif provider_id.startswith("custom-"):
             request_config.ai_service.provider = AIProviderType.CUSTOM
 
-            # 创建单个自定义提供商配置
+            # 创建单个自定义提供商配置，用自定义提供商翻译所需仅为所选模型id不需要列表
             custom_provider = CustomProviderConfig(
                 id=provider_id,
                 name=f"Custom Provider {provider_id}",
