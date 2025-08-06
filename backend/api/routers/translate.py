@@ -52,6 +52,43 @@ translation_router = APIRouter()
 from backend.api.dependencies import get_system_config, get_video_storage
 
 
+def parse_original_subtitles(source_path: str) -> List[Dict[str, Any]]:
+    """解析原始字幕文件
+
+    Args:
+        source_path: 源字幕文件路径
+
+    Returns:
+        List[Dict[str, Any]]: 解析后的原始字幕列表
+    """
+    original_subtitles = []
+    try:
+        if os.path.exists(source_path):
+            with open(source_path, "r", encoding="utf-8") as f:
+                source_srt_content = f.read()
+                # 解析原始SRT内容
+                pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
+                matches = re.findall(pattern, source_srt_content, re.DOTALL)
+
+                for match in matches:
+                    index, start_time, end_time, text = match
+                    original_subtitles.append(
+                        {
+                            "index": int(index),
+                            "startTime": srt_time_to_seconds(start_time),
+                            "endTime": srt_time_to_seconds(end_time),
+                            "text": text.strip(),
+                        }
+                    )
+                logger.info(
+                    f"成功解析原始字幕，共 {len(original_subtitles)} 条"
+                )
+    except Exception as e:
+        logger.error(f"解析原始字幕失败: {e}")
+
+    return original_subtitles
+
+
 # 辅助函数：创建一个临时的、请求专用的配置副本
 def _create_request_specific_config(
     base_config: SystemConfig,
@@ -445,128 +482,14 @@ async def translate_video_subtitle(
             f"开始翻译视频字幕v2，视频ID: {request.video_id}, 轨道索引: {request.track_index}, 任务ID: {task_id}"
         )
 
-        # 定义进度回调函数
-        async def callback(progress: float, status: str, message: str):
-            """进度回调函数"""
+        # 定义简化的进度回调函数
+        async def progress_callback(
+            progress: float, status: str, message: str
+        ):
+            """简化的进度回调函数，只负责进度更新"""
             try:
-                # 根据状态创建前端期望的消息格式
-                if status == "completed":
-                    # 获取翻译结果
-                    translation_results = []
-                    try:
-                        # 从翻译任务中获取结果
-                        task = getattr(callback, "_current_task", None)
-                        if task:
-                            logger.info(
-                                f"任务对象存在，result_path: {getattr(task, 'result_path', 'None')}"
-                            )
-
-                            # 尝试多种方式获取翻译结果文件
-                            result_file_paths = []
-
-                            # 方式1：从任务对象获取
-                            if (
-                                hasattr(task, "result_path")
-                                and task.result_path
-                            ):
-                                result_file_paths.append(task.result_path)
-
-                            # 方式2：从临时目录构建路径
-                            if hasattr(task, "id"):
-                                temp_result_file = os.path.join(
-                                    temp_dir, f"{task.id}_result.srt"
-                                )
-                                result_file_paths.append(temp_result_file)
-
-                            # 方式3：使用任务ID构建路径
-                            task_result_file = os.path.join(
-                                temp_dir, f"{task_id}_result.srt"
-                            )
-                            result_file_paths.append(task_result_file)
-
-                            # 方式4：查找临时目录中的所有SRT文件
-                            if os.path.exists(temp_dir):
-                                for file in os.listdir(temp_dir):
-                                    if (
-                                        file.endswith(".srt")
-                                        and task_id in file
-                                    ):
-                                        result_file_paths.append(
-                                            os.path.join(temp_dir, file)
-                                        )
-
-                            logger.info(
-                                f"尝试的结果文件路径: {result_file_paths}"
-                            )
-
-                            # 尝试读取翻译结果
-                            srt_content = None
-                            for path in result_file_paths:
-                                if path and os.path.exists(path):
-                                    try:
-                                        with open(
-                                            path, "r", encoding="utf-8"
-                                        ) as f:
-                                            srt_content = f.read()
-                                            logger.info(
-                                                f"成功从 {path} 读取翻译结果"
-                                            )
-                                            break
-                                    except Exception as e:
-                                        logger.warning(
-                                            f"读取文件 {path} 失败: {e}"
-                                        )
-                                        continue
-
-                            if srt_content:
-                                # 获取原始字幕数据
-                                original_subtitles = getattr(
-                                    callback, "_original_subtitles", None
-                                )
-                                logger.info(
-                                    f"原始字幕数据条数: {len(original_subtitles) if original_subtitles else 0}"
-                                )
-                                if (
-                                    original_subtitles
-                                    and len(original_subtitles) > 0
-                                ):
-                                    logger.info(
-                                        f"第一条原始字幕: {original_subtitles[0]}"
-                                    )
-
-                                # 解析翻译结果
-                                translation_results = parse_srt_content(
-                                    srt_content, original_subtitles
-                                )
-
-                                # 记录解析结果
-                                logger.info(
-                                    f"成功解析翻译结果，共 {len(translation_results)} 条字幕"
-                                )
-                                if translation_results:
-                                    logger.info(
-                                        f"第一条翻译结果: {translation_results[0]}"
-                                    )
-                            else:
-                                logger.error("无法找到或读取翻译结果文件")
-                        else:
-                            logger.error("任务对象不存在")
-
-                    except Exception as e:
-                        logger.error(f"获取翻译结果失败: {e}", exc_info=True)
-                        translation_results = []
-
-                    websocket_message = {
-                        "type": "completed",
-                        "message": message,
-                        "results": translation_results,  # ✅ 实际翻译结果
-                    }
-
-                    # 记录WebSocket消息
-                    logger.info(
-                        f"准备发送WebSocket消息: type={websocket_message['type']}, results_count={len(translation_results)}"
-                    )
-                elif status == "failed":
+                # 创建WebSocket消息
+                if status == "failed":
                     websocket_message = {"type": "error", "message": message}
                 else:
                     # 进行中状态
@@ -653,54 +576,34 @@ async def translate_video_subtitle(
                     context_window=request.context_window,
                 )
 
-                # 设置回调函数的任务引用，以便获取翻译结果
-                callback._current_task = task
+                # 解析原始字幕数据
+                original_subtitles = parse_original_subtitles(task.source_path)
 
-                # 读取并解析原始字幕数据
-                original_subtitles = []
-                try:
-                    if os.path.exists(task.source_path):
-                        with open(
-                            task.source_path, "r", encoding="utf-8"
-                        ) as f:
-                            source_srt_content = f.read()
-                            # 解析原始SRT内容
-                            pattern = r"(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.*?)(?=\n\d+\n|\n*$)"
-                            matches = re.findall(
-                                pattern, source_srt_content, re.DOTALL
-                            )
+                # 执行翻译任务，获取翻译内容和结果路径
+                translated_content, _ = await translator.translate_task(
+                    task, progress_callback
+                )
 
-                            for match in matches:
-                                index, start_time, end_time, text = match
-                                original_subtitles.append(
-                                    {
-                                        "index": int(index),
-                                        "startTime": srt_time_to_seconds(
-                                            start_time
-                                        ),
-                                        "endTime": srt_time_to_seconds(
-                                            end_time
-                                        ),
-                                        "text": text.strip(),
-                                    }
-                                )
-                            logger.info(
-                                f"成功解析原始字幕，共 {len(original_subtitles)} 条"
-                            )
-                except Exception as e:
-                    logger.error(f"解析原始字幕失败: {e}")
-                    original_subtitles = []
+                if translated_content:
+                    # 解析翻译结果
+                    translation_results = parse_srt_content(
+                        translated_content, original_subtitles
+                    )
 
-                # 保存原始字幕数据到回调函数
-                callback._original_subtitles = original_subtitles
+                    # 发送完成消息
+                    websocket_message = {
+                        "type": "completed",
+                        "message": "翻译完成",
+                        "results": translation_results,
+                    }
+                    await manager.broadcast(task_id, websocket_message)
 
-                # 执行翻译任务
-                success = await translator.translate_task(task, callback)
-
-                if success:
-                    await callback(100.0, "completed", "翻译完成")
+                    logger.info(
+                        f"翻译任务 {task_id} 完成，共 {len(translation_results)} 条结果"
+                    )
                 else:
-                    await callback(
+                    # 翻译失败
+                    await progress_callback(
                         task.progress,
                         "failed",
                         task.error_message or "翻译失败",
@@ -709,12 +612,12 @@ async def translate_video_subtitle(
             except asyncio.CancelledError:
                 # 任务被取消
                 logger.info(f"任务 {task_id} 已被成功取消")
-                await callback(0.0, "failed", "任务已被用户取消")
+                await progress_callback(0.0, "failed", "任务已被用户取消")
             except Exception as e:
                 logger.error(
                     f"视频字幕翻译任务 {task_id} 异常: {e}", exc_info=True
                 )
-                await callback(0.0, "failed", f"任务失败: {str(e)}")
+                await progress_callback(0.0, "failed", f"任务失败: {str(e)}")
             finally:
                 # 无论任务成功、失败或取消，都从管理器中移除
                 if task_id in running_tasks:

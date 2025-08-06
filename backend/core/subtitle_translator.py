@@ -5,7 +5,7 @@
 
 import logging
 import os
-from typing import Callable, Optional, Dict
+from typing import Callable, Optional, Dict, Tuple
 
 from backend.schemas.config import SystemConfig
 from backend.schemas.task import SubtitleTask, PromptTemplate
@@ -43,7 +43,7 @@ class SubtitleTranslator:
 
     async def translate_task(
         self, task: SubtitleTask, progress_callback: Optional[Callable] = None
-    ) -> bool:
+    ) -> Tuple[Optional[str], Optional[str]]:
         """执行字幕翻译任务
 
         Args:
@@ -51,7 +51,7 @@ class SubtitleTranslator:
             progress_callback: 进度回调函数
 
         Returns:
-            bool: 翻译是否成功
+            tuple[Optional[str], Optional[str]]: (翻译内容, 结果文件路径)，失败时返回 (None, None)
         """
         try:
             # 更新任务状态
@@ -76,12 +76,12 @@ class SubtitleTranslator:
 
             # 更新任务状态
             task.mark_completed(output_path)
-            return True
+            return translated_content, output_path
         except Exception as e:
             logger.error(f"翻译任务 {task.id} 失败: {e}")
             # 更新任务状态
             task.mark_failed(str(e))
-            return False
+            return None, None
 
     def get_available_templates(self) -> Dict[str, PromptTemplate]:
         """获取可用的提示模板
