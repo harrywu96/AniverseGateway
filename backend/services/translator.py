@@ -350,6 +350,46 @@ class SubtitleTranslator:
 
         return lines
 
+    def _smart_split_response_lines(self, response: str) -> List[str]:
+        """智能分割响应行，只在真正的字幕分隔符处分割
+
+        Args:
+            response: AI响应文本
+
+        Returns:
+            List[str]: 分割后的字幕块列表
+        """
+        lines = response.split("\n")
+        subtitle_blocks = []
+        current_block = ""
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # 检查是否是字幕分隔符：数字+点号开头
+            # 匹配格式如 "1. 文本" 或 "1. 91. 文本"
+            if re.match(r"^\d+\.\s*", line):
+                # 如果当前块不为空，先保存当前块
+                if current_block:
+                    subtitle_blocks.append(current_block.strip())
+                # 开始新的块
+                current_block = line
+            else:
+                # 不是分隔符，添加到当前块（保留换行符）
+                if current_block:
+                    current_block += "\n" + line
+                else:
+                    current_block = line
+
+        # 添加最后一个块
+        if current_block:
+            subtitle_blocks.append(current_block.strip())
+
+        logger.info(f"智能分割得到 {len(subtitle_blocks)} 个字幕块")
+        return subtitle_blocks
+
     def split_into_chunks(
         self, lines: List[SubtitleLine], chunk_size: int, context_window: int
     ) -> List[SubtitleChunk]:
@@ -586,8 +626,12 @@ class SubtitleTranslator:
                     response = response_data["content"]
                     usage_info = response_data.get("usage", {})
                     model_name = response_data.get("model", "unknown")
+                    logger.info(f"[Token统计] AI服务返回的usage: {usage_info}")
                 except AttributeError:
                     # 如果AI服务不支持chat_completion_with_usage，回退到普通方法
+                    logger.warning(
+                        "[Token统计] AI服务不支持chat_completion_with_usage，回退到普通方法"
+                    )
                     response = await self.ai_service.chat_completion(
                         system_prompt=system_prompt,
                         user_prompt=user_prompt,
@@ -656,6 +700,9 @@ class SubtitleTranslator:
                     "duration": end_time - start_time,
                     "attempt": attempt + 1,
                 }
+                logger.info(
+                    f"[Token统计] 返回的chunk_metadata: {chunk_metadata}"
+                )
                 return chunk.lines, chunk_metadata
 
             except Exception as e:
@@ -773,14 +820,10 @@ class SubtitleTranslator:
             # 先尝试按空行分割，如果只得到一个块，则按单行分割
             subtitle_blocks = re.split(r"\n\s*\n", response.strip())
 
-            # 如果按空行分割只得到一个块，说明可能是单换行符格式，改用单行分割
+            # 如果按空行分割只得到一个块，说明可能是单换行符格式，改用智能单行分割
             if len(subtitle_blocks) == 1 and len(response.split("\n")) > 1:
-                logger.info("检测到单换行符格式，改用单行分割")
-                subtitle_blocks = [
-                    line.strip()
-                    for line in response.split("\n")
-                    if line.strip()
-                ]
+                logger.info("检测到单换行符格式，改用智能单行分割")
+                subtitle_blocks = self._smart_split_response_lines(response)
 
             # 创建结果字典，以确保按正确顺序匹配原始行
             result_dict = {}
@@ -987,18 +1030,31 @@ class SubtitleTranslator:
 
                     # 累加token使用统计
                     chunk_usage = chunk_metadata.get("usage", {})
+                    logger.info(
+                        f"[Token统计] Chunk {i+1} usage: {chunk_usage}"
+                    )
                     if chunk_usage:
-                        total_usage["prompt_tokens"] += chunk_usage.get(
-                            "prompt_tokens", 0
-                        )
-                        total_usage["completion_tokens"] += chunk_usage.get(
+                        prompt_tokens = chunk_usage.get("prompt_tokens", 0)
+                        completion_tokens = chunk_usage.get(
                             "completion_tokens", 0
                         )
-                        total_usage["total_tokens"] += chunk_usage.get(
-                            "total_tokens", 0
+                        total_tokens = chunk_usage.get("total_tokens", 0)
+
+                        total_usage["prompt_tokens"] += prompt_tokens
+                        total_usage["completion_tokens"] += completion_tokens
+                        total_usage["total_tokens"] += total_tokens
+
+                        logger.info(
+                            f"[Token统计] Chunk {i+1} 累加: +{prompt_tokens}/{completion_tokens}/{total_tokens}"
                         )
+                        logger.info(f"[Token统计] 当前总计: {total_usage}")
+
                         # 记录每个chunk的usage信息
                         chunk_usages.append(chunk_usage)
+                    else:
+                        logger.warning(
+                            f"[Token统计] Chunk {i+1} 没有usage信息"
+                        )
 
                     # 记录chunk完成信息
                     logger.info(
@@ -1066,9 +1122,18 @@ class SubtitleTranslator:
                 translated_lines
             )
 
+            # 恢复格式标签
+            restored_srt = SRTOptimizer.restore_srt_format(
+                translated_srt, format_map
+            )
+
+            # 记录最终的token统计
+            logger.info(f"[Token统计] 最终总计: {total_usage}")
+            logger.info(f"[Token统计] Chunk数量: {len(chunk_usages)}")
+
             # 返回翻译结果和格式映射
             return {
-                "translated_content": translated_srt,
+                "translated_content": restored_srt,  # 返回已恢复格式的内容
                 "format_map": format_map,
                 "result_path": self._generate_result_file(
                     task, translated_lines
