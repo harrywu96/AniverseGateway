@@ -52,6 +52,59 @@ class AIService(abc.ABC):
         """
         pass
 
+    async def chat_completion_with_usage(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        examples: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
+        """发送聊天完成请求并返回详细信息（包括token使用）
+
+        Args:
+            system_prompt: 系统提示
+            user_prompt: 用户提示
+            examples: 可选的少样本示例
+
+        Returns:
+            Dict[str, Any]: 包含响应文本和使用信息的字典
+                {
+                    "content": str,  # 响应文本
+                    "usage": {       # token使用信息
+                        "prompt_tokens": int,
+                        "completion_tokens": int,
+                        "total_tokens": int,
+                        "is_estimated": bool  # 是否为估算值
+                    },
+                    "model": str     # 使用的模型名称
+                }
+        """
+        # 默认实现：调用chat_completion并估算token
+        content = await self.chat_completion(
+            system_prompt, user_prompt, examples
+        )
+
+        # 估算token使用（子类可以重写此方法提供准确数据）
+        prompt_text = system_prompt + user_prompt
+        if examples:
+            for example in examples:
+                prompt_text += example.get("subtitle", "") + example.get(
+                    "translation", ""
+                )
+
+        prompt_tokens = await self.get_token_count(prompt_text)
+        completion_tokens = await self.get_token_count(content)
+
+        return {
+            "content": content,
+            "usage": {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": prompt_tokens + completion_tokens,
+                "is_estimated": True,  # 标记为估算值
+            },
+            "model": getattr(self, "model", "unknown"),
+        }
+
     @abc.abstractmethod
     async def get_token_count(self, text: str) -> int:
         """估算文本的token数量
@@ -161,6 +214,91 @@ class OpenAIService(AIService):
         except Exception as e:
             logger.error(f"OpenAI API请求失败: {e}")
             raise
+
+    async def chat_completion_with_usage(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        examples: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
+        """使用OpenAI API发送聊天完成请求并返回详细信息"""
+        messages = [{"role": "system", "content": system_prompt}]
+
+        # 如果有少样本示例，添加到消息中
+        if examples and len(examples) > 0:
+            for example in examples:
+                if "subtitle" in example and "translation" in example:
+                    messages.append(
+                        {"role": "user", "content": example["subtitle"]}
+                    )
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": example["translation"],
+                        }
+                    )
+
+        messages.append({"role": "user", "content": user_prompt})
+
+        try:
+            response_data = await self._make_chat_request(messages)
+            content = response_data["choices"][0]["message"]["content"].strip()
+
+            # 智能提取token使用信息
+            usage_data = self._extract_usage_info(
+                response_data, system_prompt + user_prompt, content
+            )
+
+            return {
+                "content": content,
+                "usage": usage_data,
+                "model": self.model,
+            }
+        except Exception as e:
+            logger.error(f"OpenAI API请求失败: {e}")
+            raise
+
+    def _extract_usage_info(
+        self, response_data: Dict[str, Any], prompt_text: str, content: str
+    ) -> Dict[str, Any]:
+        """智能提取token使用信息，优先使用API返回的真实数据"""
+        # 尝试从API响应中获取usage信息，安全处理null值
+        api_usage = response_data.get("usage")
+
+        # 检查usage是否为有效的字典且包含token信息
+        if (
+            api_usage is not None
+            and isinstance(api_usage, dict)
+            and any(
+                key in api_usage
+                for key in [
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "total_tokens",
+                ]
+            )
+        ):
+            # 找到了API返回的usage信息，使用真实数据
+            logger.info(f"[Token统计] 使用API返回的真实token数据: {api_usage}")
+            return {
+                "prompt_tokens": api_usage.get("prompt_tokens", 0),
+                "completion_tokens": api_usage.get("completion_tokens", 0),
+                "total_tokens": api_usage.get("total_tokens", 0),
+                "is_estimated": False,  # 标记为真实值
+            }
+        else:
+            # 没有找到usage信息，使用估算
+            logger.warning(f"[Token统计] API响应中未找到usage信息，使用估算值")
+            prompt_tokens = len(prompt_text.split()) * 1.3  # 简单估算
+            completion_tokens = len(content.split()) * 1.3
+            total_tokens = int(prompt_tokens + completion_tokens)
+
+            return {
+                "prompt_tokens": int(prompt_tokens),
+                "completion_tokens": int(completion_tokens),
+                "total_tokens": total_tokens,
+                "is_estimated": True,  # 标记为估算值
+            }
 
     async def get_token_count(self, text: str) -> int:
         """估算文本的token数量

@@ -5,7 +5,7 @@
 
 import logging
 import os
-from typing import Callable, Optional, Dict, Tuple
+from typing import Callable, Optional, Dict, Tuple, List, Any
 
 from backend.schemas.config import SystemConfig
 from backend.schemas.task import SubtitleTask, PromptTemplate
@@ -43,7 +43,9 @@ class SubtitleTranslator:
 
     async def translate_task(
         self, task: SubtitleTask, progress_callback: Optional[Callable] = None
-    ) -> Tuple[Optional[str], Optional[str]]:
+    ) -> Tuple[
+        Optional[str], Optional[str], Dict[str, Any], List[Dict[str, Any]]
+    ]:
         """执行字幕翻译任务
 
         Args:
@@ -51,7 +53,7 @@ class SubtitleTranslator:
             progress_callback: 进度回调函数
 
         Returns:
-            tuple[Optional[str], Optional[str]]: (翻译内容, 结果文件路径)，失败时返回 (None, None)
+            tuple: (翻译内容, 结果文件路径, token使用统计, chunk使用列表)，失败时返回 (None, None, {}, [])
         """
         try:
             # 更新任务状态
@@ -65,6 +67,8 @@ class SubtitleTranslator:
             # 获取翻译结果和格式映射
             translated_content = result.get("translated_content", "")
             format_map = result.get("format_map", {})
+            total_usage = result.get("total_usage", {})
+            chunk_usages = result.get("chunk_usages", [])
 
             # 导出到原视频目录
             output_path = SubtitleExporter.auto_export(
@@ -76,12 +80,14 @@ class SubtitleTranslator:
 
             # 更新任务状态
             task.mark_completed(output_path)
-            return translated_content, output_path
+
+            # 返回翻译内容、结果路径和token使用信息
+            return translated_content, output_path, total_usage, chunk_usages
         except Exception as e:
             logger.error(f"翻译任务 {task.id} 失败: {e}")
             # 更新任务状态
             task.mark_failed(str(e))
-            return None, None
+            return None, None, {}, []
 
     def get_available_templates(self) -> Dict[str, PromptTemplate]:
         """获取可用的提示模板

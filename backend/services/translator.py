@@ -481,7 +481,7 @@ class SubtitleTranslator:
 
     async def translate_chunk(
         self, chunk: SubtitleChunk, task: SubtitleTask
-    ) -> List[SubtitleLine]:
+    ) -> tuple[List[SubtitleLine], Dict[str, Any]]:
         """翻译单个字幕块
 
         Args:
@@ -572,13 +572,30 @@ class SubtitleTranslator:
                     f"[API调用] 使用AI服务: {type(self.ai_service).__name__}"
                 )
 
-                # 调用AI服务进行翻译
+                # 调用AI服务进行翻译，获取详细响应信息
                 start_time = time.time()
-                response = await self.ai_service.chat_completion(
-                    system_prompt=system_prompt,
-                    user_prompt=user_prompt,
-                    examples=template.examples,
-                )
+                try:
+                    # 尝试使用带usage信息的方法
+                    response_data = (
+                        await self.ai_service.chat_completion_with_usage(
+                            system_prompt=system_prompt,
+                            user_prompt=user_prompt,
+                            examples=template.examples,
+                        )
+                    )
+                    response = response_data["content"]
+                    usage_info = response_data.get("usage", {})
+                    model_name = response_data.get("model", "unknown")
+                except AttributeError:
+                    # 如果AI服务不支持chat_completion_with_usage，回退到普通方法
+                    response = await self.ai_service.chat_completion(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        examples=template.examples,
+                    )
+                    usage_info = {}
+                    model_name = getattr(self.ai_service, "model", "unknown")
+
                 end_time = time.time()
 
                 # 记录API调用完成信息
@@ -588,6 +605,14 @@ class SubtitleTranslator:
                 logger.info(
                     f"[API调用] 响应长度: {len(response) if response else 0} 字符"
                 )
+                if usage_info:
+                    is_estimated = usage_info.get("is_estimated", False)
+                    estimation_note = (
+                        " (估算值)" if is_estimated else " (真实值)"
+                    )
+                    logger.info(
+                        f"[API调用] Token使用: {usage_info.get('prompt_tokens', 0)} + {usage_info.get('completion_tokens', 0)} = {usage_info.get('total_tokens', 0)}{estimation_note}"
+                    )
 
                 print("翻译后的结果response", response)
 
@@ -624,8 +649,14 @@ class SubtitleTranslator:
 
                         line.validation_result = validation_result
 
-                # 返回翻译后的行
-                return chunk.lines
+                # 返回翻译后的行和元数据
+                chunk_metadata = {
+                    "usage": usage_info,
+                    "model": model_name,
+                    "duration": end_time - start_time,
+                    "attempt": attempt + 1,
+                }
+                return chunk.lines, chunk_metadata
 
             except Exception as e:
                 last_error = e
@@ -903,6 +934,18 @@ class SubtitleTranslator:
             translated_lines = []
             logger.info(f"[翻译任务] 开始翻译，总共 {total_chunks} 个chunk")
 
+            # 记录处理时间用于预估剩余时间
+            chunk_times = []
+            # 记录token使用统计
+            total_usage = {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            }
+            # 记录每个chunk的usage信息，用于判断是否包含估算值
+            chunk_usages = []
+            import time
+
             for i, chunk in enumerate(chunks):
                 try:
                     # 检查任务是否被取消
@@ -924,20 +967,69 @@ class SubtitleTranslator:
                             f"[滑动窗口] 为第 {i + 1} 个chunk添加了 {len(prev_translated)} 条翻译历史"
                         )
 
-                    # 记录chunk开始信息
+                    # 记录chunk开始信息和时间
+                    chunk_start_time = time.time()
                     current_time = time.strftime("%Y-%m-%d %H:%M:%S")
                     logger.info(
                         f"[翻译任务] {current_time} - 开始处理第 {i + 1}/{total_chunks} 个chunk"
                     )
 
                     # 翻译当前块
-                    chunk_result = await self.translate_chunk(chunk, task)
+                    chunk_result, chunk_metadata = await self.translate_chunk(
+                        chunk, task
+                    )
                     translated_lines.extend(chunk_result)
+
+                    # 记录chunk处理时间
+                    chunk_end_time = time.time()
+                    chunk_duration = chunk_end_time - chunk_start_time
+                    chunk_times.append(chunk_duration)
+
+                    # 累加token使用统计
+                    chunk_usage = chunk_metadata.get("usage", {})
+                    if chunk_usage:
+                        total_usage["prompt_tokens"] += chunk_usage.get(
+                            "prompt_tokens", 0
+                        )
+                        total_usage["completion_tokens"] += chunk_usage.get(
+                            "completion_tokens", 0
+                        )
+                        total_usage["total_tokens"] += chunk_usage.get(
+                            "total_tokens", 0
+                        )
+                        # 记录每个chunk的usage信息
+                        chunk_usages.append(chunk_usage)
 
                     # 记录chunk完成信息
                     logger.info(
-                        f"[翻译任务] 第 {i + 1}/{total_chunks} 个chunk翻译完成"
+                        f"[翻译任务] 第 {i + 1}/{total_chunks} 个chunk翻译完成，耗时 {chunk_duration:.2f}秒"
                     )
+
+                    # 生成当前chunk的预览内容
+                    chunk_preview = []
+                    for line in chunk_result[
+                        -min(3, len(chunk_result)) :
+                    ]:  # 取最后3行作为预览
+                        if line.translated_text:
+                            chunk_preview.append(
+                                {
+                                    "index": line.index,
+                                    "original": line.text,
+                                    "translated": line.translated_text,
+                                }
+                            )
+
+                    # 计算预计剩余时间
+                    estimated_remaining_time = None
+                    if chunk_times:
+                        avg_time_per_chunk = sum(chunk_times) / len(
+                            chunk_times
+                        )
+                        remaining_chunks = total_chunks - (i + 1)
+                        if remaining_chunks > 0:
+                            estimated_remaining_time = (
+                                avg_time_per_chunk * remaining_chunks
+                            )
 
                     # 更新进度
                     task.update_chunk_progress(i + 1)
@@ -946,6 +1038,21 @@ class SubtitleTranslator:
                             task.progress,
                             "processing",
                             f"正在翻译第 {i + 1}/{total_chunks} 块",
+                            {
+                                "preview": chunk_preview,
+                                "estimated_remaining_time": estimated_remaining_time,
+                                "current_chunk": i + 1,
+                                "total_chunks": total_chunks,
+                                "avg_chunk_time": (
+                                    sum(chunk_times) / len(chunk_times)
+                                    if chunk_times
+                                    else None
+                                ),
+                                "model": chunk_metadata.get(
+                                    "model", "unknown"
+                                ),
+                                "usage": chunk_metadata.get("usage", {}),
+                            },
                         )
 
                 except asyncio.CancelledError:
@@ -966,6 +1073,8 @@ class SubtitleTranslator:
                 "result_path": self._generate_result_file(
                     task, translated_lines
                 ),
+                "total_usage": total_usage,
+                "chunk_usages": chunk_usages,  # 添加每个chunk的usage信息
             }
 
         except asyncio.CancelledError:

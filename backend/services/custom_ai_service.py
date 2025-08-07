@@ -748,6 +748,175 @@ class EnhancedCustomAPIService(AIService):
             logger.error(f"自定义API请求失败: {e}", exc_info=True)
             raise
 
+    async def chat_completion_with_usage(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        examples: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
+        """使用自定义API发送聊天完成请求并返回详细信息（包括token使用）"""
+        # 获取API端点URL
+        url = self._get_endpoint_url()
+
+        # 根据格式类型格式化请求
+        if self.format_type == FormatType.OPENAI:
+            payload = self._format_openai_request(
+                system_prompt, user_prompt, examples
+            )
+        elif self.format_type == FormatType.ANTHROPIC:
+            payload = self._format_anthropic_request(
+                system_prompt, user_prompt, examples
+            )
+        elif self.format_type == FormatType.TEXT_COMPLETION:
+            payload = self._format_text_completion_request(
+                system_prompt, user_prompt, examples
+            )
+        else:
+            # 默认使用OpenAI格式
+            payload = self._format_openai_request(
+                system_prompt, user_prompt, examples
+            )
+
+        # 计算超时时间（每1000个token增加5秒超时）
+        total_prompt_tokens = await self.get_token_count(
+            system_prompt + user_prompt
+        )
+        dynamic_timeout = self.timeout + (total_prompt_tokens / 1000) * 5
+
+        # 发送请求并获取原始响应数据
+        async with httpx.AsyncClient(timeout=dynamic_timeout) as client:
+            headers = self._get_headers()
+
+            logger.info(f"发送请求到: {url}")
+            logger.info(f"请求头: {headers}")
+            logger.info(
+                f"请求体: {json.dumps(payload, indent=2, ensure_ascii=False)}"
+            )
+
+            try:
+                response = await client.post(
+                    url, json=payload, headers=headers
+                )
+                response_text = response.text
+
+                logger.info(
+                    f"HTTP响应: {response.status_code} {response.reason_phrase}"
+                )
+                logger.info(f"响应内容: {response_text}")
+
+                if response.status_code >= 400:
+                    logger.error(f"API返回错误状态码: {response.status_code}")
+                    logger.error(f"错误响应内容: {response_text}")
+
+                response.raise_for_status()
+
+                # 解析JSON响应
+                try:
+                    response_data = response.json()
+                except json.JSONDecodeError as e:
+                    if response_text.strip():
+                        logger.warning(
+                            "响应不是JSON格式，尝试处理为纯文本响应"
+                        )
+                        response_data = {
+                            "choices": [
+                                {"message": {"content": response_text}}
+                            ]
+                        }
+                    else:
+                        logger.error(f"JSON解析错误: {e}, 响应为空")
+                        raise
+
+                # 解析响应内容
+                response_text = self._parse_response(response_data)
+
+                # 智能提取token使用信息
+                usage_data = self._extract_usage_info(
+                    response_data, system_prompt + user_prompt, response_text
+                )
+
+                return {
+                    "content": response_text,
+                    "usage": usage_data,
+                    "model": self.model,
+                }
+
+            except httpx.HTTPStatusError as e:
+                logger.error(f"HTTP请求失败: {e}")
+                raise
+            except Exception as e:
+                logger.error(f"自定义API请求失败: {e}", exc_info=True)
+                raise
+
+    def _extract_usage_info(
+        self, response_data: Dict[str, Any], prompt_text: str, content: str
+    ) -> Dict[str, Any]:
+        """智能提取token使用信息，优先使用API返回的真实数据"""
+        # 尝试从API响应中获取usage信息（支持多种可能的字段名），安全处理null值
+        usage_fields = ["usage", "token_usage", "tokens", "token_count"]
+        api_usage = None
+
+        for field in usage_fields:
+            if field in response_data:
+                field_value = response_data[field]
+                # 确保字段值不为null且为字典类型
+                if field_value is not None and isinstance(field_value, dict):
+                    api_usage = field_value
+                    break
+
+        if api_usage:
+            # 尝试提取token信息（支持多种可能的字段名）
+            prompt_tokens = (
+                api_usage.get("prompt_tokens")
+                or api_usage.get("input_tokens")
+                or api_usage.get("prompt")
+                or 0
+            )
+            completion_tokens = (
+                api_usage.get("completion_tokens")
+                or api_usage.get("output_tokens")
+                or api_usage.get("completion")
+                or 0
+            )
+            total_tokens = (
+                api_usage.get("total_tokens")
+                or api_usage.get("total")
+                or (
+                    prompt_tokens + completion_tokens
+                    if prompt_tokens and completion_tokens
+                    else 0
+                )
+            )
+
+            if any([prompt_tokens, completion_tokens, total_tokens]):
+                # 找到了API返回的usage信息，使用真实数据
+                logger.info(
+                    f"[Token统计] 使用API返回的真实token数据: {api_usage}"
+                )
+                return {
+                    "prompt_tokens": (
+                        int(prompt_tokens) if prompt_tokens else 0
+                    ),
+                    "completion_tokens": (
+                        int(completion_tokens) if completion_tokens else 0
+                    ),
+                    "total_tokens": int(total_tokens) if total_tokens else 0,
+                    "is_estimated": False,  # 标记为真实值
+                }
+
+        # 没有找到usage信息，使用估算
+        logger.warning(f"[Token统计] API响应中未找到usage信息，使用估算值")
+        prompt_tokens = len(prompt_text.split()) * 1.3  # 简单估算
+        completion_tokens = len(content.split()) * 1.3
+        total_tokens = int(prompt_tokens + completion_tokens)
+
+        return {
+            "prompt_tokens": int(prompt_tokens),
+            "completion_tokens": int(completion_tokens),
+            "total_tokens": total_tokens,
+            "is_estimated": True,  # 标记为估算值
+        }
+
     async def get_token_count(self, text: str) -> int:
         """估算文本的token数量
 

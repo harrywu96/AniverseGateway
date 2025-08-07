@@ -482,11 +482,14 @@ async def translate_video_subtitle(
             f"开始翻译视频字幕v2，视频ID: {request.video_id}, 轨道索引: {request.track_index}, 任务ID: {task_id}"
         )
 
-        # 定义简化的进度回调函数
+        # 定义增强的进度回调函数
         async def progress_callback(
-            progress: float, status: str, message: str
+            progress: float,
+            status: str,
+            message: str,
+            extra_data: Optional[Dict[str, Any]] = None,
         ):
-            """简化的进度回调函数，只负责进度更新"""
+            """增强的进度回调函数，支持更多参数"""
             try:
                 # 创建WebSocket消息
                 if status == "failed":
@@ -501,6 +504,47 @@ async def translate_video_subtitle(
                         "currentItem": message,
                         "estimatedTime": None,
                     }
+
+                    # 添加额外数据
+                    if extra_data:
+                        # 预览数据
+                        if "preview" in extra_data:
+                            websocket_message["preview"] = extra_data[
+                                "preview"
+                            ]
+
+                        # 预计剩余时间
+                        if (
+                            "estimated_remaining_time" in extra_data
+                            and extra_data["estimated_remaining_time"]
+                        ):
+                            websocket_message["estimatedTime"] = extra_data[
+                                "estimated_remaining_time"
+                            ]
+
+                        # 当前翻译模型
+                        if "model" in extra_data:
+                            websocket_message["model"] = extra_data["model"]
+
+                        # Token使用信息
+                        if "usage" in extra_data and extra_data["usage"]:
+                            usage_data = extra_data["usage"].copy()
+                            # 添加估算标记的友好显示
+                            if usage_data.get("is_estimated", False):
+                                usage_data["display_note"] = "估算值"
+                            else:
+                                usage_data["display_note"] = "真实值"
+                            websocket_message["usage"] = usage_data
+
+                        # 当前chunk信息
+                        if "current_chunk" in extra_data:
+                            websocket_message["current"] = extra_data[
+                                "current_chunk"
+                            ]
+                        if "total_chunks" in extra_data:
+                            websocket_message["total"] = extra_data[
+                                "total_chunks"
+                            ]
 
                 # 通过WebSocket广播进度更新
                 await manager.broadcast(task_id, websocket_message)
@@ -579,9 +623,9 @@ async def translate_video_subtitle(
                 # 解析原始字幕数据
                 original_subtitles = parse_original_subtitles(task.source_path)
 
-                # 执行翻译任务，获取翻译内容和结果路径
-                translated_content, _ = await translator.translate_task(
-                    task, progress_callback
+                # 执行翻译任务，获取翻译内容、结果路径和token使用信息
+                translated_content, result_path, total_usage, chunk_usages = (
+                    await translator.translate_task(task, progress_callback)
                 )
 
                 if translated_content:
@@ -590,17 +634,39 @@ async def translate_video_subtitle(
                         translated_content, original_subtitles
                     )
 
+                    # 为总计统计添加估算标记
+                    if total_usage:
+                        total_usage_display = total_usage.copy()
+                        # 检查是否包含估算值
+                        has_estimated = any(
+                            chunk_usage.get("is_estimated", False)
+                            for chunk_usage in chunk_usages
+                        )
+                        if has_estimated:
+                            total_usage_display["display_note"] = "包含估算值"
+                        else:
+                            total_usage_display["display_note"] = (
+                                "全部为真实值"
+                            )
+                    else:
+                        total_usage_display = {}
+
                     # 发送完成消息
                     websocket_message = {
                         "type": "completed",
                         "message": "翻译完成",
                         "results": translation_results,
+                        "totalUsage": total_usage_display,  # 添加总token使用统计
                     }
                     await manager.broadcast(task_id, websocket_message)
 
                     logger.info(
                         f"翻译任务 {task_id} 完成，共 {len(translation_results)} 条结果"
                     )
+                    if total_usage:
+                        logger.info(
+                            f"翻译任务 {task_id} Token使用统计: {total_usage}"
+                        )
                 else:
                     # 翻译失败
                     await progress_callback(
