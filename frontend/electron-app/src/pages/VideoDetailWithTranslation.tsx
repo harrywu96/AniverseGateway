@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../store/hooks';
+import { useTranslation } from '../hooks/useTranslation';
+import { useVideoDetail } from '../hooks/useVideoDetail';
 import {
   Box,
   Typography,
@@ -55,6 +57,7 @@ import {
 } from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
 import { VideoInfo } from '@aniversegateway/shared';
+import { TranslationRequest, TranslationResult } from '../services/translationService';
 import VideoPlayer, { VideoPlayerRef } from '../components/VideoPlayer';
 import ErrorSnackbar from '../components/ErrorSnackbar';
 import TranslationResultEditor from '../components/TranslationResultEditor';
@@ -85,87 +88,57 @@ const SUPPORTED_LANGUAGES = [
   { code: 'ru', name: 'Русский', flag: '🇷🇺' }
 ];
 
-// 翻译状态枚举
-enum TranslationStatus {
-  IDLE = 'idle',
-  CONFIGURING = 'configuring',
-  TRANSLATING = 'translating',
-  COMPLETED = 'completed',
-  ERROR = 'error',
-  CANCELLED = 'cancelled'
-}
 
-interface TranslationProgress {
-  current: number;
-  total: number;
-  percentage: number;
-  currentItem?: string;
-  estimatedTimeRemaining?: number;
-}
-
-interface TranslationResult {
-  original: string;
-  translated: string;
-  startTime: number;
-  endTime: number;
-  confidence?: number;
-}
 
 const VideoDetailWithTranslation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { state } = useAppContext();
-  
-  // 主要状态
-  const [video, setVideo] = useState<VideoInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState(0);
-  
+
+  // 使用自定义hooks管理状态
+  const videoDetail = useVideoDetail({
+    videoId: id,
+    autoLoad: true
+  });
+
   // 翻译配置状态
   const [sourceLanguage, setSourceLanguage] = useState('zh');
   const [targetLanguage, setTargetLanguage] = useState('en');
-  const [selectedTrackId, setSelectedTrackId] = useState<string>('');
+  const [activeStep, setActiveStep] = useState(0);
 
-  
-  // 翻译执行状态
-  const [translationStatus, setTranslationStatus] = useState<TranslationStatus>(TranslationStatus.IDLE);
-  const [translationProgress, setTranslationProgress] = useState<TranslationProgress>({
-    current: 0,
-    total: 0,
-    percentage: 0
+  // 使用翻译hook
+  const translation = useTranslation({
+    videoId: id,
+    targetLanguage,
+    onTranslationComplete: (results) => {
+      console.log('翻译完成，共', results.length, '条结果');
+      setActiveStep(2);
+      // 转换为字幕格式
+      const subtitles = convertToSubtitles(results);
+      setSubtitlesForPlayer(subtitles);
+    },
+    onTranslationError: (error) => {
+      console.error('翻译失败:', error);
+    }
   });
-  const [translationResults, setTranslationResults] = useState<TranslationResult[]>([]);
-  const [currentTime, setCurrentTime] = useState(0);
 
-  // 编辑模式状态
+  // UI状态
+  const [currentTime, setCurrentTime] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [editedCount, setEditedCount] = useState(0);
+  const [showSubtitles, setShowSubtitles] = useState(true);
+  const [subtitlesForPlayer, setSubtitlesForPlayer] = useState<UnifiedSubtitleItem[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [selectedModelId, setSelectedModelId] = useState('');
 
   // VideoPlayer引用
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
-  // 字幕显示状态
-  const [showSubtitles, setShowSubtitles] = useState(true);
-  const [subtitlesForPlayer, setSubtitlesForPlayer] = useState<UnifiedSubtitleItem[]>([]);
-
-  // 设置对话框状态
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [selectedProviderId, setSelectedProviderId] = useState('');
-  const [selectedModelId, setSelectedModelId] = useState('');
-  
   // 从Redux获取提供商数据
   const providers = useAppSelector(state => state.provider.providers);
   const activeProviders = providers.filter(p => p.is_active && p.is_configured);
-
-  // WebSocket连接引用
-  const wsRef = useRef<WebSocket | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  // 当前任务ID状态
-  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 
   // 初始化提供商选择
   useEffect(() => {
@@ -178,68 +151,22 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, [activeProviders, selectedProviderId]);
 
-  // 加载视频信息
+  // 当视频加载完成时，自动选择第一个字幕轨道
   useEffect(() => {
-    const loadVideo = async () => {
-      if (!id) return;
-      
-      setLoading(true);
-      try {
-        // 从全局状态查找视频
-        const foundVideo = state.videos.find(v => v.id === id);
-        if (foundVideo) {
-          setVideo(foundVideo);
-          
-          // 默认选择第一个字幕轨道
-          if (foundVideo.subtitleTracks && foundVideo.subtitleTracks.length > 0) {
-            setSelectedTrackId(foundVideo.subtitleTracks[0].id);
-          }
-        } else {
-          // 尝试从后端获取
-          const apiPort = '8000';
-          const response = await fetch(`http://localhost:${apiPort}/api/videos/${id}?include_subtitles=true`);
-          
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data) {
-              const videoData = {
-                id: result.data.id,
-                fileName: result.data.filename,
-                filePath: result.data.path,
-                format: result.data.format || '',
-                duration: result.data.duration || 0,
-                hasEmbeddedSubtitles: result.data.has_embedded_subtitle || false,
-                hasExternalSubtitles: result.data.external_subtitles?.length > 0 || false,
-                subtitleTracks: (result.data.subtitle_tracks || []).map((track: any) => ({
-                  id: track.index.toString(),
-                  language: track.language || 'unknown',
-                  title: track.title || '',
-                  format: track.codec || 'unknown',
-                  isExternal: false,
-                  backendTrackId: track.id,
-                  backendIndex: track.index
-                }))
-              };
-              
-              setVideo(videoData);
-              if (videoData.subtitleTracks.length > 0) {
-                setSelectedTrackId(videoData.subtitleTracks[0].id);
-              }
-            }
-          } else {
-            throw new Error('视频未找到');
-          }
-        }
-      } catch (err) {
-        console.error('加载视频失败:', err);
-        setError(`加载视频失败: ${err instanceof Error ? err.message : '未知错误'}`);
-      } finally {
-        setLoading(false);
+    if (videoDetail.video && videoDetail.hasSubtitleTracks && !videoDetail.selectedTrackId) {
+      const firstTrack = videoDetail.video.subtitleTracks?.[0];
+      if (firstTrack) {
+        videoDetail.selectTrack(firstTrack.id);
       }
-    };
+    }
+  }, [videoDetail.video, videoDetail.hasSubtitleTracks, videoDetail.selectedTrackId]);
 
-    loadVideo();
-  }, [id, state.videos]);
+  // 当视频和目标语言都设置后，尝试加载保存的翻译结果
+  useEffect(() => {
+    if (videoDetail.video && targetLanguage && translation.status === 'idle') {
+      translation.loadTranslation(videoDetail.video.id, targetLanguage);
+    }
+  }, [videoDetail.video, targetLanguage, translation.status]);
 
   // 转换翻译结果为字幕格式
   const convertToSubtitles = useCallback((results: TranslationResult[]): UnifiedSubtitleItem[] => {
@@ -257,82 +184,9 @@ const VideoDetailWithTranslation: React.FC = () => {
     }));
   }, []);
 
-  // 加载保存的翻译结果
-  const loadSavedTranslation = useCallback(async () => {
-    if (!video || !targetLanguage) {
-      console.log('加载翻译结果跳过:', { video: !!video, targetLanguage });
-      return;
-    }
-
-    console.log('尝试加载保存的翻译结果:', { videoId: video.id, targetLanguage });
-
-    try {
-      const apiPort = '8000';
-      const response = await fetch(`http://localhost:${apiPort}/api/translate/load`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          targetLanguage: targetLanguage
-        })
-      });
-
-      console.log('加载翻译结果响应状态:', response.status);
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('加载翻译结果响应:', result);
-
-        if (result.success && result.data?.results) {
-          // 检查是否为真实翻译结果（通过isRealTranslation字段判断）
-          const isRealTranslation = result.data.isRealTranslation !== false; // 默认为true，除非明确标记为false
-
-          if (isRealTranslation) {
-            console.log('成功加载保存的真实翻译结果:', result.data.results.length, '条');
-            setTranslationResults(result.data.results);
-            setTranslationStatus(TranslationStatus.COMPLETED);
-            setActiveStep(2);
-
-            // 转换为字幕格式
-            const subtitles = convertToSubtitles(result.data.results);
-            setSubtitlesForPlayer(subtitles);
-          } else {
-            console.log('跳过模拟翻译结果，等待真实翻译');
-          }
-        } else {
-          console.log('没有找到保存的翻译结果');
-        }
-      } else {
-        console.log('加载翻译结果请求失败:', response.status);
-      }
-    } catch (error) {
-      console.log('加载翻译结果出错:', error);
-    }
-  }, [video, targetLanguage, convertToSubtitles]);
-
-  // 当视频和目标语言都设置后，尝试加载保存的翻译结果
-  useEffect(() => {
-    if (video && targetLanguage && translationStatus === TranslationStatus.IDLE) {
-      loadSavedTranslation();
-    }
-  }, [video, targetLanguage, translationStatus, loadSavedTranslation]);
-
-  // 可用字幕轨道选项
-  const trackOptions = useMemo(() => {
-    if (!video?.subtitleTracks) return [];
-    return video.subtitleTracks.map(track => ({
-      value: track.id,
-      label: `${track.language || '未知语言'} - ${track.title || track.format}`,
-      track: track
-    }));
-  }, [video?.subtitleTracks]);
-
-  // 当前字幕轨道
-  const selectedTrack = useMemo(() => {
-    return video?.subtitleTracks?.find(track => track.id === selectedTrackId) || null;
-  }, [video?.subtitleTracks, selectedTrackId]);
+  // 使用videoDetail hook的数据
+  const trackOptions = videoDetail.trackOptions;
+  const selectedTrack = videoDetail.selectedTrack;
 
   // 当前选中的提供商和模型
   const selectedProvider = useMemo(() => {
@@ -349,8 +203,8 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 翻译配置是否完整
   const isConfigComplete = useMemo(() => {
-    return sourceLanguage && targetLanguage && selectedTrackId && selectedProvider && selectedModel;
-  }, [sourceLanguage, targetLanguage, selectedTrackId, selectedProvider, selectedModel]);
+    return sourceLanguage && targetLanguage && videoDetail.selectedTrackId && selectedProvider && selectedModel;
+  }, [sourceLanguage, targetLanguage, videoDetail.selectedTrackId, selectedProvider, selectedModel]);
 
   // 处理返回
   const handleBack = useCallback(() => {
@@ -368,222 +222,61 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 开始翻译
   const startTranslation = useCallback(async () => {
-    if (!video || !selectedTrack || !isConfigComplete || !selectedProvider || !selectedModel) {
-      setError('配置不完整，无法开始翻译');
+    if (!videoDetail.video || !selectedTrack || !isConfigComplete || !selectedProvider || !selectedModel) {
+      console.error('配置不完整，无法开始翻译');
       return;
     }
 
-    try {
-      setTranslationStatus(TranslationStatus.TRANSLATING);
-      setActiveStep(1);
-      setError(null);
-      
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
+    setActiveStep(1);
 
-      // 导入新的API函数
-      const { translateVideoSubtitle } = await import('../services/api');
-
-      // 构建提供商配置
-      const providerConfig = {
+    // 构建翻译请求
+    const requestData: TranslationRequest = {
+      video_id: videoDetail.video.id,
+      track_index: parseInt(selectedTrack.id),
+      source_language: sourceLanguage,
+      target_language: targetLanguage,
+      style: 'natural',
+      provider_config: {
         id: selectedProvider.id,
         apiKey: selectedProvider.apiKey,
         apiHost: selectedProvider.apiHost,
-      };
+      },
+      model_id: selectedModel.id,
+      chunk_size: 30,
+      context_window: 3,
+      context_preservation: true,
+      preserve_formatting: true,
+    };
 
-      // 调用新的翻译API
-      const requestData = {
-        video_id: video.id,
-        track_index: parseInt(selectedTrack.id),
-        source_language: sourceLanguage,
-        target_language: targetLanguage,
-        style: 'natural', // 可以根据需要调整
-        provider_config: providerConfig,
-        model_id: selectedModel.id,
-        chunk_size: 30,
-        context_window: 3,
-        context_preservation: true,
-        preserve_formatting: true,
-      };
-
-      console.log('准备发送的翻译请求数据:', requestData);
-      const result = await translateVideoSubtitle(requestData);
-      
-      if (!result.success) {
-        throw new Error(result.message || '翻译请求失败');
-      }
-
-      const taskId = result.data.task_id;
-
-      // 设置当前任务ID
-      setCurrentTaskId(taskId);
-
-      // 建立WebSocket连接监听进度
-      const apiPort = '8000';
-      const ws = new WebSocket(`ws://localhost:${apiPort}/api/translate/ws/${taskId}`);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log('翻译WebSocket连接已建立');
-      };
-
-      ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
-        console.log('WebSocket收到消息:', data);
-
-        if (data.type === 'progress') {
-          setTranslationProgress({
-            current: data.current || 0,
-            total: data.total || 0,
-            percentage: data.percentage || 0,
-            currentItem: data.currentItem,
-            estimatedTimeRemaining: data.estimatedTime
-          });
-        } else if (data.type === 'completed') {
-          console.log('翻译完成消息详情:', {
-            type: data.type,
-            message: data.message,
-            results: data.results,
-            resultsLength: data.results?.length || 0,
-            resultsType: typeof data.results,
-            firstResult: data.results?.[0]
-          });
-
-          // 真实翻译完成，先清空历史数据，再设置新的翻译结果
-          await clearPreviousTranslationData();
-
-          setTranslationStatus(TranslationStatus.COMPLETED);
-          setTranslationResults(data.results || []);
-          // 转换为字幕格式
-          if (data.results && Array.isArray(data.results)) {
-            const subtitles = convertToSubtitles(data.results);
-            setSubtitlesForPlayer(subtitles);
-            // 保存新的翻译结果
-            saveTranslationResults(data.results, false, true); // isRealTranslation = true
-          }
-          setActiveStep(2);
-          // 清空当前任务ID
-          setCurrentTaskId(null);
-          console.log('设置翻译结果，共', data.results?.length || 0, '条结果');
-        } else if (data.type === 'error') {
-          setTranslationStatus(TranslationStatus.ERROR);
-          setError(`翻译失败: ${data.message || '未知错误'}`);
-          // 清空当前任务ID
-          setCurrentTaskId(null);
-        } else if (data.type === 'cancelled') {
-          console.log('收到后端取消确认:', data.message);
-          setTranslationStatus(TranslationStatus.CANCELLED);
-          setCurrentTaskId(null);
-        }
-      };
-
-      ws.onerror = (event) => {
-        console.error('翻译WebSocket错误:', event);
-        setTranslationStatus(TranslationStatus.ERROR);
-        setError('WebSocket连接错误');
-      };
-
-      ws.onclose = () => {
-        console.log('翻译WebSocket连接已关闭');
-        wsRef.current = null;
-      };
-
-    } catch (err) {
-      // 清空当前任务ID
-      setCurrentTaskId(null);
-
-      if (abortControllerRef.current?.signal.aborted) {
-        setTranslationStatus(TranslationStatus.CANCELLED);
-      } else {
-        setTranslationStatus(TranslationStatus.ERROR);
-        setError(`翻译失败: ${err instanceof Error ? err.message : '未知错误'}`);
-      }
-    }
-  }, [video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, selectedProvider, selectedModel]);
+    console.log('开始翻译，请求数据:', requestData);
+    await translation.startTranslation(requestData);
+  }, [videoDetail.video, selectedTrack, isConfigComplete, sourceLanguage, targetLanguage, selectedProvider, selectedModel, translation]);
 
   // 停止翻译
   const stopTranslation = useCallback(async () => {
-    try {
-      // 如果有当前任务ID，调用后端取消API
-      if (currentTaskId) {
-        const apiPort = '8000';
-        console.log('发送取消请求到后端，任务ID:', currentTaskId);
-
-        const response = await fetch(`http://localhost:${apiPort}/api/translate/cancel/${currentTaskId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('取消请求成功:', result);
-        } else {
-          console.error('取消请求失败:', response.status);
-        }
-      }
-    } catch (error) {
-      console.error('发送取消请求失败:', error);
-    }
-
-    // 执行前端清理逻辑
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-
-    // 清空当前任务ID
-    setCurrentTaskId(null);
-
-    // 设置翻译状态为已取消
-    setTranslationStatus(TranslationStatus.CANCELLED);
-  }, [currentTaskId]);
+    await translation.stopTranslation();
+  }, [translation]);
 
   // 保存翻译结果
   const saveTranslation = useCallback(async () => {
-    if (!video || !translationResults.length) {
-      setError('没有翻译结果可保存');
+    if (!videoDetail.video || !translation.results.length) {
+      console.error('没有翻译结果可保存');
       return;
     }
 
     try {
-      setLoading(true);
-      const apiPort = '8000';
-      
-      const response = await fetch(`http://localhost:${apiPort}/api/translation/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          results: translationResults,
-          targetLanguage,
-          fileName: `${video.fileName}_${targetLanguage}`
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`保存失败: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setActiveStep(3);
-        setError('翻译文件保存成功！');
-      } else {
-        throw new Error(result.message || '保存失败');
-      }
-    } catch (err) {
-      setError(`保存失败: ${err instanceof Error ? err.message : '未知错误'}`);
-    } finally {
-      setLoading(false);
+      await translation.saveTranslation(
+        videoDetail.video.id,
+        translation.results,
+        targetLanguage,
+        `${videoDetail.video.fileName}_${targetLanguage}`
+      );
+      setActiveStep(3);
+      console.log('翻译文件保存成功！');
+    } catch (error) {
+      console.error('保存失败:', error);
     }
-  }, [video, translationResults, targetLanguage]);
+  }, [videoDetail.video, translation, targetLanguage]);
 
   // 处理时间跳转
   const handleTimeJump = useCallback((time: number) => {
@@ -592,98 +285,25 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, []);
 
-  // 清空之前的翻译数据
-  const clearPreviousTranslationData = useCallback(async () => {
-    if (!video || !targetLanguage) return;
-
-    try {
-      // 清空服务器端数据
-      const apiPort = '8000';
-      const response = await fetch(`http://localhost:${apiPort}/api/translate/clear`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          targetLanguage: targetLanguage
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          console.log('服务器端历史翻译数据已清空');
-        }
-      }
-
-      // 清空localStorage中的编辑数据
-      const storageKey = `edited_subtitles_${video.id}`;
-      localStorage.removeItem(storageKey);
-      console.log('localStorage中的编辑数据已清空');
-
-    } catch (error) {
-      console.error('清空历史翻译数据失败:', error);
-    }
-  }, [video, targetLanguage]);
-
   // 删除翻译结果
   const deleteTranslationResults = useCallback(async (): Promise<boolean> => {
-    if (!video || !targetLanguage) return false;
+    if (!videoDetail.video || !targetLanguage) return false;
 
-    try {
-      const apiPort = '8000';
-      const response = await fetch(`http://localhost:${apiPort}/api/translate/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          targetLanguage: targetLanguage
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          console.log('翻译结果已删除');
-
-          // 清空前端状态
-          setTranslationResults([]);
-          setTranslationStatus(TranslationStatus.IDLE);
-          setActiveStep(1);
-          setSubtitlesForPlayer([]);
-
-          // 清空localStorage中的编辑数据
-          const storageKey = `edited_subtitles_${video.id}`;
-          localStorage.removeItem(storageKey);
-
-          setError('翻译结果已删除');
-
-          // 3秒后清除消息
-          setTimeout(() => {
-            setError(null);
-          }, 3000);
-
-          return true;
-        } else {
-          throw new Error(result.message || '删除失败');
-        }
-      } else {
-        throw new Error(`删除请求失败: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('删除翻译结果失败:', error);
-      setError(`删除失败: ${error instanceof Error ? error.message : '未知错误'}`);
-      return false;
+    const success = await translation.deleteTranslation(videoDetail.video.id, targetLanguage);
+    if (success) {
+      setActiveStep(1);
+      setSubtitlesForPlayer([]);
+      // 清空localStorage中的编辑数据
+      const storageKey = `edited_subtitles_${videoDetail.video.id}`;
+      localStorage.removeItem(storageKey);
     }
-  }, [video, targetLanguage]);
+    return success;
+  }, [videoDetail.video, targetLanguage, translation]);
 
   // 保存翻译结果
   const saveTranslationResults = useCallback(async (results: TranslationResult[], edited: boolean = false, isRealTranslation: boolean = true) => {
-    if (!video || !targetLanguage || !results.length) {
-      console.log('保存翻译结果跳过:', { video: !!video, targetLanguage, resultsLength: results.length });
+    if (!videoDetail.video || !targetLanguage || !results.length) {
+      console.log('保存翻译结果跳过:', { video: !!videoDetail.video, targetLanguage, resultsLength: results.length });
       return;
     }
 
@@ -701,10 +321,10 @@ const VideoDetailWithTranslation: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          videoId: video.id,
+          videoId: videoDetail.video.id,
           results: results,
           targetLanguage: targetLanguage,
-          fileName: video.fileName || 'unknown',
+          fileName: videoDetail.video.fileName || 'unknown',
           edited: edited,
           isRealTranslation: isRealTranslation
         })
@@ -723,20 +343,19 @@ const VideoDetailWithTranslation: React.FC = () => {
     } catch (error) {
       console.error('保存翻译结果出错:', error);
     }
-  }, [video, targetLanguage]);
+  }, [videoDetail.video, targetLanguage]);
 
   // 处理测试翻译结果
   const handleTestResults = useCallback((results: any[]) => {
     console.log('收到测试翻译结果:', results);
 
     // 检查是否已有真实的翻译结果，如果有则不覆盖
-    if (translationResults.length > 0 && translationStatus === TranslationStatus.COMPLETED) {
+    if (translation.hasResults && translation.isCompleted) {
       console.log('已存在真实翻译结果，跳过模拟翻译结果覆盖');
       return;
     }
 
-    setTranslationResults(results);
-    setTranslationStatus(TranslationStatus.COMPLETED);
+    // 对于测试结果，我们不使用translation hook，而是直接设置UI状态
     setActiveStep(2);
 
     // 转换为字幕格式
@@ -745,7 +364,7 @@ const VideoDetailWithTranslation: React.FC = () => {
 
     // 模拟翻译结果不保存到服务器，避免污染真实翻译数据
     console.log('模拟翻译结果仅用于测试，不保存到服务器');
-  }, [convertToSubtitles, translationResults.length, translationStatus]);
+  }, [convertToSubtitles, translation.hasResults, translation.isCompleted]);
 
 
 
@@ -759,60 +378,32 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 处理编辑结果保存
   const handleEditedResultsSave = useCallback(async (editedResults: any[]) => {
-    if (!video) {
-      setError('视频信息不存在');
+    if (!videoDetail.video) {
+      console.error('视频信息不存在');
       return;
     }
 
     try {
-      setLoading(true);
-      const apiPort = '8000';
+      await translation.saveTranslation(
+        videoDetail.video.id,
+        editedResults,
+        targetLanguage,
+        `${videoDetail.video.fileName}_${targetLanguage}_edited`,
+        true // edited = true
+      );
 
-      const response = await fetch(`http://localhost:${apiPort}/api/translate/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: video.id,
-          results: editedResults,
-          targetLanguage,
-          fileName: `${video.fileName}_${targetLanguage}_edited`,
-          edited: true
-        })
-      });
+      setHasUnsavedChanges(false);
+      setEditedCount(editedResults.filter(r => r.edited).length);
 
-      if (!response.ok) {
-        throw new Error(`保存失败: ${response.status}`);
-      }
+      // 更新字幕显示
+      const subtitles = convertToSubtitles(editedResults);
+      setSubtitlesForPlayer(subtitles);
 
-      const result = await response.json();
-
-      if (result.success) {
-        // 更新翻译结果
-        setTranslationResults(editedResults);
-        setHasUnsavedChanges(false);
-        setEditedCount(editedResults.filter(r => r.edited).length);
-
-        // 更新字幕显示
-        const subtitles = convertToSubtitles(editedResults);
-        setSubtitlesForPlayer(subtitles);
-
-        setError('编辑结果保存成功！');
-
-        // 3秒后清除成功消息
-        setTimeout(() => {
-          setError(null);
-        }, 3000);
-      } else {
-        throw new Error(result.message || '保存失败');
-      }
-    } catch (err) {
-      setError(`保存失败: ${err instanceof Error ? err.message : '未知错误'}`);
-    } finally {
-      setLoading(false);
+      console.log('编辑结果保存成功！');
+    } catch (error) {
+      console.error('保存失败:', error);
     }
-  }, [video, targetLanguage]);
+  }, [videoDetail.video, targetLanguage, translation, convertToSubtitles]);
 
   // 切换编辑模式
   const toggleEditMode = useCallback(() => {
@@ -821,8 +412,8 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 导出编辑后的字幕
   const exportEditedSubtitles = useCallback((resultsToExport: any[]) => {
-    if (!video || !resultsToExport.length) {
-      setError('没有可导出的字幕数据');
+    if (!videoDetail.video || !resultsToExport.length) {
+      console.error('没有可导出的字幕数据');
       return;
     }
 
@@ -841,7 +432,7 @@ const VideoDetailWithTranslation: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${video.fileName}_${targetLanguage}_edited.srt`;
+      link.download = `${videoDetail.video.fileName}_${targetLanguage}_edited.srt`;
 
       // 触发下载
       document.body.appendChild(link);
@@ -849,11 +440,11 @@ const VideoDetailWithTranslation: React.FC = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      setError('字幕文件导出成功！');
+      console.log('字幕文件导出成功！');
     } catch (err) {
-      setError(`导出失败: ${err instanceof Error ? err.message : '未知错误'}`);
+      console.error('导出失败:', err);
     }
-  }, [video, targetLanguage]);
+  }, [videoDetail.video, targetLanguage]);
 
   // 处理编辑结果保存（扩展版本，支持导出）
   const handleEditedResultsSaveAndExport = useCallback(async (editedResults: any[], shouldExport: boolean = false) => {
@@ -881,22 +472,22 @@ const VideoDetailWithTranslation: React.FC = () => {
 
   // 虚拟列表状态
   const [displayedResults, setDisplayedResults] = useState<any[]>([]);
-  const [loadedCount, setLoadedCount] = useState(15);
+  const [loadedCount, setLoadedCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 初始化显示的结果
   useEffect(() => {
-    console.log('虚拟列表初始化，translationResults长度:', translationResults.length);
-    if (translationResults.length > 0) {
-      const initialResults = translationResults.slice(0, Math.min(15, translationResults.length));
+    console.log('虚拟列表初始化，translation.results长度:', translation.results.length);
+    if (translation.results.length > 0) {
+      const initialResults = translation.results.slice(0, Math.min(15, translation.results.length));
       console.log('设置初始显示结果，数量:', initialResults.length, '第一条:', initialResults[0]);
       setDisplayedResults(initialResults);
-      setLoadedCount(Math.min(15, translationResults.length));
+      setLoadedCount(Math.min(15, translation.results.length));
     } else {
       setDisplayedResults([]);
       setLoadedCount(0);
     }
-  }, [translationResults]);
+  }, [translation.results]);
 
   // 调试displayedResults
   useEffect(() => {
@@ -915,14 +506,14 @@ const VideoDetailWithTranslation: React.FC = () => {
     // 检查是否滚动到底部（留一些缓冲区）
     if (scrollHeight - scrollTop <= clientHeight + 50) {
       // 如果还有更多数据可以加载
-      if (loadedCount < translationResults.length) {
-        const nextCount = Math.min(loadedCount + 15, translationResults.length);
-        setDisplayedResults(translationResults.slice(0, nextCount));
+      if (loadedCount < translation.results.length) {
+        const nextCount = Math.min(loadedCount + 15, translation.results.length);
+        setDisplayedResults(translation.results.slice(0, nextCount));
         setLoadedCount(nextCount);
-        console.log(`虚拟列表加载更多: ${loadedCount} -> ${nextCount} / ${translationResults.length}`);
+        console.log(`虚拟列表加载更多: ${loadedCount} -> ${nextCount} / ${translation.results.length}`);
       }
     }
-  }, [loadedCount, translationResults]);
+  }, [loadedCount, translation.results]);
 
   // 格式化预计剩余时间
   const formatEstimatedTime = useCallback((seconds: number): string => {
@@ -935,19 +526,9 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, []);
 
-  // 清理连接
-  useEffect(() => {
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
 
-  if (loading && !video) {
+
+  if (videoDetail.isLoading && !videoDetail.video) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ textAlign: 'center' }}>
@@ -960,13 +541,13 @@ const VideoDetailWithTranslation: React.FC = () => {
     );
   }
 
-  if (!video) {
+  if (!videoDetail.video) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ textAlign: 'center' }}>
           <ErrorIcon sx={{ fontSize: 64, color: theme.palette.error.main, mb: 2 }} />
           <Typography variant="h6" color="error">
-            {error || '未找到视频信息'}
+            {videoDetail.error || translation.error || '未找到视频信息'}
           </Typography>
           <Button
             variant="outlined"
@@ -1015,7 +596,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                 字幕翻译
               </Typography>
               <Typography variant="h6" color="text.secondary">
-                {video.fileName}
+                {videoDetail.video.fileName}
               </Typography>
             </Box>
             <Tooltip title="翻译设置">
@@ -1040,7 +621,7 @@ const VideoDetailWithTranslation: React.FC = () => {
           <Card sx={{ mb: 3 }}>
             <VideoPlayer
               ref={videoPlayerRef}
-              src={video.filePath}
+              src={videoDetail.video.filePath}
               onTimeUpdate={setCurrentTime}
               poster=""
               autoPlay={false}
@@ -1055,7 +636,7 @@ const VideoDetailWithTranslation: React.FC = () => {
           </Card>
 
           {/* 翻译结果编辑器 */}
-          {translationResults.length > 0 && (
+          {translation.hasResults && (
             <Box>
                 {/* 编辑模式切换按钮 */}
                 <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1066,9 +647,9 @@ const VideoDetailWithTranslation: React.FC = () => {
                         variant="outlined"
                         color="secondary"
                         startIcon={<DownloadIcon />}
-                        onClick={() => exportEditedSubtitles(translationResults)}
+                        onClick={() => exportEditedSubtitles(translation.results)}
                         size="small"
-                        disabled={translationResults.length === 0}
+                        disabled={!translation.hasResults}
                       >
                         导出字幕
                       </Button>
@@ -1101,9 +682,9 @@ const VideoDetailWithTranslation: React.FC = () => {
 
                 {/* 翻译结果编辑器组件 */}
                 <TranslationResultEditor
-                  results={translationResults}
+                  results={translation.results}
                   currentTime={currentTime}
-                  videoId={video.id}
+                  videoId={videoDetail.video.id}
                   readOnly={!isEditMode}
                   showPreview={!isEditMode}
                   maxHeight={500}
@@ -1237,8 +818,8 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
                                     <InputLabel>字幕轨道</InputLabel>
                                     <Select
-                                      value={selectedTrackId}
-                                      onChange={(e) => setSelectedTrackId(e.target.value)}
+                                      value={videoDetail.selectedTrackId}
+                                      onChange={(e) => videoDetail.selectTrack(e.target.value)}
                                       label="字幕轨道"
                                       sx={{
                                         borderRadius: 2,
@@ -1332,7 +913,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   variant="contained"
                                   startIcon={<PlayIcon />}
                                   onClick={startTranslation}
-                                  disabled={!isConfigComplete || translationStatus === TranslationStatus.TRANSLATING}
+                                  disabled={!isConfigComplete || translation.isTranslating}
                                   sx={{
                                     ...createModernButtonStyles(theme, 'primary'),
                                     flex: 1,
@@ -1348,7 +929,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                           {/* 步骤1：执行翻译 */}
                           {index === 1 && (
                             <Box>
-                              {translationStatus === TranslationStatus.TRANSLATING && (
+                              {translation.isTranslating && (
                                 <Box
                                   sx={{
                                     ...createModernContainerStyles(theme, 2, 'info'),
@@ -1361,13 +942,13 @@ const VideoDetailWithTranslation: React.FC = () => {
                                       正在翻译中...
                                     </Typography>
                                   </Box>
-                                  
-                                  <LinearProgress 
-                                    variant="determinate" 
-                                    value={translationProgress.percentage} 
-                                    sx={{ 
-                                      mb: 2, 
-                                      height: 8, 
+
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={translation.progress.percentage}
+                                    sx={{
+                                      mb: 2,
+                                      height: 8,
                                       borderRadius: 2,
                                       backgroundColor: alpha(theme.palette.info.main, 0.1),
                                       '& .MuiLinearProgress-bar': {
@@ -1375,25 +956,25 @@ const VideoDetailWithTranslation: React.FC = () => {
                                       }
                                     }}
                                   />
-                                  
+
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      进度: {translationProgress.current} / {translationProgress.total}
+                                      进度: {translation.progress.current} / {translation.progress.total}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      {Math.round(translationProgress.percentage)}%
+                                      {Math.round(translation.progress.percentage)}%
                                     </Typography>
                                   </Box>
-                                  
-                                  {translationProgress.currentItem && (
+
+                                  {translation.progress.currentItem && (
                                     <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                                      当前处理: {translationProgress.currentItem}
+                                      当前处理: {translation.progress.currentItem}
                                     </Typography>
                                   )}
-                                  
-                                  {translationProgress.estimatedTimeRemaining && (
+
+                                  {translation.progress.estimatedTimeRemaining && (
                                     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      预计剩余时间: {formatEstimatedTime(translationProgress.estimatedTimeRemaining)}
+                                      预计剩余时间: {formatEstimatedTime(translation.progress.estimatedTimeRemaining)}
                                     </Typography>
                                   )}
                                   
@@ -1418,38 +999,38 @@ const VideoDetailWithTranslation: React.FC = () => {
                                 </Box>
                               )}
                               
-                              {translationStatus === TranslationStatus.COMPLETED && (
-                                <Alert 
-                                  severity="success" 
-                                  sx={{ 
+                              {translation.isCompleted && (
+                                <Alert
+                                  severity="success"
+                                  sx={{
                                     ...createModernAlertStyles(theme, 'success'),
                                     mb: 2
                                   }}
                                 >
                                   <AlertTitle sx={{ fontWeight: 600 }}>翻译完成</AlertTitle>
-                                  成功翻译了 {translationResults.length} 条字幕
+                                  成功翻译了 {translation.results.length} 条字幕
                                 </Alert>
                               )}
                               
-                              {translationStatus === TranslationStatus.ERROR && (
-                                <Alert 
-                                  severity="error" 
-                                  sx={{ 
+                              {translation.hasError && (
+                                <Alert
+                                  severity="error"
+                                  sx={{
                                     ...createModernAlertStyles(theme, 'error'),
                                     mb: 2
                                   }}
                                 >
                                   <AlertTitle sx={{ fontWeight: 600 }}>翻译失败</AlertTitle>
-                                  {error}
+                                  {translation.error}
                                 </Alert>
                               )}
                             </Box>
                           )}
 
                           {/* 步骤2：预览结果 */}
-                          {index === 2 && translationResults.length > 0 && (
+                          {index === 2 && translation.results.length > 0 && (
                             <Box>
-                              <Alert 
+                              <Alert
                                 severity="info" 
                                 sx={{ 
                                   ...createModernAlertStyles(theme, 'info'),
@@ -1465,7 +1046,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   variant="contained"
                                   startIcon={<SaveIcon />}
                                   onClick={saveTranslation}
-                                  disabled={loading}
+                                  disabled={translation.isLoading}
                                   sx={{
                                     ...createModernButtonStyles(theme, 'primary'),
                                     background: `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`
@@ -1479,14 +1060,14 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   onClick={() => {
                                     // 触发下载
                                     const blob = new Blob([
-                                      translationResults.map((result, index) => 
+                                      translation.results.map((result, index) =>
                                         `${index + 1}\n${formatTime(result.startTime)} --> ${formatTime(result.endTime)}\n${result.translated}\n`
                                       ).join('\n')
                                     ], { type: 'text/plain' });
                                     const url = URL.createObjectURL(blob);
                                     const a = document.createElement('a');
                                     a.href = url;
-                                    a.download = `${video.fileName}_${targetLanguage}.srt`;
+                                    a.download = `${videoDetail.video?.fileName || 'video'}_${targetLanguage}.srt`;
                                     a.click();
                                     URL.revokeObjectURL(url);
                                   }}
@@ -1520,9 +1101,8 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   startIcon={<RefreshIcon />}
                                   onClick={() => {
                                     setActiveStep(0);
-                                    setTranslationStatus(TranslationStatus.IDLE);
-                                    setTranslationResults([]);
-                                    setTranslationProgress({ current: 0, total: 0, percentage: 0 });
+                                    translation.resetTranslation();
+                                    setSubtitlesForPlayer([]);
                                   }}
                                   sx={{ 
                                     ...createModernButtonStyles(theme, 'outlined')
@@ -1621,7 +1201,7 @@ const VideoDetailWithTranslation: React.FC = () => {
       </Dialog>
 
       {/* 浮动操作按钮 */}
-      {translationStatus === TranslationStatus.IDLE && (
+      {translation.status === 'idle' && (
         <Fab
           color="primary"
           sx={{
@@ -1639,9 +1219,12 @@ const VideoDetailWithTranslation: React.FC = () => {
 
       {/* 错误提示 */}
       <ErrorSnackbar
-        message={error}
-        severity={error?.includes('成功') ? 'success' : 'error'}
-        onClose={() => setError(null)}
+        message={translation.error || videoDetail.error}
+        severity={translation.error?.includes('成功') ? 'success' : 'error'}
+        onClose={() => {
+          translation.clearError();
+          videoDetail.clearError();
+        }}
       />
     </Container>
   );

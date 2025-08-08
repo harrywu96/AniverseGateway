@@ -22,6 +22,9 @@ export interface SubtitleTrack {
   format: string;
   isExternal: boolean;
   path?: string;
+  // 后端字段映射
+  backendTrackId?: string;
+  backendIndex?: number;
 }
 
 /**
