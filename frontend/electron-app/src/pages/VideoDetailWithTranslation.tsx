@@ -56,6 +56,10 @@ import {
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useAppContext } from '../context/AppContext';
+import TranslationHeader from '../components/translation/TranslationHeader';
+import TranslationConfigPanel from '../components/translation/TranslationConfigPanel';
+import TranslationProgressPanel from '../components/translation/TranslationProgressPanel';
+import TranslationResultsPanel from '../components/translation/TranslationResultsPanel';
 import { VideoInfo } from '@aniversegateway/shared';
 import { TranslationRequest, TranslationResult } from '../services/translationService';
 import VideoPlayer, { VideoPlayerRef } from '../components/VideoPlayer';
@@ -87,7 +91,6 @@ const SUPPORTED_LANGUAGES = [
   { code: 'pt', name: 'Português', flag: '🇵🇹' },
   { code: 'ru', name: 'Русский', flag: '🇷🇺' }
 ];
-
 
 
 const VideoDetailWithTranslation: React.FC = () => {
@@ -202,8 +205,8 @@ const VideoDetailWithTranslation: React.FC = () => {
   }, [availableModels, selectedModelId]);
 
   // 翻译配置是否完整
-  const isConfigComplete = useMemo(() => {
-    return sourceLanguage && targetLanguage && videoDetail.selectedTrackId && selectedProvider && selectedModel;
+  const isConfigComplete = useMemo<boolean>(() => {
+    return Boolean(sourceLanguage && targetLanguage && videoDetail.selectedTrackId && selectedProvider && selectedModel);
   }, [sourceLanguage, targetLanguage, videoDetail.selectedTrackId, selectedProvider, selectedModel]);
 
   // 处理返回
@@ -300,76 +303,6 @@ const VideoDetailWithTranslation: React.FC = () => {
     return success;
   }, [videoDetail.video, targetLanguage, translation]);
 
-  // 保存翻译结果
-  const saveTranslationResults = useCallback(async (results: TranslationResult[], edited: boolean = false, isRealTranslation: boolean = true) => {
-    if (!videoDetail.video || !targetLanguage || !results.length) {
-      console.log('保存翻译结果跳过:', { video: !!videoDetail.video, targetLanguage, resultsLength: results.length });
-      return;
-    }
-
-    // 如果是模拟翻译，不保存到服务器
-    if (!isRealTranslation) {
-      console.log('模拟翻译结果不保存到服务器，避免污染真实翻译数据');
-      return;
-    }
-
-    try {
-      const apiPort = '8000';
-      const response = await fetch(`http://localhost:${apiPort}/api/translate/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: videoDetail.video.id,
-          results: results,
-          targetLanguage: targetLanguage,
-          fileName: videoDetail.video.fileName || 'unknown',
-          edited: edited,
-          isRealTranslation: isRealTranslation
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          console.log('真实翻译结果保存成功:', result.data);
-        } else {
-          console.error('翻译结果保存失败:', result.message);
-        }
-      } else {
-        console.error('翻译结果保存请求失败:', response.status);
-      }
-    } catch (error) {
-      console.error('保存翻译结果出错:', error);
-    }
-  }, [videoDetail.video, targetLanguage]);
-
-  // 处理测试翻译结果
-  const handleTestResults = useCallback((results: any[]) => {
-    console.log('收到测试翻译结果:', results);
-
-    // 检查是否已有真实的翻译结果，如果有则不覆盖
-    if (translation.hasResults && translation.isCompleted) {
-      console.log('已存在真实翻译结果，跳过模拟翻译结果覆盖');
-      return;
-    }
-
-    // 对于测试结果，我们不使用translation hook，而是直接设置UI状态
-    setActiveStep(2);
-
-    // 转换为字幕格式
-    const subtitles = convertToSubtitles(results);
-    setSubtitlesForPlayer(subtitles);
-
-    // 模拟翻译结果不保存到服务器，避免污染真实翻译数据
-    console.log('模拟翻译结果仅用于测试，不保存到服务器');
-  }, [convertToSubtitles, translation.hasResults, translation.isCompleted]);
-
-
-
-
-
   // 处理编辑状态变化
   const handleEditStateChange = useCallback((hasChanges: boolean, editedCount: number) => {
     setHasUnsavedChanges(hasChanges);
@@ -446,24 +379,13 @@ const VideoDetailWithTranslation: React.FC = () => {
     }
   }, [videoDetail.video, targetLanguage]);
 
-  // 处理编辑结果保存（扩展版本，支持导出）
-  const handleEditedResultsSaveAndExport = useCallback(async (editedResults: any[], shouldExport: boolean = false) => {
-    // 先保存到服务器
-    await handleEditedResultsSave(editedResults);
-
-    // 如果需要导出，则导出文件
-    if (shouldExport) {
-      exportEditedSubtitles(editedResults);
-    }
-  }, [handleEditedResultsSave, exportEditedSubtitles]);
-
   // 格式化时间
   const formatTime = useCallback((seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
     const ms = Math.floor((seconds % 1) * 1000);
-    
+
     if (hours > 0) {
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
     }
@@ -473,7 +395,6 @@ const VideoDetailWithTranslation: React.FC = () => {
   // 虚拟列表状态
   const [displayedResults, setDisplayedResults] = useState<any[]>([]);
   const [loadedCount, setLoadedCount] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 初始化显示的结果
   useEffect(() => {
@@ -497,23 +418,6 @@ const VideoDetailWithTranslation: React.FC = () => {
       loadedCount
     });
   }, [displayedResults, loadedCount]);
-
-  // 处理滚动事件，实现虚拟列表
-  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
-    const container = event.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = container;
-
-    // 检查是否滚动到底部（留一些缓冲区）
-    if (scrollHeight - scrollTop <= clientHeight + 50) {
-      // 如果还有更多数据可以加载
-      if (loadedCount < translation.results.length) {
-        const nextCount = Math.min(loadedCount + 15, translation.results.length);
-        setDisplayedResults(translation.results.slice(0, nextCount));
-        setLoadedCount(nextCount);
-        console.log(`虚拟列表加载更多: ${loadedCount} -> ${nextCount} / ${translation.results.length}`);
-      }
-    }
-  }, [loadedCount, translation.results]);
 
   // 格式化预计剩余时间
   const formatEstimatedTime = useCallback((seconds: number): string => {
@@ -568,9 +472,9 @@ const VideoDetailWithTranslation: React.FC = () => {
       <Box sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
             <Tooltip title="返回视频详情">
-              <IconButton 
+              <IconButton
                 onClick={handleBack}
-                sx={{ 
+                sx={{
                   backgroundColor: alpha(theme.palette.primary.main, 0.1),
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.primary.main, 0.2)
@@ -581,10 +485,10 @@ const VideoDetailWithTranslation: React.FC = () => {
               </IconButton>
             </Tooltip>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography 
-                variant="h4" 
+              <Typography
+                variant="h4"
                 component="h1"
-                sx={{ 
+                sx={{
                   fontWeight: 600,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   backgroundClip: 'text',
@@ -595,14 +499,12 @@ const VideoDetailWithTranslation: React.FC = () => {
                 <TranslateIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                 字幕翻译
               </Typography>
-              <Typography variant="h6" color="text.secondary">
-                {videoDetail.video.fileName}
-              </Typography>
+              <TranslationHeader fileName={videoDetail.video.fileName} onBack={handleBack} />
             </Box>
             <Tooltip title="翻译设置">
-              <IconButton 
+              <IconButton
                 onClick={() => setSettingsOpen(true)}
-                sx={{ 
+                sx={{
                   backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.secondary.main, 0.2)
@@ -638,60 +540,22 @@ const VideoDetailWithTranslation: React.FC = () => {
           {/* 翻译结果编辑器 */}
           {translation.hasResults && (
             <Box>
-                {/* 编辑模式切换按钮 */}
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    {/* 导出按钮 */}
-                    <Tooltip title="导出编辑后的字幕文件">
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        startIcon={<DownloadIcon />}
-                        onClick={() => exportEditedSubtitles(translation.results)}
-                        size="small"
-                        disabled={!translation.hasResults}
-                      >
-                        导出字幕
-                      </Button>
-                    </Tooltip>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    {hasUnsavedChanges && (
-                      <Chip
-                        label={`${editedCount} 条未保存`}
-                        color="warning"
-                        size="small"
-                        variant="filled"
-                      />
-                    )}
-
-                    <Tooltip title={isEditMode ? '切换到预览模式' : '切换到编辑模式'}>
-                      <Button
-                        variant={isEditMode ? 'contained' : 'outlined'}
-                        color="primary"
-                        startIcon={isEditMode ? <VisibilityIcon /> : <EditIcon />}
-                        onClick={toggleEditMode}
-                        size="small"
-                      >
-                        {isEditMode ? '预览模式' : '编辑模式'}
-                      </Button>
-                    </Tooltip>
-                  </Box>
-                </Box>
-
-                {/* 翻译结果编辑器组件 */}
-                <TranslationResultEditor
+                {/* 翻译结果抽离为面板组件 */}
+                <TranslationResultsPanel
                   results={translation.results}
                   currentTime={currentTime}
                   videoId={videoDetail.video.id}
                   readOnly={!isEditMode}
                   showPreview={!isEditMode}
-                  maxHeight={500}
                   onTimeJump={handleTimeJump}
                   onEditStateChange={handleEditStateChange}
                   onSave={handleEditedResultsSave}
                   onDelete={deleteTranslationResults}
+                  isEditMode={isEditMode}
+                  onToggleEditMode={toggleEditMode}
+                  hasUnsavedChanges={hasUnsavedChanges}
+                  editedCount={editedCount}
+                  onExport={exportEditedSubtitles}
                 />
               </Box>
           )}
@@ -728,7 +592,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                     >
                       <LanguageIcon />
                     </Box>
-                    <Typography 
+                    <Typography
                       variant="h6"
                       sx={{
                         fontWeight: 600,
@@ -748,8 +612,8 @@ const VideoDetailWithTranslation: React.FC = () => {
                 }}
               />
               <CardContent sx={{ p: 3 }}>
-                <Stepper 
-                  activeStep={activeStep} 
+                <Stepper
+                  activeStep={activeStep}
                   orientation="vertical"
                   sx={{
                     '& .MuiStepLabel-root': {
@@ -779,9 +643,9 @@ const VideoDetailWithTranslation: React.FC = () => {
                     <Step key={step.key}>
                       <StepLabel
                         optional={
-                          <Typography 
+                          <Typography
                             variant="caption"
-                            sx={{ 
+                            sx={{
                               color: 'text.secondary',
                               fontStyle: 'italic'
                             }}
@@ -792,9 +656,9 @@ const VideoDetailWithTranslation: React.FC = () => {
                         onClick={() => handleStepChange(index)}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <Typography 
-                          variant="subtitle1" 
-                          sx={{ 
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
                             fontWeight: 600,
                             color: activeStep === index ? theme.palette.info.main : 'text.primary'
                           }}
@@ -810,120 +674,25 @@ const VideoDetailWithTranslation: React.FC = () => {
                             mb: 2
                           }}
                         >
-                          {/* 步骤0：配置翻译 */}
+                          {/* 步骤0：配置翻译（抽离组件） */}
                           {index === 0 && (
-                            <Box>
-                              <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
-                                    <InputLabel>字幕轨道</InputLabel>
-                                    <Select
-                                      value={videoDetail.selectedTrackId}
-                                      onChange={(e) => videoDetail.selectTrack(e.target.value)}
-                                      label="字幕轨道"
-                                      sx={{
-                                        borderRadius: 2,
-                                        '& .MuiOutlinedInput-notchedOutline': {
-                                          borderColor: alpha(theme.palette.info.main, 0.3)
-                                        }
-                                      }}
-                                    >
-                                      {trackOptions.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                          {option.label}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                                
-                                <Grid item xs={6}>
-                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
-                                    <InputLabel>源语言</InputLabel>
-                                    <Select
-                                      value={sourceLanguage}
-                                      onChange={(e) => setSourceLanguage(e.target.value)}
-                                      label="源语言"
-                                      sx={{ borderRadius: 2 }}
-                                    >
-                                      {SUPPORTED_LANGUAGES.map((lang) => (
-                                        <MenuItem key={lang.code} value={lang.code}>
-                                          {lang.flag} {lang.name}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                                
-                                <Grid item xs={6}>
-                                  <FormControl fullWidth sx={{ ...createModernFormStyles(theme, 'info') }}>
-                                    <InputLabel>目标语言</InputLabel>
-                                    <Select
-                                      value={targetLanguage}
-                                      onChange={(e) => setTargetLanguage(e.target.value)}
-                                      label="目标语言"
-                                      sx={{ borderRadius: 2 }}
-                                    >
-                                      {SUPPORTED_LANGUAGES.map((lang) => (
-                                        <MenuItem key={lang.code} value={lang.code}>
-                                          {lang.flag} {lang.name}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-
-                                {/* 显示当前选中的提供商和模型 */}
-                                <Grid item xs={12}>
-                                  <Paper
-                                    variant="outlined"
-                                    sx={{
-                                      p: 2,
-                                      backgroundColor: alpha(theme.palette.info.main, 0.05),
-                                      borderColor: alpha(theme.palette.info.main, 0.2)
-                                    }}
-                                  >
-                                    <Typography variant="subtitle2" color="info.main" gutterBottom>
-                                      当前翻译配置
-                                    </Typography>
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                      <Chip
-                                        label={selectedProvider ? `提供商: ${selectedProvider.name}` : '未选择提供商'}
-                                        color={selectedProvider ? 'success' : 'default'}
-                                        size="small"
-                                      />
-                                      <Chip
-                                        label={selectedModel ? `模型: ${selectedModel.name}` : '未选择模型'}
-                                        color={selectedModel ? 'success' : 'default'}
-                                        size="small"
-                                      />
-                                    </Stack>
-                                    {(!selectedProvider || !selectedModel) && (
-                                      <Typography variant="caption" color="warning.main" sx={{ mt: 1, display: 'block' }}>
-                                        请点击右上角设置按钮配置AI提供商和模型
-                                      </Typography>
-                                    )}
-                                  </Paper>
-                                </Grid>
-
-                              </Grid>
-                              
-                              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                                <Button
-                                  variant="contained"
-                                  startIcon={<PlayIcon />}
-                                  onClick={startTranslation}
-                                  disabled={!isConfigComplete || translation.isTranslating}
-                                  sx={{
-                                    ...createModernButtonStyles(theme, 'primary'),
-                                    flex: 1,
-                                    py: 1.2
-                                  }}
-                                >
-                                  开始翻译
-                                </Button>
-                              </Box>
-                            </Box>
+                            <TranslationConfigPanel
+                                sourceLanguage={sourceLanguage}
+                                targetLanguage={targetLanguage}
+                                onSourceChange={setSourceLanguage}
+                                onTargetChange={setTargetLanguage}
+                                languageOptions={SUPPORTED_LANGUAGES}
+                                trackOptions={trackOptions}
+                                selectedTrackId={videoDetail.selectedTrackId}
+                                onTrackChange={videoDetail.selectTrack}
+                                providers={activeProviders}
+                                selectedProviderId={selectedProviderId}
+                                onProviderChange={setSelectedProviderId}
+                                selectedModelId={selectedModelId}
+                                onModelChange={setSelectedModelId}
+                                isConfigComplete={isConfigComplete}
+                                onStart={startTranslation}
+                              />
                           )}
 
                           {/* 步骤1：执行翻译 */}
@@ -977,13 +746,13 @@ const VideoDetailWithTranslation: React.FC = () => {
                                       预计剩余时间: {formatEstimatedTime(translation.progress.estimatedTimeRemaining)}
                                     </Typography>
                                   )}
-                                  
+
                                   <Button
                                     variant="outlined"
                                     color="error"
                                     startIcon={<StopIcon />}
                                     onClick={stopTranslation}
-                                    sx={{ 
+                                    sx={{
                                       ...createModernButtonStyles(theme, 'outlined'),
                                       mt: 2,
                                       borderColor: alpha(theme.palette.error.main, 0.3),
@@ -998,7 +767,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   </Button>
                                 </Box>
                               )}
-                              
+
                               {translation.isCompleted && (
                                 <Alert
                                   severity="success"
@@ -1011,7 +780,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                   成功翻译了 {translation.results.length} 条字幕
                                 </Alert>
                               )}
-                              
+
                               {translation.hasError && (
                                 <Alert
                                   severity="error"
@@ -1031,8 +800,8 @@ const VideoDetailWithTranslation: React.FC = () => {
                           {index === 2 && translation.results.length > 0 && (
                             <Box>
                               <Alert
-                                severity="info" 
-                                sx={{ 
+                                severity="info"
+                                sx={{
                                   ...createModernAlertStyles(theme, 'info'),
                                   mb: 2
                                 }}
@@ -1040,7 +809,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                 <AlertTitle sx={{ fontWeight: 600 }}>预览完成</AlertTitle>
                                 请查看左侧的翻译结果预览，确认无误后可以保存文件
                               </Alert>
-                              
+
                               <Stack direction="row" spacing={2}>
                                 <Button
                                   variant="contained"
@@ -1071,7 +840,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                     a.click();
                                     URL.revokeObjectURL(url);
                                   }}
-                                  sx={{ 
+                                  sx={{
                                     ...createModernButtonStyles(theme, 'outlined')
                                   }}
                                 >
@@ -1084,9 +853,9 @@ const VideoDetailWithTranslation: React.FC = () => {
                           {/* 步骤3：保存文件 */}
                           {index === 3 && (
                             <Box>
-                              <Alert 
-                                severity="success" 
-                                sx={{ 
+                              <Alert
+                                severity="success"
+                                sx={{
                                   ...createModernAlertStyles(theme, 'success'),
                                   mb: 2
                                 }}
@@ -1094,7 +863,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                 <AlertTitle sx={{ fontWeight: 600 }}>翻译任务完成</AlertTitle>
                                 翻译文件已成功保存到服务器
                               </Alert>
-                              
+
                               <Stack direction="row" spacing={2}>
                                 <Button
                                   variant="outlined"
@@ -1104,7 +873,7 @@ const VideoDetailWithTranslation: React.FC = () => {
                                     translation.resetTranslation();
                                     setSubtitlesForPlayer([]);
                                   }}
-                                  sx={{ 
+                                  sx={{
                                     ...createModernButtonStyles(theme, 'outlined')
                                   }}
                                 >
@@ -1134,8 +903,8 @@ const VideoDetailWithTranslation: React.FC = () => {
       </Grid>
 
       {/* 翻译设置对话框 */}
-      <Dialog 
-        open={settingsOpen} 
+      <Dialog
+        open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -1188,7 +957,7 @@ const VideoDetailWithTranslation: React.FC = () => {
           <Button onClick={() => setSettingsOpen(false)}>
             取消
           </Button>
-          <Button 
+          <Button
             onClick={() => setSettingsOpen(false)}
             variant="contained"
             sx={{
