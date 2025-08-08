@@ -49,7 +49,12 @@ translation_router = APIRouter()
 
 
 # 导入标准依赖
-from backend.api.dependencies import get_system_config, get_video_storage
+from backend.api.dependencies import (
+    get_system_config,
+    get_video_storage,
+    get_subtitle_extractor,
+)
+from backend.core.subtitle_extractor import SubtitleExtractor
 
 
 def parse_original_subtitles(source_path: str) -> List[Dict[str, Any]]:
@@ -434,6 +439,7 @@ async def translate_video_subtitle(
     raw_request: Request,
     base_config: SystemConfig = Depends(get_system_config),
     video_storage: VideoStorageService = Depends(get_video_storage),
+    extractor: SubtitleExtractor = Depends(get_subtitle_extractor),
 ):
     """翻译视频字幕轨道 v2 - 重构版本
 
@@ -441,10 +447,10 @@ async def translate_video_subtitle(
 
     Args:
         request: 视频字幕翻译请求
-        background_tasks: FastAPI后台任务
         raw_request: 原始请求对象，用于调试
-        base_config: 基础系统配置
-        video_storage: 视频存储服务
+        base_config: 基础系统配置（通过依赖注入获取）
+        video_storage: 视频存储服务（通过依赖注入获取）
+        extractor: 字幕提取器（通过依赖注入获取）
 
     Returns:
         VideoSubtitleTranslateResponseV2: 翻译响应
@@ -556,8 +562,14 @@ async def translate_video_subtitle(
                 logger.error(f"进度回调失败: {e}")
 
         # 后台翻译任务
-        async def process_video_subtitle_translation():
-            """处理视频字幕翻译的后台任务"""
+        async def process_video_subtitle_translation(
+            extractor_instance: SubtitleExtractor,
+        ):
+            """处理视频字幕翻译的后台任务
+
+            Args:
+                extractor_instance: 字幕提取器实例（通过依赖注入传入）
+            """
             try:
                 # 获取字幕轨道
                 subtitle_track = video_info.subtitle_tracks[
@@ -571,20 +583,14 @@ async def translate_video_subtitle(
                     )
 
                 # 提取字幕内容到临时文件
-                from backend.core.subtitle_extractor import SubtitleExtractor
-                from backend.core.ffmpeg import FFmpegTool
                 from pathlib import Path
-
-                # 创建字幕提取器实例
-                ffmpeg_tool = FFmpegTool()
-                extractor = SubtitleExtractor(ffmpeg_tool)
 
                 # 创建临时目录
                 output_dir = Path(base_config.temp_dir) / "subtitles"
                 output_dir.mkdir(parents=True, exist_ok=True)
 
                 # 提取字幕内容
-                subtitle_path = extractor.extract_embedded_subtitle(
+                subtitle_path = extractor_instance.extract_embedded_subtitle(
                     video_info,
                     track_index=request.track_index,
                     output_dir=output_dir,
@@ -691,7 +697,9 @@ async def translate_video_subtitle(
                     logger.info(f"任务 {task_id} 已从管理器中移除")
 
         # 使用 asyncio.create_task 而不是 background_tasks.add_task
-        task_obj = asyncio.create_task(process_video_subtitle_translation())
+        task_obj = asyncio.create_task(
+            process_video_subtitle_translation(extractor)
+        )
 
         # 将任务对象存储到全局管理器中
         running_tasks[task_id] = task_obj
@@ -1297,6 +1305,7 @@ async def cancel_translation_task(task_id: str):
 )
 async def save_translation_result_compat(
     request: dict,
+    config: SystemConfig = Depends(get_system_config),
 ):
     """保存翻译结果 (兼容性接口)
 
@@ -1304,6 +1313,7 @@ async def save_translation_result_compat(
 
     Args:
         request: 保存请求，包含videoId、results、targetLanguage、fileName等字段
+        config: 系统配置（通过依赖注入获取）
 
     Returns:
         TranslationSaveResponse: 保存结果响应
@@ -1318,9 +1328,6 @@ async def save_translation_result_compat(
             edited=request.get("edited", False),
             isRealTranslation=request.get("isRealTranslation", True),
         )
-
-        # 获取配置
-        config = SystemConfig.from_env()
 
         # 调用主要的保存函数
         return await save_translation_results(save_request, config)
