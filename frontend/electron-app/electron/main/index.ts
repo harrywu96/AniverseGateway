@@ -202,7 +202,7 @@ async function checkApiHealth(retries: number = 3): Promise<boolean> {
     }
     return false;
   } catch (error) {
-    console.log(`API健康检查失败 (剩余重试次数: ${retries}):`, error.message);
+    console.log(`API健康检查失败 (剩余重试次数: ${retries}):`, (error as Error).message);
 
     // 如果还有重试次数，则等待一秒后重试
     if (retries > 0) {
@@ -362,7 +362,7 @@ function startPythonBackend() {
     const checkInterval = isDev ? 2000 : 5000; // 开发环境2秒，生产环境5秒
     apiCheckInterval = setInterval(async () => {
       if (isBackendStarted) {
-        clearInterval(apiCheckInterval);
+        if (apiCheckInterval) clearInterval(apiCheckInterval);
         return;
       }
 
@@ -376,7 +376,7 @@ function startPythonBackend() {
         }
         console.log('API服务已启动并可访问');
         mainWindow?.webContents.send('backend-started');
-        clearInterval(apiCheckInterval);
+        if (apiCheckInterval) clearInterval(apiCheckInterval);
       }
     }, checkInterval);
 
@@ -511,7 +511,7 @@ function startPythonBackend() {
     console.error('启动Python后端时出错', error);
     if (mainWindow) {
       mainWindow.webContents.send('backend-error', {
-        message: `启动Python后端出错: ${error.message}`
+        message: `启动Python后端出错: ${(error as Error).message}`
       });
     }
   }
@@ -568,7 +568,7 @@ function registerIpcHandlers() {
       return await response.json();
     } catch (error) {
       console.error('清除缓存时出错', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
@@ -615,7 +615,7 @@ function registerIpcHandlers() {
       return await response.json();
     } catch (error) {
       console.error('上传视频时出错', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
@@ -674,18 +674,19 @@ function registerIpcHandlers() {
   });
 
   // 保存设置
-  ipcMain.handle('save-settings', async (event, settings) => {
+  ipcMain.handle('save-settings', async (_event, settings) => {
     try {
       saveSettings(settings);
       return { success: true };
     } catch (error) {
       console.error('保存设置时出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 打开目录选择对话框
-  ipcMain.handle('open-directory-dialog', async (event, options) => {
+  ipcMain.handle('open-directory-dialog', async (_event, options) => {
+    if (!mainWindow) return { canceled: true, filePaths: [] };
     return await dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory'],
       ...options
@@ -693,7 +694,8 @@ function registerIpcHandlers() {
   });
 
   // 打开文件选择对话框
-  ipcMain.handle('open-file-dialog', async (event, options) => {
+  ipcMain.handle('open-file-dialog', async (_event, options) => {
+    if (!mainWindow) return { canceled: true, filePaths: [] };
     return await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       ...options
@@ -701,7 +703,7 @@ function registerIpcHandlers() {
   });
 
   // 验证模型
-  ipcMain.handle('validate-model', async (event, modelPath) => {
+  ipcMain.handle('validate-model', async (_event, modelPath) => {
     try {
       const port = process.env.API_PORT || '8000';
       const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/validate-model`, {
@@ -721,13 +723,13 @@ function registerIpcHandlers() {
       console.error('验证模型出错:', error);
       return {
         valid: false,
-        message: `请求失败: ${error.message}`
+        message: `请求失败: ${(error as Error).message}`
       };
     }
   });
 
   // 加载Faster Whisper GUI配置文件
-  ipcMain.handle('load-faster-whisper-config', async (event, configPath) => {
+  ipcMain.handle('load-faster-whisper-config', async (_event, configPath) => {
     try {
       const port = process.env.API_PORT || '8000';
       const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/load-gui-config`, {
@@ -746,7 +748,7 @@ function registerIpcHandlers() {
 
       // 保存配置文件路径到设置
       if (result.success) {
-        await saveSettings({ fasterWhisperConfigPath: configPath });
+        saveSettings({ fasterWhisperConfigPath: configPath });
       }
 
       return result;
@@ -754,13 +756,13 @@ function registerIpcHandlers() {
       console.error('加载Faster Whisper配置文件出错:', error);
       return {
         success: false,
-        message: `请求失败: ${error.message}`
+        message: `请求失败: ${(error as Error).message}`
       };
     }
   });
 
   // 应用Faster Whisper配置进行语音转写
-  ipcMain.handle('transcribe-with-gui-config', async (event, { videoPath, configPath, outputDir }) => {
+  ipcMain.handle('transcribe-with-gui-config', async (_event, { videoPath, configPath, outputDir }) => {
     try {
       const port = process.env.API_PORT || '8000';
       const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/transcribe-with-gui-config`, {
@@ -784,14 +786,14 @@ function registerIpcHandlers() {
       console.error('使用GUI配置进行转写出错:', error);
       return {
         success: false,
-        message: `请求失败: ${error.message}`,
+        message: `请求失败: ${(error as Error).message}`,
         task_id: null
       };
     }
   });
 
   // 获取Faster Whisper配置参数
-  ipcMain.handle('get-faster-whisper-params', async (event, configPath) => {
+  ipcMain.handle('get-faster-whisper-params', async (_event, configPath) => {
     try {
       const port = process.env.API_PORT || '8000';
       const response = await fetch(`http://127.0.0.1:${port}/api/speech-to-text/get-config-params`, {
@@ -811,7 +813,7 @@ function registerIpcHandlers() {
       console.error('获取配置参数出错:', error);
       return {
         success: false,
-        message: `请求失败: ${error.message}`,
+        message: `请求失败: ${(error as Error).message}`,
         parameters: null
       };
     }
@@ -824,43 +826,43 @@ function registerIpcHandlers() {
       return getProviderList();
     } catch (error) {
       console.error('获取提供商列表出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 获取提供商详情
-  ipcMain.handle('get-provider-details', (event, providerId) => {
+  ipcMain.handle('get-provider-details', (_event, providerId) => {
     try {
       const details = getProviderDetails(providerId);
       return { success: true, data: details };
     } catch (error) {
       console.error('获取提供商详情出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 获取提供商模型列表
-  ipcMain.handle('get-provider-models', (event, providerId) => {
+  ipcMain.handle('get-provider-models', (_event, providerId) => {
     try {
       return getProviderModels(providerId);
     } catch (error) {
       console.error('获取提供商模型列表出错:', error);
-      return { success: false, error: error.message, models: [] };
+      return { success: false, error: (error as Error).message, models: [] };
     }
   });
 
   // 更新提供商配置
-  ipcMain.handle('update-provider', (event, providerId, apiKey, defaultModel, baseUrl) => {
+  ipcMain.handle('update-provider', (_event, providerId, apiKey, defaultModel, baseUrl) => {
     try {
       return updateProvider(providerId, apiKey, defaultModel, baseUrl);
     } catch (error) {
       console.error('更新提供商配置出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 测试提供商连接
-  ipcMain.handle('test-provider', async (event, providerId, apiKey, baseUrl, model, formatType) => {
+  ipcMain.handle('test-provider', async (_event, providerId, apiKey, baseUrl, model, formatType) => {
     try {
       // 如果是自定义提供商，将请求发送到后端进行测试
       const port = process.env.API_PORT || '8000';
@@ -911,37 +913,37 @@ function registerIpcHandlers() {
       return await response.json();
     } catch (error) {
       console.error('测试提供商连接出错:', error);
-      return { success: false, message: `测试失败: ${error.message}` };
+      return { success: false, message: `测试失败: ${(error as Error).message}` };
     }
   });
 
   // 创建自定义提供商
-  ipcMain.handle('create-custom-provider', (event, name, apiKey, baseUrl, defaultModel, formatType, models) => {
+  ipcMain.handle('create-custom-provider', (_event, name, apiKey, baseUrl, defaultModel, formatType, models) => {
     try {
       return createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models);
     } catch (error) {
       console.error('创建自定义提供商出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 删除自定义提供商
-  ipcMain.handle('delete-custom-provider', (event, providerId) => {
+  ipcMain.handle('delete-custom-provider', (_event, providerId) => {
     try {
       return deleteCustomProvider(providerId);
     } catch (error) {
       console.error('删除自定义提供商出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 激活提供商
-  ipcMain.handle('activate-provider', (event, providerId) => {
+  ipcMain.handle('activate-provider', (_event, providerId) => {
     try {
       return activateProvider(providerId);
     } catch (error) {
       console.error('激活提供商出错:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
@@ -949,7 +951,6 @@ function registerIpcHandlers() {
   ipcMain.handle('load-complete-config', async () => {
     try {
       const settings = loadSettings();
-      const providersData = loadProviders();
       const providersList = getProviderList();
 
       return {
@@ -962,18 +963,17 @@ function registerIpcHandlers() {
       };
     } catch (error) {
       console.error('加载完整配置失败:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 
   // 新增：同步配置到文件（运行时调用）
-  ipcMain.handle('sync-config-to-files', async (event, configData) => {
+  ipcMain.handle('sync-config-to-files', async (_event, configData) => {
     try {
       const { providers, currentProviderId, currentModelId } = configData;
 
       // 分离标准提供商和自定义提供商
       const customProviders = providers.filter((p: any) => p.id.startsWith('custom-'));
-      const standardProviders = providers.filter((p: any) => !p.id.startsWith('custom-'));
 
       // 更新settings.json（包含选中的提供商和模型）
       const currentSettings = loadSettings();
@@ -985,7 +985,6 @@ function registerIpcHandlers() {
       saveSettings(updatedSettings);
 
       // 更新providers.json（只包含自定义提供商）
-      const providersData = loadProviders();
 
       // 重建自定义提供商数据
       const newProvidersData: any = {
@@ -1038,7 +1037,7 @@ function registerIpcHandlers() {
       return { success: true };
     } catch (error) {
       console.error('同步配置到文件失败:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   });
 }
@@ -1071,7 +1070,7 @@ function loadSettings() {
 /**
  * 保存设置
  */
-function saveSettings(newSettings) {
+function saveSettings(newSettings: any) {
   try {
     // 合并现有设置
     const existingSettings = loadSettings();
@@ -1119,7 +1118,7 @@ function loadProviders() {
 /**
  * 保存AI服务提供商配置
  */
-function saveProviders(providersData) {
+function saveProviders(providersData: any) {
   try {
     // 确保目录存在
     const dir = join(userDataPath, '..');
@@ -1141,7 +1140,6 @@ function saveProviders(providersData) {
  */
 function getProviderList() {
   const providersData = loadProviders();
-  const settings = loadSettings();
 
   console.log('获取提供商列表，原始数据:', {
     activeProvider: providersData.active_provider,
@@ -1232,7 +1230,7 @@ function getProviderList() {
 /**
  * 获取提供商详情
  */
-function getProviderDetails(providerId) {
+function getProviderDetails(providerId: string) {
   // 如果是自定义提供商
   if (providerId.startsWith('custom-')) {
     const realProviderId = providerId.substring(7); // 去除'custom-'前缀
@@ -1268,7 +1266,7 @@ function getProviderDetails(providerId) {
 /**
  * 更新提供商配置
  */
-function updateProvider(providerId, apiKey, defaultModel, baseUrl) {
+function updateProvider(providerId: string, apiKey: string, defaultModel: string, baseUrl: string) {
   // 如果是自定义提供商
   if (providerId.startsWith('custom-')) {
     const realProviderId = providerId.substring(7); // 去除'custom-'前缀
@@ -1305,14 +1303,14 @@ function updateProvider(providerId, apiKey, defaultModel, baseUrl) {
 /**
  * 创建自定义提供商
  */
-function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, models = []) {
+function createCustomProvider(name: string, apiKey: string, baseUrl: string, defaultModel: string, formatType: string, models: any[] = []) {
   console.log('创建自定义提供商:', { name, baseUrl, defaultModel, formatType, modelsCount: Array.isArray(models) ? models.length : 0 });
 
   const providersData = loadProviders();
   const providerId = Date.now().toString(); // 使用时间戳作为ID
 
   // 处理模型数据
-  const processedModels = Array.isArray(models) ? models.map(model => ({
+  const processedModels = Array.isArray(models) ? models.map((model: any) => ({
     id: model.id,
     name: model.name,
     context_window: model.context_window || model.contextWindow || 4096,
@@ -1352,7 +1350,7 @@ function createCustomProvider(name, apiKey, baseUrl, defaultModel, formatType, m
 /**
  * 删除自定义提供商
  */
-function deleteCustomProvider(providerId) {
+function deleteCustomProvider(providerId: string) {
   if (providerId.startsWith('custom-')) {
     const realProviderId = providerId.substring(7); // 去除'custom-'前缀
     const providersData = loadProviders();
@@ -1378,7 +1376,7 @@ function deleteCustomProvider(providerId) {
 /**
  * 激活提供商
  */
-function activateProvider(providerId) {
+function activateProvider(providerId: string) {
   console.log('尝试激活提供商:', providerId);
 
   if (providerId === 'siliconflow') {
@@ -1424,7 +1422,7 @@ function activateProvider(providerId) {
 /**
  * 获取提供商模型列表
  */
-function getProviderModels(providerId) {
+function getProviderModels(providerId: string) {
   if (providerId.startsWith('custom-')) {
     const realProviderId = providerId.substring(7); // 去除'custom-'前缀
     const providersData = loadProviders();
@@ -1433,7 +1431,7 @@ function getProviderModels(providerId) {
     if (provider && provider.models) {
       return {
         success: true,
-        models: provider.models.map(model => ({
+        models: provider.models.map((model: any) => ({
           id: model.id,
           name: model.name,
           context_window: model.context_window || 4096,
