@@ -12,6 +12,18 @@ interface Props {
 
 const TranslationProgressPanel: React.FC<Props> = ({ isTranslating, progress, onStop }) => {
   const theme = useTheme();
+
+  // 格式化预计剩余时间
+  const formatEstimatedTime = (seconds: number): string => {
+    if (seconds < 60) {
+      return `${Math.ceil(seconds)}秒`;
+    } else if (seconds < 3600) {
+      return `${Math.ceil(seconds / 60)}分钟`;
+    } else {
+      return `${Math.ceil(seconds / 3600)}小时`;
+    }
+  };
+
   if (!isTranslating) return null;
   return (
     <Box sx={{ p: 2, borderRadius: 2, border: `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
@@ -25,7 +37,7 @@ const TranslationProgressPanel: React.FC<Props> = ({ isTranslating, progress, on
         {progress.currentItem && <Typography variant="body2">当前处理: {progress.currentItem}</Typography>}
       </Box>
       {progress.estimatedTimeRemaining && (
-        <Typography variant="body2" color="text.secondary">预计剩余时间: {Math.round(progress.estimatedTimeRemaining)}s</Typography>
+        <Typography variant="body2" color="text.secondary">预计剩余时间: {formatEstimatedTime(progress.estimatedTimeRemaining)}</Typography>
       )}
       <Button variant="outlined" color="error" startIcon={<StopIcon />} onClick={onStop} sx={{ mt: 2 }}>停止翻译</Button>
     </Box>

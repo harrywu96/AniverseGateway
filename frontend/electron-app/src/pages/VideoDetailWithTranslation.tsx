@@ -11,7 +11,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  LinearProgress,
   CircularProgress,
   Card,
   CardContent,
@@ -51,7 +50,7 @@ import {
   Upload as UploadIcon,
   Preview as PreviewIcon,
   Save as SaveIcon,
-  Stop as StopIcon,
+
   Edit as EditIcon,
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
@@ -419,17 +418,6 @@ const VideoDetailWithTranslation: React.FC = () => {
     });
   }, [displayedResults, loadedCount]);
 
-  // 格式化预计剩余时间
-  const formatEstimatedTime = useCallback((seconds: number): string => {
-    if (seconds < 60) {
-      return `${Math.ceil(seconds)}秒`;
-    } else if (seconds < 3600) {
-      return `${Math.ceil(seconds / 60)}分钟`;
-    } else {
-      return `${Math.ceil(seconds / 3600)}小时`;
-    }
-  }, []);
-
 
 
   if (videoDetail.isLoading && !videoDetail.video) {
@@ -698,75 +686,11 @@ const VideoDetailWithTranslation: React.FC = () => {
                           {/* 步骤1：执行翻译 */}
                           {index === 1 && (
                             <Box>
-                              {translation.isTranslating && (
-                                <Box
-                                  sx={{
-                                    ...createModernContainerStyles(theme, 2, 'info'),
-                                    p: 2
-                                  }}
-                                >
-                                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <CircularProgress size={24} sx={{ mr: 2, color: theme.palette.info.main }} />
-                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                      正在翻译中...
-                                    </Typography>
-                                  </Box>
-
-                                  <LinearProgress
-                                    variant="determinate"
-                                    value={translation.progress.percentage}
-                                    sx={{
-                                      mb: 2,
-                                      height: 8,
-                                      borderRadius: 2,
-                                      backgroundColor: alpha(theme.palette.info.main, 0.1),
-                                      '& .MuiLinearProgress-bar': {
-                                        backgroundColor: theme.palette.info.main
-                                      }
-                                    }}
-                                  />
-
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      进度: {translation.progress.current} / {translation.progress.total}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      {Math.round(translation.progress.percentage)}%
-                                    </Typography>
-                                  </Box>
-
-                                  {translation.progress.currentItem && (
-                                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                                      当前处理: {translation.progress.currentItem}
-                                    </Typography>
-                                  )}
-
-                                  {translation.progress.estimatedTimeRemaining && (
-                                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                      预计剩余时间: {formatEstimatedTime(translation.progress.estimatedTimeRemaining)}
-                                    </Typography>
-                                  )}
-
-                                  <Button
-                                    variant="outlined"
-                                    color="error"
-                                    startIcon={<StopIcon />}
-                                    onClick={stopTranslation}
-                                    sx={{
-                                      ...createModernButtonStyles(theme, 'outlined'),
-                                      mt: 2,
-                                      borderColor: alpha(theme.palette.error.main, 0.3),
-                                      color: theme.palette.error.main,
-                                      '&:hover': {
-                                        borderColor: theme.palette.error.main,
-                                        backgroundColor: alpha(theme.palette.error.main, 0.05)
-                                      }
-                                    }}
-                                  >
-                                    停止翻译
-                                  </Button>
-                                </Box>
-                              )}
+                              <TranslationProgressPanel
+                                isTranslating={translation.isTranslating}
+                                progress={translation.progress}
+                                onStop={stopTranslation}
+                              />
 
                               {translation.isCompleted && (
                                 <Alert
