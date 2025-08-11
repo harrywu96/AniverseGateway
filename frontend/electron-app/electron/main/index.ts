@@ -988,10 +988,13 @@ function registerIpcHandlers() {
       const providersData = loadProviders();
 
       // 重建自定义提供商数据
-      const newProvidersData = {
+      const newProvidersData: any = {
         providers: {},
         active_provider: null
       };
+
+      // 检查当前激活的提供商
+      let activeProviderFound = false;
 
       customProviders.forEach((provider: any) => {
         const realId = provider.id.startsWith('custom-') ? provider.id.substring(7) : provider.id;
@@ -1006,7 +1009,22 @@ function registerIpcHandlers() {
 
         if (provider.is_active) {
           newProvidersData.active_provider = realId;
+          activeProviderFound = true;
         }
+      });
+
+      // 如果当前激活的提供商是标准提供商，也要设置到active_provider
+      if (!activeProviderFound && currentProviderId) {
+        if (currentProviderId === 'siliconflow') {
+          newProvidersData.active_provider = 'siliconflow';
+        }
+      }
+
+      console.log('同步自定义提供商到文件:', {
+        customProvidersCount: customProviders.length,
+        activeProvider: newProvidersData.active_provider,
+        currentProviderId,
+        activeProviderFound
       });
 
       saveProviders(newProvidersData);
@@ -1123,6 +1141,8 @@ function saveProviders(providersData) {
  */
 function getProviderList() {
   const providersData = loadProviders();
+  const settings = loadSettings();
+
   console.log('获取提供商列表，原始数据:', {
     activeProvider: providersData.active_provider,
     providersCount: Object.keys(providersData.providers || {}).length
@@ -1130,13 +1150,25 @@ function getProviderList() {
 
   const providers = [];
 
-  // 添加硬基流动提供商
+  // 添加硅基流动提供商（从Redux状态获取API Key）
   providers.push({
     id: 'siliconflow',
     name: 'SiliconFlow',
+    api_key: '', // 标准提供商的API Key存储在Redux中，这里为空
+    base_url: 'https://api.siliconflow.cn/v1',
     is_active: providersData.active_provider === 'siliconflow',
-    is_configured: true,
-    model_count: 0
+    is_configured: true, // 假设标准提供商已配置
+    model_count: 0,
+    models: [], // 模型列表需要从API获取
+    description: 'SiliconFlow AI服务提供商',
+    logo_url: '',
+    provider_type: 'openai',
+    format_type: 'openai'
+  });
+
+  console.log('标准提供商处理完成:', {
+    siliconflowActive: providersData.active_provider === 'siliconflow',
+    activeProvider: providersData.active_provider
   });
 
   // 添加自定义提供商
@@ -1144,25 +1176,51 @@ function getProviderList() {
     console.log('自定义提供商IDs:', Object.keys(providersData.providers));
 
     for (const [providerId, provider] of Object.entries(providersData.providers)) {
+      const providerData = provider as any; // 类型断言
+
       console.log(`处理提供商 ${providerId}:`, {
-        name: provider.name,
+        name: providerData.name,
         isActive: providersData.active_provider === providerId,
-        modelCount: provider.models ? provider.models.length : 0
+        modelCount: providerData.models ? providerData.models.length : 0,
+        hasApiKey: !!providerData.api_key
+      });
+
+      const customProviderId = `custom-${providerId}`;
+      const isActive = providersData.active_provider === providerId;
+      const isConfigured = !!providerData.api_key;
+
+      console.log(`自定义提供商 ${customProviderId}:`, {
+        originalId: providerId,
+        isActive,
+        isConfigured,
+        activeProviderInFile: providersData.active_provider
       });
 
       providers.push({
-        id: `custom-${providerId}`,
-        name: provider.name,
-        is_active: providersData.active_provider === providerId,
-        is_configured: true,
-        model_count: provider.models ? provider.models.length : 0
+        id: customProviderId,
+        name: providerData.name,
+        api_key: providerData.api_key || '',
+        base_url: providerData.base_url || '',
+        is_active: isActive,
+        is_configured: isConfigured,
+        model_count: providerData.models ? providerData.models.length : 0,
+        models: providerData.models || [],
+        description: providerData.description || '',
+        logo_url: providerData.logo_url || '',
+        provider_type: providerData.provider_type || 'openai',
+        format_type: providerData.format_type || 'openai'
       });
     }
   }
 
   console.log('返回提供商列表:', {
     count: providers.length,
-    providers: providers.map(p => ({ id: p.id, name: p.name }))
+    providers: providers.map(p => ({
+      id: p.id,
+      name: p.name,
+      is_active: p.is_active,
+      is_configured: p.is_configured
+    }))
   });
 
   return {

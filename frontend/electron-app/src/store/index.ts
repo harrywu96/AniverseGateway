@@ -15,6 +15,11 @@ const configSyncMiddleware = (store: any) => (next: any) => (action: any) => {
 
   // 监听provider相关的action
   if (action.type.startsWith('provider/')) {
+    console.log('配置同步中间件触发:', {
+      actionType: action.type,
+      payload: action.payload
+    });
+
     const state = store.getState();
     // 异步同步到Electron文件，避免阻塞UI
     setTimeout(() => {

@@ -195,31 +195,41 @@ const Settings: React.FC = () => {
       if (configResponse?.success && configResponse.data) {
         const { settings, providers: providersFromFiles, currentProvider } = configResponse.data;
 
-        // 映射提供商数据到Redux格式
-        const mappedProviders: Provider[] = (providersFromFiles || []).map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          apiKey: p.api_key || '',
-          apiHost: p.base_url || '',
-          models: (p.models || []).map((m: any) => ({
-            id: m.id,
-            name: m.name,
-            isDefault: m.is_default,
-            description: m.description,
-            provider_id: p.id,
-            capabilities: m.capabilities,
-            temperature: m.temperature,
-            top_p: m.top_p,
-            max_tokens: m.max_tokens,
-            message_limit_enabled: m.message_limit_enabled,
-          })),
-          is_active: p.is_active !== undefined ? p.is_active : false,
-          isSystem: DEFAULT_PROVIDERS.some(dp => dp.id === p.id),
-          description: p.description || '',
-          logo_url: p.logo_url || '',
-          model_count: p.model_count || (p.models ? p.models.length : 0),
-          is_configured: !!p.api_key,
-        }));
+        // 获取当前Redux中的提供商数据（可能包含标准提供商的API Key）
+        const existingProvidersInStore = store.getState().provider.providers;
+
+        // 映射提供商数据到Redux格式，合并文件数据和现有Redux数据
+        const mappedProviders: Provider[] = (providersFromFiles || []).map((p: any) => {
+          // 查找Redux中是否已有此提供商的数据
+          const existingProvider = existingProvidersInStore.find(ep => ep.id === p.id);
+
+          return {
+            id: p.id,
+            name: p.name,
+            // 优先使用Redux中的API Key（特别是标准提供商）
+            apiKey: existingProvider?.apiKey || p.api_key || '',
+            apiHost: existingProvider?.apiHost || p.base_url || '',
+            models: (p.models || []).map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              isDefault: m.is_default,
+              description: m.description,
+              provider_id: p.id,
+              capabilities: m.capabilities,
+              temperature: m.temperature,
+              top_p: m.top_p,
+              max_tokens: m.max_tokens,
+              message_limit_enabled: m.message_limit_enabled,
+            })),
+            is_active: p.is_active !== undefined ? p.is_active : false,
+            isSystem: DEFAULT_PROVIDERS.some(dp => dp.id === p.id),
+            description: p.description || '',
+            logo_url: p.logo_url || '',
+            model_count: p.model_count || (p.models ? p.models.length : 0),
+            // 基于合并后的API Key判断是否已配置
+            is_configured: !!(existingProvider?.apiKey || p.api_key),
+          };
+        });
 
         // 一次性初始化Redux状态（来自文件的权威数据）
         dispatch(setProviders(mappedProviders));
@@ -244,7 +254,14 @@ const Settings: React.FC = () => {
         console.log('配置已从文件加载到Redux:', {
           providersCount: mappedProviders.length,
           selectedProvider: newSelectedProviderId,
-          source: 'files'
+          source: 'files',
+          providers: mappedProviders.map(p => ({
+            id: p.id,
+            name: p.name,
+            is_active: p.is_active,
+            is_configured: p.is_configured,
+            hasApiKey: !!p.apiKey
+          }))
         });
 
       } else {
@@ -1248,14 +1265,34 @@ const Settings: React.FC = () => {
                 ...model,
                 provider_id: newId
               })),
-              is_active: providerData.is_active !== undefined ? providerData.is_active : true,
+              is_active: true, // 新创建的提供商默认激活
               isSystem: false,
               description: providerData.description || '',
               logo_url: providerData.logo_url || '',
               model_count: providerData.models ? providerData.models.length : 0,
               is_configured: !!providerData.apiKey
             } as Provider;
+
+            console.log('创建新的自定义提供商:', {
+              id: newId,
+              name: newProvider.name,
+              is_active: newProvider.is_active,
+              is_configured: newProvider.is_configured,
+              hasApiKey: !!newProvider.apiKey
+            });
+
+            // 先将所有其他提供商设置为非激活状态
+            providers.forEach(p => {
+              if (p.is_active) {
+                dispatch(setProviderActiveStatus({ id: p.id, is_active: false }));
+              }
+            });
+
+            // 添加新提供商
             dispatch(addProviderAction(newProvider));
+
+            // 设置新提供商为当前选中的提供商
+            dispatch(setCurrentProviderId(newId));
           }
           setCustomProviderDialogOpen(false);
           setCustomProviderToEdit(null);

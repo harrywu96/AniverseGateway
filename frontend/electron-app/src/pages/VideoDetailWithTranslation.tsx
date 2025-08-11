@@ -142,6 +142,23 @@ const VideoDetailWithTranslation: React.FC = () => {
   const providers = useAppSelector(state => state.provider.providers);
   const activeProviders = providers.filter(p => p.is_active && p.is_configured);
 
+  // 调试日志
+  console.log('VideoDetailWithTranslation - 提供商数据:', {
+    totalProviders: providers.length,
+    activeProviders: activeProviders.length,
+    providers: providers.map(p => ({
+      id: p.id,
+      name: p.name,
+      is_active: p.is_active,
+      is_configured: p.is_configured,
+      hasApiKey: !!p.apiKey
+    })),
+    activeProvidersDetails: activeProviders.map(p => ({
+      id: p.id,
+      name: p.name
+    }))
+  });
+
   // 初始化提供商选择
   useEffect(() => {
     if (activeProviders.length > 0 && !selectedProviderId) {
