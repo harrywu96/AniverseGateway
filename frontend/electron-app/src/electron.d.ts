@@ -58,6 +58,22 @@ interface ElectronAPI {
   deleteCustomProvider: (providerId: string) => Promise<{ success: boolean; message?: string }>;
   activateProvider: (providerId: string) => Promise<{ success: boolean; message?: string }>;
   updateProviderStatus: (providerId: string, isActive: boolean) => Promise<{ success: boolean; message?: string; data?: any; error?: string }>;
+
+  // 新增：配置管理相关
+  loadCompleteConfig: () => Promise<{
+    success: boolean;
+    error?: string;
+    data?: {
+      settings: any;
+      providers: any[];
+      currentProvider: string;
+    };
+  }>;
+  syncConfigToFiles: (configData: {
+    providers: any[];
+    currentProviderId: string;
+    currentModelId: string;
+  }) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {

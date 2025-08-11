@@ -58,6 +58,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 新增：更新提供商状态
   updateProviderStatus: (providerId: string, isActive: boolean) => ipcRenderer.invoke('update-provider-status', providerId, isActive),
+
+  // 新增：配置管理相关
+  loadCompleteConfig: () => ipcRenderer.invoke('load-complete-config'),
+  syncConfigToFiles: (configData: any) => ipcRenderer.invoke('sync-config-to-files', configData),
 });
 
 // 打印预加载脚本已加载的消息

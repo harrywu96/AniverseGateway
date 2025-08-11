@@ -944,6 +944,85 @@ function registerIpcHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  // 新增：加载完整配置数据（应用启动时调用）
+  ipcMain.handle('load-complete-config', async () => {
+    try {
+      const settings = loadSettings();
+      const providersData = loadProviders();
+      const providersList = getProviderList();
+
+      return {
+        success: true,
+        data: {
+          settings,
+          providers: providersList.providers,
+          currentProvider: providersList.current_provider,
+        }
+      };
+    } catch (error) {
+      console.error('加载完整配置失败:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // 新增：同步配置到文件（运行时调用）
+  ipcMain.handle('sync-config-to-files', async (event, configData) => {
+    try {
+      const { providers, currentProviderId, currentModelId } = configData;
+
+      // 分离标准提供商和自定义提供商
+      const customProviders = providers.filter((p: any) => p.id.startsWith('custom-'));
+      const standardProviders = providers.filter((p: any) => !p.id.startsWith('custom-'));
+
+      // 更新settings.json（包含选中的提供商和模型）
+      const currentSettings = loadSettings();
+      const updatedSettings = {
+        ...currentSettings,
+        selectedProvider: currentProviderId,
+        selectedModel: currentModelId,
+      };
+      saveSettings(updatedSettings);
+
+      // 更新providers.json（只包含自定义提供商）
+      const providersData = loadProviders();
+
+      // 重建自定义提供商数据
+      const newProvidersData = {
+        providers: {},
+        active_provider: null
+      };
+
+      customProviders.forEach((provider: any) => {
+        const realId = provider.id.startsWith('custom-') ? provider.id.substring(7) : provider.id;
+        newProvidersData.providers[realId] = {
+          name: provider.name,
+          api_key: provider.apiKey || '',
+          base_url: provider.apiHost || '',
+          model: provider.models?.[0]?.id || 'default',
+          format_type: 'openai',
+          models: provider.models || []
+        };
+
+        if (provider.is_active) {
+          newProvidersData.active_provider = realId;
+        }
+      });
+
+      saveProviders(newProvidersData);
+
+      console.log('配置已同步到文件:', {
+        settingsUpdated: !!updatedSettings,
+        customProvidersCount: customProviders.length,
+        activeProvider: newProvidersData.active_provider
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('同步配置到文件失败:', error);
+      return { success: false, error: error.message };
+    }
+  });
 }
 
 /**

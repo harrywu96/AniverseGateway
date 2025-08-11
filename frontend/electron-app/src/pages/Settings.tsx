@@ -74,7 +74,7 @@ import OllamaDialog from '../components/OllamaDialog';
 import ProviderList from '../components/ProviderList';
 import ProviderDetail from '../components/ProviderDetail';
 import ConfigSection from '../components/ui/ConfigSection';
-import { store, persistor } from '../store';
+import { store } from '../store';
 
 // Tab面板组件
 interface TabPanelProps {
@@ -189,12 +189,14 @@ const Settings: React.FC = () => {
   const fetchProviders = useCallback(async (preferredProviderId?: string) => {
     setLoadingProviders(true);
     try {
-      const response = await fetchProvidersFromApi();
-      const existingProvidersInStore = store.getState().provider.providers;
-      const currentProviderIdFromStore = store.getState().provider.currentProviderId;
+      // 新的单向数据流：从文件加载完整配置
+      const configResponse = await window.electronAPI?.loadCompleteConfig();
 
-      if (response && response.success && response.data) {
-        const mappedProvidersFromApi: Provider[] = (response.data.providers || []).map((p: any) => ({
+      if (configResponse?.success && configResponse.data) {
+        const { settings, providers: providersFromFiles, currentProvider } = configResponse.data;
+
+        // 映射提供商数据到Redux格式
+        const mappedProviders: Provider[] = (providersFromFiles || []).map((p: any) => ({
           id: p.id,
           name: p.name,
           apiKey: p.api_key || '',
@@ -219,77 +221,94 @@ const Settings: React.FC = () => {
           is_configured: !!p.api_key,
         }));
 
-        let effectiveProviders: Provider[];
+        // 一次性初始化Redux状态（来自文件的权威数据）
+        dispatch(setProviders(mappedProviders));
+
+        // 确定当前选中的提供商
         let newSelectedProviderId = '';
 
-        if (existingProvidersInStore.length === 0) {
-          dispatch(setProviders(mappedProvidersFromApi));
-          effectiveProviders = mappedProvidersFromApi;
-          console.log('Provider store empty, initialized from API/main process.');
-        } else {
-          effectiveProviders = existingProvidersInStore;
-          console.log('Providers loaded from Redux store (redux-persist). API data not used to setProviders.');
-        }
-        const apiCurrentProvider = response.data.current_provider;
-
-        if (preferredProviderId && effectiveProviders.some(p => p.id === preferredProviderId)) {
+        // 优先级：用户偏好 > 文件中的当前提供商 > 设置中的选中提供商 > 第一个激活的提供商
+        if (preferredProviderId && mappedProviders.some(p => p.id === preferredProviderId)) {
           newSelectedProviderId = preferredProviderId;
-        } else if (apiCurrentProvider && effectiveProviders.some(p => p.id === apiCurrentProvider)) {
-          newSelectedProviderId = apiCurrentProvider;
-        } else if (currentProviderIdFromStore && effectiveProviders.some(p => p.id === currentProviderIdFromStore)) {
-          newSelectedProviderId = currentProviderIdFromStore;
+        } else if (currentProvider && mappedProviders.some(p => p.id === currentProvider)) {
+          newSelectedProviderId = currentProvider;
+        } else if (settings.selectedProvider && mappedProviders.some(p => p.id === settings.selectedProvider)) {
+          newSelectedProviderId = settings.selectedProvider;
+        } else if (mappedProviders.length > 0) {
+          const firstActive = mappedProviders.find(p => p.is_active);
+          newSelectedProviderId = firstActive ? firstActive.id : mappedProviders[0].id;
         }
 
-        if (!newSelectedProviderId && effectiveProviders.length > 0) {
-          const firstActive = effectiveProviders.find(p => p.is_active);
-          newSelectedProviderId = firstActive ? firstActive.id : effectiveProviders[0].id;
-        }
-        
         dispatch(setCurrentProviderId(newSelectedProviderId || null));
 
+        console.log('配置已从文件加载到Redux:', {
+          providersCount: mappedProviders.length,
+          selectedProvider: newSelectedProviderId,
+          source: 'files'
+        });
+
       } else {
-        const apiMessage = response ? response.message : '获取提供商列表的API调用失败';
-        setStatusMessage({ message: `${apiMessage}，尝试使用本地缓存数据`, type: 'warning' });
-        
-        if (existingProvidersInStore.length > 0) {
+        // 如果文件加载失败，尝试从API加载（兼容性处理）
+        const response = await fetchProvidersFromApi();
+
+        if (response && response.success && response.data) {
+          const mappedProvidersFromApi: Provider[] = (response.data.providers || []).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            apiKey: p.api_key || '',
+            apiHost: p.base_url || '',
+            models: (p.models || []).map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              isDefault: m.is_default,
+              description: m.description,
+              provider_id: p.id,
+              capabilities: m.capabilities,
+              temperature: m.temperature,
+              top_p: m.top_p,
+              max_tokens: m.max_tokens,
+              message_limit_enabled: m.message_limit_enabled,
+            })),
+            is_active: p.is_active !== undefined ? p.is_active : false,
+            isSystem: DEFAULT_PROVIDERS.some(dp => dp.id === p.id),
+            description: p.description || '',
+            logo_url: p.logo_url || '',
+            model_count: p.model_count || (p.models ? p.models.length : 0),
+            is_configured: !!p.api_key,
+          }));
+
+          dispatch(setProviders(mappedProvidersFromApi));
+
+          const apiCurrentProvider = response.data.current_provider;
           let newSelectedProviderId = '';
-          if (preferredProviderId && existingProvidersInStore.some(p => p.id === preferredProviderId)) {
+
+          if (preferredProviderId && mappedProvidersFromApi.some(p => p.id === preferredProviderId)) {
             newSelectedProviderId = preferredProviderId;
-          } else if (currentProviderIdFromStore && existingProvidersInStore.some(p => p.id === currentProviderIdFromStore)) {
-            newSelectedProviderId = currentProviderIdFromStore;
+          } else if (apiCurrentProvider && mappedProvidersFromApi.some(p => p.id === apiCurrentProvider)) {
+            newSelectedProviderId = apiCurrentProvider;
+          } else if (mappedProvidersFromApi.length > 0) {
+            const firstActive = mappedProvidersFromApi.find(p => p.is_active);
+            newSelectedProviderId = firstActive ? firstActive.id : mappedProvidersFromApi[0].id;
           }
-          if (!newSelectedProviderId && existingProvidersInStore.length > 0) {
-            const firstActive = existingProvidersInStore.find(p => p.is_active);
-            newSelectedProviderId = firstActive ? firstActive.id : existingProvidersInStore[0].id;
-          }
+
           dispatch(setCurrentProviderId(newSelectedProviderId || null));
-          console.log('API fetch failed, but providers restored from redux-persist.');
+
+          console.log('配置从API加载（文件加载失败）:', {
+            providersCount: mappedProvidersFromApi.length,
+            selectedProvider: newSelectedProviderId,
+            source: 'api'
+          });
         } else {
-          setStatusMessage({ message: `${apiMessage}，且无本地缓存`, type: 'error' });
+          setStatusMessage({ message: '无法加载提供商配置', type: 'error' });
           dispatch(setCurrentProviderId(null));
           dispatch(setCurrentModelId(null));
         }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      setStatusMessage({ message: `获取提供商列表出错: ${errorMessage}`, type: 'error' });
-      const existingProvidersOnCatch = store.getState().provider.providers;
-      const currentProviderIdOnCatch = store.getState().provider.currentProviderId;
-      if (existingProvidersOnCatch.length > 0) {
-        let newSelectedProviderId = '';
-          if (currentProviderIdOnCatch && existingProvidersOnCatch.some(p => p.id === currentProviderIdOnCatch)) {
-            newSelectedProviderId = currentProviderIdOnCatch;
-          }
-          if (!newSelectedProviderId && existingProvidersOnCatch.length > 0) {
-            const firstActive = existingProvidersOnCatch.find(p => p.is_active);
-            newSelectedProviderId = firstActive ? firstActive.id : existingProvidersOnCatch[0].id;
-          }
-        dispatch(setCurrentProviderId(newSelectedProviderId || null));
-        console.log('Exception during API fetch, but providers restored from redux-persist.');
-      } else {
-        dispatch(setCurrentProviderId(null));
-        dispatch(setCurrentModelId(null));
-      }
+      setStatusMessage({ message: `加载配置出错: ${errorMessage}`, type: 'error' });
+      dispatch(setCurrentProviderId(null));
+      dispatch(setCurrentModelId(null));
     } finally {
       setLoadingProviders(false);
     }
@@ -381,12 +400,13 @@ const Settings: React.FC = () => {
 
   const handleToggleProviderActive = async (providerId: string, newActiveState: boolean) => {
     dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
-    persistor.persist();
+    // 中间件会自动同步到文件
     setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
   };
 
   useEffect(() => {
     if (!initialLoadCompleteRef.current) return;
+    // 只自动保存基本设置，提供商配置通过Redux中间件自动同步
     const generalSettingsToSave = {
       modelPath, configPath, device, computeType,
       sourceLanguage, targetLanguage, defaultStyle, translationServiceType, darkMode,
@@ -395,8 +415,8 @@ const Settings: React.FC = () => {
     };
     if (window.electronAPI && window.electronAPI.saveSettings) {
       window.electronAPI.saveSettings(generalSettingsToSave)
-        .then(() => console.log('General settings auto-saved successfully.'))
-        .catch(err => console.error('Error auto-saving general settings:', err));
+        .then(() => console.log('基本设置已自动保存'))
+        .catch(err => console.error('自动保存基本设置出错:', err));
     }
   }, [
     modelPath, configPath, device, computeType, sourceLanguage, targetLanguage,
@@ -405,6 +425,7 @@ const Settings: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      // 保存基本设置到文件（非提供商相关的设置）
       if (window.electronAPI && window.electronAPI.saveSettings) {
         await window.electronAPI.saveSettings({
           modelPath, configPath, device, computeType,
@@ -413,6 +434,8 @@ const Settings: React.FC = () => {
           selectedModel: currentModelId
         });
       }
+
+      // 更新提供商配置（通过Redux，中间件会自动同步到文件）
       if (currentProviderId) {
         const provider = providers.find(p => p.id === currentProviderId);
         if (provider && (currentApiKeyInput !== provider.apiKey || currentBaseUrlInput !== provider.apiHost)) {
@@ -422,8 +445,10 @@ const Settings: React.FC = () => {
             apiHost: currentBaseUrlInput,
             is_configured: !!currentApiKeyInput
           }));
+          console.log('提供商配置已更新，将通过中间件自动同步到文件');
         }
       }
+
       setSaved(true);
       setStatusMessage({ message: '设置已保存', type: 'success' });
       setTimeout(() => setSaved(false), 3000);
@@ -448,7 +473,7 @@ const Settings: React.FC = () => {
 
   const handleDeleteProvider = (providerId: string) => {
     dispatch(removeProviderAction(providerId));
-    persistor.persist();
+    // 中间件会自动同步到文件
     setStatusMessage({ message: `提供商 ${providerId} 已删除`, type: 'success'});
   };
 
@@ -756,7 +781,7 @@ const Settings: React.FC = () => {
                       onSelectProvider={(id) => dispatch(setCurrentProviderId(id))}
                       onToggleProviderActive={async (providerId: string, newActiveState: boolean) => {
                         dispatch(setProviderActiveStatus({ id: providerId, is_active: newActiveState }));
-                        persistor.persist();
+                        // 中间件会自动同步到文件
                         setStatusMessage({ message: '提供商活跃状态已更新', type: 'success' });
                       }}
                       onAddProvider={() => {
@@ -858,7 +883,7 @@ const Settings: React.FC = () => {
                       }}
                       onDeleteProvider={currentProviderId && !providers.find(p=>p.id === currentProviderId)?.isSystem ? () => {
                         dispatch(removeProviderAction(currentProviderId));
-                        persistor.persist();
+                        // 中间件会自动同步到文件
                         setStatusMessage({ message: `提供商 ${currentProviderId} 已删除`, type: 'success'});
                       } : undefined}
                       onRefreshModels={() => currentProviderId && fetchModels(currentProviderId)}

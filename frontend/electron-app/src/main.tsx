@@ -8,8 +8,7 @@ import App from './App';
 import './styles/index.css';
 import { AppProvider } from './context/AppContext';
 import { Provider as ReduxProvider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor } from './store';
+import { store } from './store';
 // 导入完整的主题系统
 import { darkTheme } from './theme';
 
@@ -18,13 +17,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <ReduxProvider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <HashRouter>
-            <AppProvider>
-              <App />
-            </AppProvider>
-          </HashRouter>
-        </PersistGate>
+        <HashRouter>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </HashRouter>
       </ReduxProvider>
     </ThemeProvider>
   </React.StrictMode>
