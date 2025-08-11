@@ -471,7 +471,7 @@ class ProviderService:
         # 获取预定义提供商列表
         providers = []
 
-        # 只添加硬基流动提供商
+        # 只添加硅基流动提供商
         providers.append(self.provider_info_cache[AIProviderType.SILICONFLOW])
 
         # 如果有自定义提供商，将每个自定义提供商作为独立提供商添加到列表中

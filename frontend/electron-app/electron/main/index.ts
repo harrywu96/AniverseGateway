@@ -880,12 +880,12 @@ function registerIpcHandlers() {
             console.log(`使用已保存的自定义提供商API密钥进行测试: ${providerId}`);
           }
         }
-        // 如果是硬基流动提供商
+        // 如果是硅基流动提供商
         else if (providerId === 'siliconflow') {
           const settings = loadSettings();
           if (settings.siliconflowApiKey) {
             actualApiKey = settings.siliconflowApiKey;
-            console.log('使用已保存的硬基流动API密钥进行测试');
+            console.log('使用已保存的硅基流动API密钥进行测试');
           }
         }
       }
@@ -1248,7 +1248,7 @@ function getProviderDetails(providerId: string) {
       };
     }
   }
-  // 如果是硬基流动提供商
+  // 如果是硅基流动提供商
   else if (providerId === 'siliconflow') {
     const settings = loadSettings();
     return {
@@ -1283,7 +1283,7 @@ function updateProvider(providerId: string, apiKey: string, defaultModel: string
       return { success: true };
     }
   }
-  // 如果是硬基流动提供商
+  // 如果是硅基流动提供商
   else if (providerId === 'siliconflow') {
     const settings = loadSettings();
     const newSettings = { ...settings };
@@ -1380,7 +1380,7 @@ function activateProvider(providerId: string) {
   console.log('尝试激活提供商:', providerId);
 
   if (providerId === 'siliconflow') {
-    console.log('激活硬基流动提供商');
+    console.log('激活硅基流动提供商');
     const providersData = loadProviders();
     providersData.active_provider = 'siliconflow';
     saveProviders(providersData);
@@ -1444,7 +1444,7 @@ function getProviderModels(providerId: string) {
     return { success: true, models: [] };
   }
   else if (providerId === 'siliconflow') {
-    // 硬基流动的默认模型
+    // 硅基流动的默认模型
     const settings = loadSettings();
     const defaultModel = settings.siliconflowModel || 'deepseek-ai/DeepSeek-V2.5';
 
