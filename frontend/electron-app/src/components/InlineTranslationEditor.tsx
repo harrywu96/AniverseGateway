@@ -437,4 +437,20 @@ const InlineTranslationEditor: React.FC<InlineTranslationEditorProps> = ({
   );
 };
 
-export default memo(InlineTranslationEditor);
+// 优化memo比较函数，减少不必要的重新渲染
+export default memo(InlineTranslationEditor, (prevProps, nextProps) => {
+  // 检查关键属性是否发生变化
+  return (
+    prevProps.result.id === nextProps.result.id &&
+    prevProps.result.original === nextProps.result.original &&
+    prevProps.result.translated === nextProps.result.translated &&
+    prevProps.result.confidence === nextProps.result.confidence &&
+    prevProps.result.startTime === nextProps.result.startTime &&
+    prevProps.result.endTime === nextProps.result.endTime &&
+    prevProps.isEditing === nextProps.isEditing &&
+    prevProps.isHighlighted === nextProps.isHighlighted &&
+    prevProps.readOnly === nextProps.readOnly &&
+    prevProps.showTime === nextProps.showTime &&
+    prevProps.showConfidence === nextProps.showConfidence
+  );
+});

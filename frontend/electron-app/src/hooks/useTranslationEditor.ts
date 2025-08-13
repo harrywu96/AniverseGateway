@@ -134,37 +134,59 @@ export const useTranslationEditor = (
   // 最大撤销步数
   const maxUndoSteps = 50;
 
-  // 初始化虚拟列表
+  // 优化初始化虚拟列表 - 减少状态更新
   useEffect(() => {
     if (resultsWithIds.length > 0) {
-      const initialResults = resultsWithIds.slice(0, Math.min(pageSize, resultsWithIds.length));
-      setDisplayedResults(initialResults);
-      setLoadedCount(Math.min(pageSize, resultsWithIds.length));
+      // 初始加载更多数据，减少后续加载次数
+      const initialCount = Math.min(Math.max(pageSize, 30), resultsWithIds.length);
+
+      // 批量更新状态，减少重新渲染
+      requestAnimationFrame(() => {
+        const initialResults = resultsWithIds.slice(0, initialCount);
+        setDisplayedResults(initialResults);
+        setLoadedCount(initialCount);
+      });
     } else {
       setDisplayedResults([]);
       setLoadedCount(0);
     }
   }, [resultsWithIds, pageSize]);
 
-  // 加载更多数据
+  // 加载更多数据 - 优化批量加载
   const loadMore = useCallback(() => {
     if (loadedCount < resultsWithIds.length) {
-      const nextCount = Math.min(loadedCount + pageSize, resultsWithIds.length);
-      setDisplayedResults(resultsWithIds.slice(0, nextCount));
-      setLoadedCount(nextCount);
+      // 批量加载更多数据，减少频繁更新
+      const batchSize = Math.max(pageSize, 30); // 至少加载30条
+      const nextCount = Math.min(loadedCount + batchSize, resultsWithIds.length);
+
+      // 使用requestAnimationFrame优化渲染时机
+      requestAnimationFrame(() => {
+        setDisplayedResults(resultsWithIds.slice(0, nextCount));
+        setLoadedCount(nextCount);
+      });
     }
   }, [loadedCount, resultsWithIds, pageSize]);
 
-  // 处理滚动事件
+  // 防抖的滚动处理函数 - 优化防抖时间
+  const debouncedLoadMore = useDebouncedCallback(() => {
+    loadMore();
+  }, 150); // 增加到150ms防抖，减少频繁触发
+
+  // 处理滚动事件 - 添加空值检查
   const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const container = event.currentTarget;
+    if (!container) {
+      console.warn('滚动容器为空，跳过处理');
+      return;
+    }
+
     const { scrollTop, scrollHeight, clientHeight } = container;
 
-    // 检查是否滚动到底部（留50px缓冲区）
-    if (scrollHeight - scrollTop <= clientHeight + 50) {
-      loadMore();
+    // 增加缓冲区到200px，减少频繁触发
+    if (scrollHeight - scrollTop <= clientHeight + 200) {
+      debouncedLoadMore();
     }
-  }, [loadMore]);
+  }, [debouncedLoadMore]);
 
   // 保存到localStorage的防抖函数
   const debouncedSave = useDebouncedCallback(() => {

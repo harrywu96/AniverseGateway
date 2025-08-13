@@ -11,6 +11,7 @@ import {
   Tooltip,
   Fade,
   LinearProgress,
+  CircularProgress,
   TextField,
   InputAdornment,
   Divider,
@@ -31,6 +32,7 @@ import { createModernCardStyles } from '../utils/modernStyles';
 import { useTranslationEditor, TranslationResult } from '../hooks/useTranslationEditor';
 import { useDebouncedCallback } from '../utils/useDebounce';
 import InlineTranslationEditor from './InlineTranslationEditor';
+// import { usePerformanceMonitor, useScrollOptimization } from '../hooks/usePerformanceMonitor';
 
 /**
  * 翻译结果编辑器主组件属性接口
@@ -93,6 +95,10 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
 }) => {
   const theme = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 性能监控 (开发环境启用) - 暂时禁用以避免错误
+  // const { monitorScroll } = usePerformanceMonitor('TranslationResultEditor', process.env.NODE_ENV === 'development');
+  // const { optimizedScrollHandler } = useScrollOptimization();
   
   // 使用翻译编辑器Hook
   const {
@@ -100,7 +106,7 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
     loadedCount,
     totalCount,
     loadMore,
-    handleScroll,
+    handleScroll: originalHandleScroll,
     editedResults,
     hasUnsavedChanges,
     editedCount,
@@ -114,6 +120,16 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
     getEditedResults,
     saveToLocalStorage
   } = useTranslationEditor(results, videoId, pageSize);
+
+  // 简化的滚动处理函数 - 直接使用原始处理函数
+  // const handleOptimizedScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+  //   const element = event.currentTarget;
+  //   if (!element) {
+  //     console.warn('滚动元素为空，跳过处理');
+  //     return;
+  //   }
+  //   originalHandleScroll(event);
+  // }, [originalHandleScroll]);
 
   // 编辑状态
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -482,11 +498,16 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
         <CardContent sx={{ p: 0 }}>
           <Box
             ref={scrollContainerRef}
-            onScroll={handleScroll}
+            onScroll={originalHandleScroll}
             sx={{
               maxHeight,
               overflow: 'auto',
               p: 2,
+              // 优化滚动性能
+              scrollBehavior: 'smooth',
+              // 启用硬件加速
+              transform: 'translateZ(0)',
+              // 优化滚动条样式
               '&::-webkit-scrollbar': {
                 width: 8
               },
@@ -499,7 +520,11 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.primary.main, 0.5)
                 }
-              }
+              },
+              // 优化触摸滚动
+              WebkitOverflowScrolling: 'touch',
+              // 减少重绘
+              contain: 'layout style paint'
             }}
           >
             {/* 加载状态 */}
@@ -509,24 +534,52 @@ const TranslationResultEditor: React.FC<TranslationResultEditorProps> = ({
               </Typography>
             )}
 
-            {/* 字幕列表 */}
-            {filteredResults.map((result) => (
-              <InlineTranslationEditor
-                key={result.id}
-                result={result}
-                isEditing={!showPreview && editingId === result.id}
-                isHighlighted={isCurrentSubtitle(result)}
-                readOnly={readOnly || showPreview}
-                showTime={true}
-                showConfidence={true}
-                onEdit={readOnly || showPreview ? undefined : handleEditStart}
-                onSave={handleEditSave}
-                onCancel={handleEditCancel}
-                onReset={handleReset}
-                onTimeJump={handleTimeJump}
-                sx={{ mb: 1 }}
-              />
-            ))}
+            {/* 字幕列表 - 优化渲染性能 */}
+            <Box sx={{
+              // 启用GPU加速
+              transform: 'translateZ(0)',
+              // 优化重绘性能
+              willChange: 'scroll-position'
+            }}>
+              {filteredResults.map((result) => (
+                <InlineTranslationEditor
+                  key={result.id}
+                  result={result}
+                  isEditing={!showPreview && editingId === result.id}
+                  isHighlighted={isCurrentSubtitle(result)}
+                  readOnly={readOnly || showPreview}
+                  showTime={true}
+                  showConfidence={true}
+                  onEdit={readOnly || showPreview ? undefined : handleEditStart}
+                  onSave={handleEditSave}
+                  onCancel={handleEditCancel}
+                  onReset={handleReset}
+                  onTimeJump={handleTimeJump}
+                  sx={{
+                    mb: 1,
+                    // 优化单个项目的渲染性能
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden'
+                  }}
+                />
+              ))}
+
+              {/* 加载更多指示器 */}
+              {loadedCount < totalCount && (
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  py: 2,
+                  opacity: 0.7
+                }}>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    正在加载更多字幕... ({loadedCount}/{totalCount})
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
             {/* 加载更多提示 */}
             {loadedCount < totalCount && (
