@@ -1,215 +1,143 @@
-# 异世界语桥 (AniVerse Gateway)
+# Aniverse Gateway - 异世界语桥
 
-每一部动漫都是一个独特的异世界，而语言往往是阻隔我们深入其中的最大障碍。异世界语桥正是为此而生——它不仅仅是一个翻译工具，更是连接现实与动漫世界的神奇桥梁。通过先进的AI技术，让每一句台词都成为通往异世界的钥匙，让每一个追番的夜晚都充满无限可能。
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/Node.js-20+-green.svg" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+  <!-- <img src="https://img.shields.io/github/actions/workflow/status/harrywu96/AniverseGateway/main.yml?branch=main" alt="Build Status"> -->
+  <!-- <img src="https://img.shields.io/github/stars/harrywu96/AniverseGateway" alt="GitHub stars">
+  <img src="https://img.shields.io/github/forks/harrywu96/AniverseGateway" alt="GitHub forks"> -->
+</p>
 
-## 功能特点
+<p align="center">
+  <strong>异世界语桥是一款功能强大的桌面应用程序，旨在打造一个本地优先、AI 驱动的视频字幕生成与翻译工作流程。</strong>
+</p>
 
-- **智能字幕提取**：自动从视频中提取内嵌字幕或识别外挂字幕文件
-- **上下文感知翻译**：保持对话连贯性，理解角色关系和情境
-- **多种 AI 模型支持**：支持 OpenAI、智谱 AI 等多种 AI 服务提供商
-- **自定义 AI 提供商**：支持添加自定义 AI 服务提供商
-- **字幕编辑器**：直观的界面，方便编辑和调整翻译结果
-- **多种导出格式**：支持 SRT、ASS 等多种字幕格式导出
+<p align="center">
+  <a href="#-功能亮点">功能亮点</a> •
+  <a href="#-技术架构">技术架构</a> •
+  <a href="#-快速上手">快速上手</a> •
+  <a href="#-如何使用">如何使用</a> •
+  <a href="#-贡献指南">贡献指南</a> •
+  <a href="#-授权许可">授权许可</a>
+</p>
 
-## 安装指南
+---
 
-### 使用Python venv环境（推荐使用UV）
+<!-- <p align="center">
+  <img src="YOUR_SCREENSHOT_OR_GIF_HERE" alt="Aniverse Gateway 应用程序截图" width="80%">
+</p> -->
+
+异世界语桥（Aniverse Gateway）旨在为动漫爱好者提供了一套属于自己的快速翻译"生肉"（其他语言的视频）的软件，能够自动化处理视频翻译中最繁琐的环节，让您可以在自己的电脑上快捷完成从"生肉"番剧到自己语言的熟肉的完整翻译流程，确保数据的私密性与自主性。
+
+**当前版本状态：** 本项目目前专注于基于**已有字幕轨道**的翻译流程。语音转文字（ASR）、本地ollama功能正在规划中。应用目前已在 Windows 平台稳定运行，macOS 和 Linux 的兼容性测试将在未来进行。
+
+## ✨ 功能亮点
+
+* **🎬 视频管理**：轻松导入本地视频文件，创建您的个人视频库。
+* **📜 字幕提取**：自动检测并提取视频内嵌的字幕轨道作为翻译原文。
+* **🧠 AI 翻译**：
+    * 支持在设置中配置自定义 AI 提供商（任何与 OpenAI API 兼容的服务）。
+    * 内置高质量的翻译提示词（Prompt），确保开箱即用的专业翻译效果。
+    * 已填写提供商数据支持持久化存储。
+* **✍️ 所见即所得字幕编辑器**：
+    * 在视频播放器旁，直观地并排对比、编辑原始字幕与翻译字幕。
+    * 支持时间轴微调、文本修正和格式调整。
+    * 已翻译字幕内容支持持久化存储。
+* **🚀 异步任务处理**：所有翻译任务都在后端作为异步任务执行，界面保持流畅响应。
+* **💻 桌面端应用**：基于 Electron 和 React，目前已在 Windows 平台提供稳定的图形化操作体验。
+* **🛡️ 本地优先，保障隐私**：核心功能在本地执行，您的视频和填写的提供商数据无需上传到第三方云服务。
+
+## 💡 核心优势：为高质量翻译而生
+
+本项目不仅是简单地调用 AI 大模型进行翻译，更在细节上进行了深度优化，以解决视频字幕翻译中的核心痛点：
+
+1.  **Token 成本优化**
+    本项目在将字幕发送给大模型前，会进行精密的预处理。通过 SRT 格式优化，从而智能筛选并移除无效的字幕格式标签（如 `<i>`, `<b>`, 颜色标签等），只将纯净的文本内容传送给 AI，显著减少不必要的 Token 消耗，为您节省成本。
+
+2.  **智能上下文分块翻译**
+    为突破大模型单次请求的 `max_token` 限制，本项目开发了一套智能分块算法。它会将长字幕文件切分为大小合适、可被模型处理的逻辑块。更重要的是，在翻译每个新分块时，算法会**自动携带前一个分块的原文和译文作为上下文**，确保了长句、跨句对话以及专业术语在整个翻译过程中的连贯性、准确性和自然感。
+
+3.  **精准的格式处理**
+    翻译完成后，系统会对返回的字幕内容进行严格的格式化处理，确保生成的 `.srt` 文件拥有精准的时间轴和规范的格式，可被所有标准播放器正确识别。
+
+## 🛠️ 技术架构
+
+Aniverse Gateway 采用前后端分离的本地客户端-服务器架构。
+
+* **后端 (Backend)**：
+    * **框架**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
+    * **语音识别**: [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+    * **AI 服务集成**: Ollama, OpenAI-compatible APIs
+    * **媒体处理**: FFmpeg
+    * **主要职责**: API 服务、视频处理、字幕生成、AI 翻译任务管理。
+
+* **前端 (Frontend)**：
+    * **框架**: [Electron](https://www.electronjs.org/), [React](https://reactjs.org/), [Vite](https://vitejs.dev/)
+    * **语言**: TypeScript
+    * **UI 组件库**: [Material-UI (MUI)](https://mui.com/)
+    * **状态管理**: Redux Toolkit
+    * **主要职责**: 提供用户图形界面、与后端 API 交互、状态管理。
+
+* **开发环境**:
+    * **Python 包管理**: `uv`
+    * **Node.js 包管理**: `pnpm` (Monorepo 工作区)
+
+## 🚀 快速上手
+
+请确保您的开发环境已安装以下必要工具：
+
+* [Python](https://www.python.org/) (建议版本 3.11+)
+* [Node.js](https://nodejs.org/) (建议版本 20+)
+* [pnpm](https://pnpm.io/)
+* [FFmpeg](https://ffmpeg.org/download.html) (请确保 `ffmpeg` 命令在您的系统 PATH 中可用)
+
+#### 1. 克隆代码仓库
 
 ```bash
-# 安装UV（如果尚未安装）
-curl -sSf https://install.python-poetry.org | python3 -
-
-# 设置powershell执行策略
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-# 创建并激活虚拟环境
-uv venv
-source .venv/Scripts/activate  # bash
-
-# 安装依赖
-uv pip sync requirements.txt
+git clone [https://github.com/harrywu96/AniverseGateway.git](https://github.com/harrywu96/AniverseGateway.git)
+cd AniverseGateway
 ```
-
-### 使用Docker（可选）
-
-```bash
-docker pull yourusername/subtranslate:latest
-docker run -p 8000:8000 -v /path/to/videos:/videos yourusername/subtranslate
-```
-
-## 开发环境设置
-
-### 前提条件
-
-- Python 3.10+
-- Node.js 18+
-- pnpm 8+
-
-### 安装依赖
+#### 2. 配置后端
 
 ```bash
+# 创建并激活虚拟环境 (推荐)
+python -m venv .venv
+source .venv/bin/activate  # on Windows, use `.venv\Scripts\activate`
+
 # 安装 Python 依赖
-pip install -e .
+pip install -r requirements.txt
+```
+#### 3. 配置前端
 
-# 安装前端依赖
+```bash
+# 安装 Node.js 依赖
 pnpm install
 ```
-
-### 开发模式运行
-
-```bash
-# 使用开发脚本启动
-python scripts/dev.py
-```
-
-或者分别启动前端和后端：
+#### 4. 运行应用程序
 
 ```bash
-# 启动后端
-python backend/main.py
-
-# 启动前端
+# 在根目录运行，会同时启动前后端服务
 pnpm dev
+
+# 单独启动后端服务器
+python backend/run_api_server.py # 服务器将默认在 http://127.0.0.1:8000 启动。
+
+
 ```
 
-## 构建和打包
+## 📖 如何使用
 
-```bash
-# 构建项目
-python scripts/build.py
+1. **配置翻译服务**：在“设置”页面，添加并配置您的 AI 翻译服务提供商（需要提供服务的 API 地址和密钥）。
+2. **添加视频**：在主界面点击添加按钮，选择导入一个包含字幕轨道的视频文件。
+3. **执行翻译**：进入视频详情页，系统会自动提取字幕。选择您配置好的翻译服务和目标语言，然后开始翻译任务。
+4. **编辑与导出**：翻译完成后，您可以在字幕编辑器中进行校对和修改。完成后，点击导出按钮即可得到翻译好的 .srt 字幕文件。
 
-# 打包应用
-python scripts/package.py
-```
+## ❤️ 贡献指南
 
-## 系统要求
+我们热烈欢迎任何形式的贡献！无论是报告错误、提出功能建议，PR。
+<!-- 请参考我们的 [CONTRIBUTING.md](https://www.google.com/search?q=CONTRIBUTING.md) 文件来了解详细的贡献流程。 -->
 
-- Python 3.10+
-- FFmpeg（用于视频处理）
-- 活跃的互联网连接（用于API访问）
+## 📜 授权许可
 
-## 字幕翻译子系统
-
-字幕翻译子系统是异世界语桥的核心组件，负责处理字幕的提取、分析、翻译和整合过程。
-
-### 特点
-
-- **上下文感知翻译**：保持对话连贯性，理解角色关系和情境
-- **文化适应**：智能处理文化特定的参考和习语
-- **风格一致性**：保持原始对话的语气和风格
-- **专业术语处理**：针对特定领域（如科技、医学、法律等）智能识别和翻译专业术语
-- **批量处理能力**：高效处理多集剧集或多个视频文件
-
-### 工作流程
-
-1. **字幕提取**：从视频文件中提取内嵌字幕或读取外部字幕文件
-2. **预处理**：清理文本，标记说话者、场景和特殊元素
-3. **分块处理**：将长字幕文件分割成适合AI处理的语境相关块
-4. **智能翻译**：通过AI模型进行翻译，保持对话连贯性和上下文
-5. **后处理**：调整格式，确保时间码对齐，处理特殊字符
-6. **质量检查**：验证翻译完整性，检测潜在问题
-7. **整合输出**：生成新的字幕文件或将翻译结果嵌入到视频中
-
-### 翻译模式
-
-- **标准模式**：平衡质量和速度的通用翻译
-- **精确模式**：偏重准确性，适合文档和教育内容
-- **创意模式**：保留原文幽默和文化元素，适合娱乐内容
-- **专业模式**：针对特定领域优化的专业术语翻译
-
-## 项目结构
-
-```
-aniversegateway/
-├── frontend/                      # 所有前端代码
-│   ├── electron-app/              # Electron 应用
-│   │   ├── electron/              # Electron 主进程代码
-│   │   ├── src/                   # 渲染进程代码 (React)
-│   │   └── ...
-│   └── shared/                    # 共享代码
-├── backend/                       # 所有后端代码
-│   ├── api/                       # API 接口
-│   ├── core/                      # 核心功能
-│   ├── schemas/                   # 数据模型
-│   ├── services/                  # 服务
-│   └── ...
-├── scripts/                       # 构建和部署脚本
-├── tests/                         # 测试
-├── docs/                          # 文档
-└── ...
-```
-
-## 详细文档
-
-请参阅 [docs/README.md](docs/README.md) 获取更详细的项目文档，包括API参考、架构细节和开发指南。
-
-## 贡献指南
-
-欢迎贡献代码、报告问题或提出改进建议！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
-
-## 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
-
-## 支持的AI服务提供商
-
-异世界语桥支持多种AI服务提供商，您可以根据需要选择：
-
-- **OpenAI**：支持GPT-3.5和GPT-4等模型
-- **智谱AI**：支持ChatGLM等国产大语言模型
-- **火山引擎**：字节跳动的AI服务
-- **百度文心一言**：百度的大语言模型
-- **Anthropic**：Claude系列模型
-- **Azure OpenAI**：微软Azure上的OpenAI服务
-- **SiliconFlow**：支持DeepSeek、Qwen等多种开源大模型
-- **自定义API**：支持自定义兼容OpenAI API格式的服务
-
-要切换提供商，只需在`.env`文件中设置相应的`AI_PROVIDER`值和API密钥即可。
-
-## 环境设置
-
-本项目使用Python 3.10+和UV包管理器来管理依赖。
-
-### 自动设置（推荐）
-
-为了方便设置环境，我们提供了自动化脚本：
-
-#### Windows用户
-
-```bash
-# 设置基本环境
-setup_environment.bat
-
-# 设置开发环境（包含开发工具）
-setup_environment.bat --dev
-```
-
-#### Linux/macOS用户
-
-```bash
-# 设置基本环境
-chmod +x setup_environment.sh
-./setup_environment.sh
-
-# 设置开发环境（包含开发工具）
-./setup_environment.sh --dev
-```
-
-### 火山引擎机器学习平台SDK
-
-本项目中使用的火山引擎机器学习平台SDK需要特殊安装。详细说明请参考 [火山引擎机器学习平台SDK安装指南](docs/ml_platform_setup.md)。
-
-
-# 启动时通过环境变量设置
-API_WORKERS=1 python src/run_api_server.py
-
-# python全进程kill
-taskkill /f /im python.exe
-
-# 启动uv环境
-source .venv/Scripts/activate
-
-# 打包后端环境
-source .venv/Scripts/activate && pyinstaller backend_build.spec --distpath frontend/electron-app/resources --workpath build/pyinstaller
-
-# 打包(虚拟环境 git bash)
-./build_package.bat
+本项目采用 [MIT License](https://www.google.com/search?q=LICENSE) 授权。
